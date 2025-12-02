@@ -1,0 +1,28 @@
+{
+  "generatorName": "scala-sttp4-jsoniter",
+  "inputSpec": "modules/hcloud-codegen/hcloud.json",
+  "outputDir": "modules/hcloud-codegen/src/main/scala",
+  "mainPackage": "",
+  "apiPackage": "hcloud.api",
+  "modelPackage": "hcloud.models",
+  "invokerPackage": "hcloud",
+  "globalProperties": { "apis": "", "models": "", "supportingFiles": "" },
+  "configOptions": {                    
+    "modelPropertyNaming": "camelCase",
+    "ensureUniqueParams": "true",
+    "sortParamsByRequiredFlag": "true",
+    "sortModelPropertiesByRequiredFlag": "true",
+    "allowUnicodeIdentifiers": "false",
+    "prependFormOrBodyParameters": "false",
+    "enumUnknownDefaultCase": "true",
+    "disallowAdditionalPropertiesIfNotPresent": "false",
+    "separateErrorChannel": "false",
+    "sttpClientVersion": "4.0.13",
+    "jsoniterVersion": "2.38.4"
+  },
+  "additionalProperties": {
+    "artifactVersion": "1.0.0",
+     "sourceFolder": "",
+     "apiNameSuffix" : ""
+  }
+}

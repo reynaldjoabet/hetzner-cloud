@@ -1,0 +1,44 @@
+package routes
+import hcloud.models.LoadBalancer
+import hcloud.api.LoadBalancers
+import hcloud.models.AddServiceResponse
+import hcloud.models.AddTargetResponse
+import hcloud.models.AttachLoadBalancerToNetworkRequest
+import hcloud.models.AttachLoadBalancerToNetworkResponse
+import hcloud.models.ChangeAlgorithmResponse
+import hcloud.models.ChangeLoadBalancerProtectionRequest
+import hcloud.models.ChangeLoadBalancerProtectionResponse
+import hcloud.models.ChangeReverseDnsEntryForThisLoadBalancerRequest
+import hcloud.models.ChangeReverseDnsEntryForThisLoadBalancerResponse
+import hcloud.models.ChangeTypeOfLoadBalancerRequest
+import hcloud.models.ChangeTypeOfLoadBalancerResponse
+import hcloud.models.CreateLoadBalancerRequest
+import hcloud.models.CreateLoadBalancerResponse
+import hcloud.models.DeleteServiceRequest
+import hcloud.models.DeleteServiceResponse
+import hcloud.models.DetachLoadBalancerFromNetworkRequest
+import hcloud.models.DetachLoadBalancerFromNetworkResponse
+import hcloud.models.DisablePublicInterfaceOfLoadBalancerResponse
+import hcloud.models.EnablePublicInterfaceOfLoadBalancerResponse
+import hcloud.models.GetActionResponse
+import hcloud.models.GetLoadBalancerResponse
+import hcloud.models.GetMetricsForLoadbalancerResponse
+import hcloud.models.ListActionsResponse
+import hcloud.models.ListLoadBalancersResponse
+import hcloud.models.LoadBalancerAddTarget
+import hcloud.models.LoadBalancerAlgorithm
+import hcloud.models.LoadBalancerService
+import hcloud.models.RemoveTargetRequest
+import hcloud.models.RemoveTargetResponse
+import hcloud.models.ReplaceLoadBalancerRequest
+import hcloud.models.ReplaceLoadBalancerResponse
+import hcloud.models.UpdateLoadBalancerService
+import hcloud.models.UpdateServiceResponse
+import hcloud.JsonSupport.{*, given}
+import org.http4s.AuthedRoutes
+import org.http4s.dsl.Http4sDsl
+import cats.effect.kernel.Concurrent
+import sttp.client4.Backend
+import cats.syntax.flatMap.toFlatMapOps
+
+abstract class LoadBalancerRoutes[F[*]: Concurrent](backend: Backend[F]) extends Http4sDsl[F] {}

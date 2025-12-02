@@ -1,0 +1,22 @@
+
+    {
+        "hideGenerationTimestamp": "true",
+        "groupId": "com.premierdev",
+        "artifactId": "hcloud-codegen",
+        "artifactVersion": "2.0.0",
+        "artifactDescription": "Scala client for Hetzner Cloud API",
+        "parentGroupId": "",
+        "parentArtifactId": "",
+        "parentVersion": "2.0.0",
+        "apiPackage": "",
+        "modelPackage": "",
+        "developerOrganizationUrl": "https:",
+        "developerOrganization": "Premierdev",
+        "developerName": "Premierdev",
+        "developerEmail": "oss-maintainers@yugabyte.com",
+        "licenseName": "POLYFORM-FREE-TRIAL-LICENSE-1.0.0",
+        "dateLibrary": "java8",
+        "enumPropertyNaming": "legacy",
+        "removeEnumValuePrefix": true,
+        "defaultToEmptyContainer": "array|map"
+    }
