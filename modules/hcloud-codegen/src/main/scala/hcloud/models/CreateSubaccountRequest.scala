@@ -17,14 +17,14 @@ import com.github.plokhotnyuk.jsoniter_scala.macros.named
    * Request for POST https://api.hetzner.com/v1/storage_boxes/{id}/subaccounts
    */
 case class CreateSubaccountRequest(
+  /* Home directory of the Storage Box Subaccount.  The directory will be created if it doesn't exist yet.  */
+  @named("home_directory") homeDirectory: String,
+  /* Password of the Storage Box Subaccount.  For more details, see the Storage Boxes password policy.  */
+  @named("password") password: String,
   @named("access_settings") accessSettings: Option[CreateSubaccountRequestAccessSettings] = scala.None,
   /* A description of Storage Box Subaccount.  */
   @named("description") description: Option[String] = scala.None,
-  /* Home directory of the Storage Box Subaccount.  The directory will be created if it doesn't exist yet.  */
-  @named("home_directory") homeDirectory: String,
   /* User-defined labels (`key/value` pairs) for the Resource. For more information, see \"Labels\".  | User-defined labels (`key/value` pairs) for the Resource.  Note that the set of Labels provided in the request will overwrite the existing one.  For more information, see \"Labels\".  */
-  @named("labels") labels: Option[Map[String, String]] = scala.None,
-  /* Password of the Storage Box Subaccount.  For more details, see the Storage Boxes password policy.  */
-  @named("password") password: String
+  @named("labels") labels: Option[Map[String, String]] = scala.None
 )
 

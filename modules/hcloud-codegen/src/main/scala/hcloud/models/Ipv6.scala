@@ -21,9 +21,9 @@ case class Ipv6(
   @named("blocked") blocked: Boolean,
   /* Reverse DNS PTR entries for the IPv6 addresses of this Server. */
   @named("dns_ptr") dnsPtr: Seq[DnsPtr],
-  /* ID of the Primary IP. */
-  @named("id") id: Option[Long] = scala.None,
   /* IP address (v6) of this Server. */
-  @named("ip") ip: String
+  @named("ip") ip: String,
+  /* ID of the Primary IP. */
+  @named("id") id: Option[Long] = scala.None
 )
 

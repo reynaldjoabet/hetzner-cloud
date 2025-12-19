@@ -18,6 +18,10 @@ import com.github.plokhotnyuk.jsoniter_scala.macros.named
    * Request for POST https://api.hetzner.cloud/v1/volumes
    */
 case class CreateVolumeRequest(
+  /* Name of the volume. */
+  @named("name") name: String,
+  /* Size of the Volume in GB. */
+  @named("size") size: Int,
   /* Auto-mount Volume after attach. `server` must be provided. */
   @named("automount") automount: Option[Boolean] = scala.None,
   /* Format Volume after creation. One of: `xfs`, `ext4`. */
@@ -26,11 +30,7 @@ case class CreateVolumeRequest(
   @named("labels") labels: Option[Map[String, String]] = scala.None,
   /* Location to create the Volume in (can be omitted if Server is specified). */
   @named("location") location: Option[String] = scala.None,
-  /* Name of the volume. */
-  @named("name") name: String,
   /* Server to which to attach the Volume once it's created (Volume will be created in the same Location as the server). */
-  @named("server") server: Option[Long] = scala.None,
-  /* Size of the Volume in GB. */
-  @named("size") size: Int
+  @named("server") server: Option[Long] = scala.None
 )
 

@@ -18,9 +18,9 @@ import com.github.plokhotnyuk.jsoniter_scala.macros.named
    * Record of a RRSet.  The `value` is used to identify the record in an RRSet. 
    */
 case class ResourceRecord(
-  /* Comment of the record. */
-  @named("comment") comment: Option[String] = scala.None,
   /* Value of the record.  For details about accepted values, see the [DNS record types documentation](https://docs.hetzner.com/networking/dns/record-types/overview/).  */
-  @named("value") value: String
+  @named("value") value: String,
+  /* Comment of the record. */
+  @named("comment") comment: Option[String] = scala.None
 )
 

@@ -18,7 +18,7 @@ import com.github.plokhotnyuk.jsoniter_scala.macros.named
    * Response to POST https://api.hetzner.cloud/v1/certificates
    */
 case class CreateCertificateResponse(
-  @named("action") action: Option[Action] = scala.None,
-  @named("certificate") certificate: Certificate
+  @named("certificate") certificate: Certificate,
+  @named("action") action: Option[Action] = scala.None
 )
 

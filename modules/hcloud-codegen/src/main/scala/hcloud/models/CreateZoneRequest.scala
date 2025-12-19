@@ -17,12 +17,12 @@ import com.github.plokhotnyuk.jsoniter_scala.macros.named
    * Request for POST https://api.hetzner.cloud/v1/zones
    */
 case class CreateZoneRequest(
-  /* User-defined labels (`key/value` pairs) for the Resource. For more information, see \"Labels\".  | User-defined labels (`key/value` pairs) for the Resource.  Note that the set of Labels provided in the request will overwrite the existing one.  For more information, see \"Labels\".  */
-  @named("labels") labels: Option[Map[String, String]] = scala.None,
   /* Mode of the Zone.  For more information, see Zone Modes.  */
   @named("mode") mode: CreateZoneRequestEnums.Mode,
   /* Name of the Zone.  All names with [well-known public suffixes](https://publicsuffix.org/) (e.g. `.de`, `.com`, `.co.uk`) are supported. Subdomains are not supported.  The name must be in lower case and must not end with a dot. [Internationalized domain names](https://en.wikipedia.org/wiki/Internationalized_domain_name) must be transcribed to [Punycode](https://wikipedia.org/wiki/Punycode) representation with ACE prefix, e.g. `xn--mnchen-3ya.de` (`münchen.de`).  */
   @named("name") name: String,
+  /* User-defined labels (`key/value` pairs) for the Resource. For more information, see \"Labels\".  | User-defined labels (`key/value` pairs) for the Resource.  Note that the set of Labels provided in the request will overwrite the existing one.  For more information, see \"Labels\".  */
+  @named("labels") labels: Option[Map[String, String]] = scala.None,
   /* Primary nameservers of the Zone.  Only applicable for Zones in secondary mode. Ignored for Zones in primary mode.  */
   @named("primary_nameservers") primaryNameservers: Option[Seq[Nameserver]] = scala.None,
   /* RRSets to be added to the Zone.  Only applicable for Zones in primary mode. Ignored for Zones in secondary mode.  */

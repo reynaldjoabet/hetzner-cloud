@@ -21,9 +21,9 @@ case class Ipv4(
   @named("blocked") blocked: Boolean,
   /* Reverse DNS PTR entry for the IPv4 addresses of this Server. */
   @named("dns_ptr") dnsPtr: String,
-  /* ID of the Primary IP. */
-  @named("id") id: Option[Long] = scala.None,
   /* IP address (v4) of this Server. */
-  @named("ip") ip: String
+  @named("ip") ip: String,
+  /* ID of the Primary IP. */
+  @named("id") id: Option[Long] = scala.None
 )
 

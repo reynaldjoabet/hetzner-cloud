@@ -17,12 +17,12 @@ import com.github.plokhotnyuk.jsoniter_scala.macros.named
    * Subnets divide the ip_range from the parent Network object into multiple Subnetworks that you can use for different specific purposes.
    */
 case class Subnet(
-  /* IP range of the subnet.  Uses CIDR notation.  Must be a subnet of the parent Networks `ip_range`.  Must not overlap with any other subnets or with any destinations in routes.  Minimum network size is /30. We highly recommend that you pick a larger subnet with a /24 netmask.  */
-  @named("ip_range") ipRange: Option[String] = scala.None,
   /* Name of the Network Zone.  The Location contains the `network_zone` property it belongs to.  | Name of the Network Zone.  The Location contains the `network_zone` it belongs to.  */
   @named("network_zone") networkZone: String,
   /* Type of subnet.  - `cloud` - Used to connect cloud Servers and Load Balancers. - `server` - Same as the `cloud` type. **Deprecated**, use the `cloud` type instead. - `vswitch` - Used to [connect cloud Servers and Load Balancers with dedicated Servers](https://docs.hetzner.com/cloud/networks/connect-dedi-vswitch).  */
   @named("type") `type`: SubnetEnums.Type,
+  /* IP range of the subnet.  Uses CIDR notation.  Must be a subnet of the parent Networks `ip_range`.  Must not overlap with any other subnets or with any destinations in routes.  Minimum network size is /30. We highly recommend that you pick a larger subnet with a /24 netmask.  */
+  @named("ip_range") ipRange: Option[String] = scala.None,
   /* ID of the robot vSwitch.  Must only be supplied for subnets of type `vswitch`.  | ID of the robot vSwitch.  Must be supplied if the subnet is of type `vswitch`.  */
   @named("vswitch_id") vswitchId: Option[Long] = scala.None
 )

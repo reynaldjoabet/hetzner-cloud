@@ -18,15 +18,15 @@ import com.github.plokhotnyuk.jsoniter_scala.macros.named
    * Request for POST https://api.hetzner.cloud/v1/zones/{id_or_name}/rrsets
    */
 case class ResourceRecordSetToCreate(
-  /* User-defined labels (`key/value` pairs) for the Resource. For more information, see \"Labels\".  | User-defined labels (`key/value` pairs) for the Resource.  Note that the set of Labels provided in the request will overwrite the existing one.  For more information, see \"Labels\".  */
-  @named("labels") labels: Option[Map[String, String]] = scala.None,
   /* Name of the RRSet.  The name must be in lower case, and must not end with a dot or the Zone name. Names containing non-ASCII characters must be transcribed to [Punycode](https://wikipedia.org/wiki/Punycode) representation with ACE prefix, e.g. `xn--4bi` (✉️).  For the Zone apex, use `@`.  */
   @named("name") name: String,
   /* Records of the RRSet.  Must not be empty and must only contain distinct record values. The order of records returned in responses is not guaranteed to be consistent.  */
   @named("records") records: Seq[ResourceRecord],
+  @named("type") `type`: ResourceRecordSetType,
+  /* User-defined labels (`key/value` pairs) for the Resource. For more information, see \"Labels\".  | User-defined labels (`key/value` pairs) for the Resource.  Note that the set of Labels provided in the request will overwrite the existing one.  For more information, see \"Labels\".  */
+  @named("labels") labels: Option[Map[String, String]] = scala.None,
   /* Time To Live (TTL) of the RRSet.  Must be in between 60s and 2147483647s.  If not set, the Zone's Default TTL is used.  */
-  @named("ttl") ttl: Option[Int] = scala.None,
-  @named("type") `type`: ResourceRecordSetType
+  @named("ttl") ttl: Option[Int] = scala.None
 )
 
 object ResourceRecordSetToCreateEnums:

@@ -23,6 +23,6 @@ import cats.effect.std.PQueueSource
 import cats.effect.std.UUIDGen
 class HelloSpec extends munit.FunSuite {
   test("say hello") {
-    //assertEquals(Hello.greeting, "hello")
+    // assertEquals(Hello.greeting, "hello")
   }
 }

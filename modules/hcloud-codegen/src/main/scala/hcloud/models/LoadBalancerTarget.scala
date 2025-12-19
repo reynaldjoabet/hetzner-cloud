@@ -18,6 +18,8 @@ import com.github.plokhotnyuk.jsoniter_scala.macros.named
    * A target of a Load Balancer.
    */
 case class LoadBalancerTarget(
+  /* Type of the resource. */
+  @named("type") `type`: LoadBalancerTargetEnums.Type,
   /* List of health statuses of the services on this target. Only present for target types \"server\" and \"ip\". */
   @named("health_status") healthStatus: Option[Seq[LoadBalancerTargetHealthStatus]] = scala.None,
   @named("ip") ip: Option[LoadBalancerTargetIp] = scala.None,
@@ -25,8 +27,6 @@ case class LoadBalancerTarget(
   @named("server") server: Option[ResourceId] = scala.None,
   /* List of resolved label selector target Servers. Only present for type \"label_selector\". */
   @named("targets") targets: Option[Seq[LoadBalancerSelectedTarget]] = scala.None,
-  /* Type of the resource. */
-  @named("type") `type`: LoadBalancerTargetEnums.Type,
   /* Use the private network IP instead of the public IP. Only present for target types \"server\" and \"label_selector\". */
   @named("use_private_ip") usePrivateIp: Option[Boolean] = scala.None
 )

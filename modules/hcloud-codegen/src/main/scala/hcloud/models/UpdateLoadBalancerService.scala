@@ -18,12 +18,12 @@ import com.github.plokhotnyuk.jsoniter_scala.macros.named
    * An update to a service for a Load Balancer.
    */
 case class UpdateLoadBalancerService(
+  /* Port the Load Balancer listens on. */
+  @named("listen_port") listenPort: Int,
   /* Port the Load Balancer will balance to. */
   @named("destination_port") destinationPort: Option[Int] = scala.None,
   @named("health_check") healthCheck: Option[UpdateLoadBalancerServiceHealthCheck] = scala.None,
   @named("http") http: Option[Http] = scala.None,
-  /* Port the Load Balancer listens on. */
-  @named("listen_port") listenPort: Int,
   /* Protocol of the Load Balancer. */
   @named("protocol") protocol: Option[UpdateLoadBalancerServiceEnums.Protocol] = scala.None,
   /* Is Proxyprotocol enabled or not. */

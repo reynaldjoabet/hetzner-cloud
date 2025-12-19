@@ -1,0 +1,13 @@
+[Unit]
+Description=Hetzner provisioner
+After=network.target
+
+[Service]
+User=app
+Environment=HETZNER_TOKEN=...
+ExecStart=/usr/bin/java -jar /opt/hetzner/app.jar
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

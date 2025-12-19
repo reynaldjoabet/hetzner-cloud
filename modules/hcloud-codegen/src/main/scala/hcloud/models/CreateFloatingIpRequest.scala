@@ -19,6 +19,7 @@ import com.github.plokhotnyuk.jsoniter_scala.macros.named
    * Request for POST https://api.hetzner.cloud/v1/floating_ips
    */
 case class CreateFloatingIpRequest(
+  @named("type") `type`: IpType,
   /* Description of the Resource. */
   @named("description") description: Option[String] = scala.None,
   /* Home Location for the Floating IP.  Either the ID or the name of the Location.  Only optional if no Server is provided. Routing is optimized for this Locations.  */
@@ -28,8 +29,7 @@ case class CreateFloatingIpRequest(
   /* Name of the Resource. Must be unique per Project. */
   @named("name") name: Option[String] = scala.None,
   /* Server the Floating IP is assigned to.  `null` if not assigned.  */
-  @named("server") server: Option[Long] = scala.None,
-  @named("type") `type`: IpType
+  @named("server") server: Option[Long] = scala.None
 )
 
 object CreateFloatingIpRequestEnums:

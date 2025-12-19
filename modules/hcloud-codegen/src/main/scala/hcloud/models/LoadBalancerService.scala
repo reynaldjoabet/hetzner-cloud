@@ -21,13 +21,13 @@ case class LoadBalancerService(
   /* Port the Load Balancer will balance to. */
   @named("destination_port") destinationPort: Int,
   @named("health_check") healthCheck: LoadBalancerServiceHealthCheck,
-  @named("http") http: Option[Http] = scala.None,
   /* Port the Load Balancer listens on. */
   @named("listen_port") listenPort: Int,
   /* Protocol of the Load Balancer. */
   @named("protocol") protocol: LoadBalancerServiceEnums.Protocol,
   /* Is Proxyprotocol enabled or not. */
-  @named("proxyprotocol") proxyprotocol: Boolean
+  @named("proxyprotocol") proxyprotocol: Boolean,
+  @named("http") http: Option[Http] = scala.None
 )
 
 object LoadBalancerServiceEnums:

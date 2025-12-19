@@ -17,15 +17,15 @@ import com.github.plokhotnyuk.jsoniter_scala.macros.named
    * Request for POST https://api.hetzner.com/v1/storage_boxes/{id}/actions/enable_snapshot_plan
    */
 case class EnableSnapshotPlanRequest(
-  /* Day of the month when the Snapshot Plan is executed.  Null means every day.  */
-  @named("day_of_month") dayOfMonth: Option[Int] = scala.None,
-  /* Day of the week when the Snapshot Plan is executed.  Starts at 1 for Monday til 7 for Sunday. Null means every day.  */
-  @named("day_of_week") dayOfWeek: Option[Int] = scala.None,
   /* Hour when the Snapshot Plan is executed (UTC).  */
   @named("hour") hour: Int,
   /* Maximum amount of Snapshots that will be created by this Snapshot Plan.  Older Snapshots will be deleted.  */
   @named("max_snapshots") maxSnapshots: Int,
   /* Minute when the Snapshot Plan is executed (UTC).  */
-  @named("minute") minute: Int
+  @named("minute") minute: Int,
+  /* Day of the month when the Snapshot Plan is executed.  Null means every day.  */
+  @named("day_of_month") dayOfMonth: Option[Int] = scala.None,
+  /* Day of the week when the Snapshot Plan is executed.  Starts at 1 for Monday til 7 for Sunday. Null means every day.  */
+  @named("day_of_week") dayOfWeek: Option[Int] = scala.None
 )
 

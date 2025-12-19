@@ -17,11 +17,11 @@ import com.github.plokhotnyuk.jsoniter_scala.macros.named
    * Request for POST https://api.hetzner.cloud/v1/load_balancers/{id}/actions/attach_to_network
    */
 case class AttachLoadBalancerToNetworkRequest(
+  /* ID of an existing network to attach the Load Balancer to. */
+  @named("network") network: Long,
   /* IP to request to be assigned to this Load Balancer; if you do not provide this then you will be auto assigned an IP address. */
   @named("ip") ip: Option[String] = scala.None,
   /* IP range in CIDR block notation of the subnet to attach to.  This allows for auto assigning an IP address for a specific subnet. Providing `ip` that is not part of `ip_range` will result in an error.  */
-  @named("ip_range") ipRange: Option[String] = scala.None,
-  /* ID of an existing network to attach the Load Balancer to. */
-  @named("network") network: Long
+  @named("ip_range") ipRange: Option[String] = scala.None
 )
 

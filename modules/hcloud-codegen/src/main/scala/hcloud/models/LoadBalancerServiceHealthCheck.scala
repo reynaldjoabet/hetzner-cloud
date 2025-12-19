@@ -18,7 +18,6 @@ import com.github.plokhotnyuk.jsoniter_scala.macros.named
    * Service health check.
    */
 case class LoadBalancerServiceHealthCheck(
-  @named("http") http: Option[LoadBalancerServiceHealthCheckHttp] = scala.None,
   /* Time interval in seconds health checks are performed. */
   @named("interval") interval: Int,
   /* Port the health check will be performed on. */
@@ -28,7 +27,8 @@ case class LoadBalancerServiceHealthCheck(
   /* Unsuccessful retries needed until a target is considered unhealthy; an unhealthy target needs the same number of successful retries to become healthy again. */
   @named("retries") retries: Int,
   /* Time in seconds after an attempt is considered a timeout. */
-  @named("timeout") timeout: Int
+  @named("timeout") timeout: Int,
+  @named("http") http: Option[LoadBalancerServiceHealthCheckHttp] = scala.None
 )
 
 object LoadBalancerServiceHealthCheckEnums:

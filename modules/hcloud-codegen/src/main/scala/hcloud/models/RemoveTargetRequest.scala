@@ -18,11 +18,11 @@ import com.github.plokhotnyuk.jsoniter_scala.macros.named
    * Request for POST https://api.hetzner.cloud/v1/load_balancers/{id}/actions/remove_target
    */
 case class RemoveTargetRequest(
+  /* Type of the resource. */
+  @named("type") `type`: RemoveTargetRequestEnums.Type,
   @named("ip") ip: Option[LoadBalancerTargetIp] = scala.None,
   @named("label_selector") labelSelector: Option[LabelSelector] = scala.None,
-  @named("server") server: Option[ResourceId] = scala.None,
-  /* Type of the resource. */
-  @named("type") `type`: RemoveTargetRequestEnums.Type
+  @named("server") server: Option[ResourceId] = scala.None
 )
 
 object RemoveTargetRequestEnums:

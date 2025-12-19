@@ -18,11 +18,11 @@ import com.github.plokhotnyuk.jsoniter_scala.macros.named
    * A target to be added to a load balancer.
    */
 case class LoadBalancerAddTarget(
+  /* Type of the resource. */
+  @named("type") `type`: LoadBalancerAddTargetEnums.Type,
   @named("ip") ip: Option[LoadBalancerTargetIp] = scala.None,
   @named("label_selector") labelSelector: Option[LabelSelector] = scala.None,
   @named("server") server: Option[ResourceId] = scala.None,
-  /* Type of the resource. */
-  @named("type") `type`: LoadBalancerAddTargetEnums.Type,
   /* Use the private network IP instead of the public IP of the Server, requires the Server and Load Balancer to be in the same network. Only valid for target types `server` and `label_selector`. */
   @named("use_private_ip") usePrivateIp: Option[Boolean] = scala.None
 )

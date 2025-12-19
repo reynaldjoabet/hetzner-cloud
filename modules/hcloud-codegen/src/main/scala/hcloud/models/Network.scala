@@ -24,8 +24,6 @@ case class Network(
   @named("ip_range") ipRange: String,
   /* User-defined labels (`key/value` pairs) for the Resource. For more information, see \"Labels\".  | User-defined labels (`key/value` pairs) for the Resource.  Note that the set of Labels provided in the request will overwrite the existing one.  For more information, see \"Labels\".  */
   @named("labels") labels: Map[String, String],
-  /* Array of IDs of Load Balancers attached to this Network. */
-  @named("load_balancers") loadBalancers: Option[Seq[Long]] = scala.None,
   /* Name of the Network. */
   @named("name") name: String,
   @named("protection") protection: Protection,
@@ -34,6 +32,8 @@ case class Network(
   /* Array of IDs of Servers attached to this Network. */
   @named("servers") servers: Seq[Long],
   /* List of subnets allocated in this Network. */
-  @named("subnets") subnets: Seq[SubnetWithGateway]
+  @named("subnets") subnets: Seq[SubnetWithGateway],
+  /* Array of IDs of Load Balancers attached to this Network. */
+  @named("load_balancers") loadBalancers: Option[Seq[Long]] = scala.None
 )
 

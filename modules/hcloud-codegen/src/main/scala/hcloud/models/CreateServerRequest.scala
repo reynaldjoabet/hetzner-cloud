@@ -18,27 +18,27 @@ import com.github.plokhotnyuk.jsoniter_scala.macros.named
    * Request for POST https://api.hetzner.cloud/v1/servers
    */
 case class CreateServerRequest(
+  /* ID or name of the Image the Server is created from. */
+  @named("image") image: String,
+  /* Name of the Server to create (must be unique per Project and a valid hostname as per RFC 1123). */
+  @named("name") name: String,
+  /* ID or name of the Server type this Server should be created with. */
+  @named("server_type") serverType: String,
   /* Auto-mount Volumes after attach. */
   @named("automount") automount: Option[Boolean] = scala.None,
   /* ID or name of Data Center to create Server in (must not be used together with location). */
   @named("datacenter") datacenter: Option[String] = scala.None,
   /* Firewalls which should be applied on the Server's public network interface at creation time. */
   @named("firewalls") firewalls: Option[Seq[CreateServerRequestFirewalls]] = scala.None,
-  /* ID or name of the Image the Server is created from. */
-  @named("image") image: String,
   /* User-defined labels (`key/value` pairs) for the Resource. For more information, see \"Labels\".  | User-defined labels (`key/value` pairs) for the Resource.  Note that the set of Labels provided in the request will overwrite the existing one.  For more information, see \"Labels\".  */
   @named("labels") labels: Option[Map[String, String]] = scala.None,
   /* ID or name of Location to create Server in (must not be used together with datacenter). */
   @named("location") location: Option[String] = scala.None,
-  /* Name of the Server to create (must be unique per Project and a valid hostname as per RFC 1123). */
-  @named("name") name: String,
   /* Network IDs which should be attached to the Server private network interface at the creation time. */
   @named("networks") networks: Option[Seq[Long]] = scala.None,
   /* ID of the Placement Group the Server should be in. */
   @named("placement_group") placementGroup: Option[Long] = scala.None,
   @named("public_net") publicNet: Option[CreateServerRequestPublicNet] = scala.None,
-  /* ID or name of the Server type this Server should be created with. */
-  @named("server_type") serverType: String,
   /* SSH key IDs (`integer`) or names (`string`) which should be injected into the Server at creation time. */
   @named("ssh_keys") sshKeys: Option[Seq[String]] = scala.None,
   /* This automatically triggers a Power on a Server-Server Action after the creation is finished and is returned in the `next_actions` response object. */

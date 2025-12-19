@@ -46,12 +46,12 @@ case class Image(
   /* Operating system version. */
   @named("os_version") osVersion: String,
   @named("protection") protection: Protection,
-  /* Indicates that rapid deploy of the Image is available. */
-  @named("rapid_deploy") rapidDeploy: Option[Boolean] = scala.None,
   /* Whether the Image can be used or if it's still being created or unavailable. */
   @named("status") status: ImageEnums.Status,
   /* Type of the Image. */
-  @named("type") `type`: ImageEnums.Type
+  @named("type") `type`: ImageEnums.Type,
+  /* Indicates that rapid deploy of the Image is available. */
+  @named("rapid_deploy") rapidDeploy: Option[Boolean] = scala.None
 )
 
 object ImageEnums:
