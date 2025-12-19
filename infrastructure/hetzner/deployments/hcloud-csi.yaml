@@ -1,0 +1,24 @@
+
+controller:
+  hcloudToken:
+    existingSecret:
+      name: hcloud
+      key: token
+
+  priorityClassName: system-cluster-critical
+
+  nodeSelector:
+    node-role.kubernetes.io/control-plane: ""
+  tolerations:
+    - key: node-role.kubernetes.io/control-plane
+      effect: NoSchedule
+
+node:
+  priorityClassName: system-node-critical
+  nodeSelector:
+    node.cloudprovider.kubernetes.io/platform: hcloud
+
+storageClasses:
+  - name: hcloud-volumes
+    defaultStorageClass: false
+    reclaimPolicy: Delete

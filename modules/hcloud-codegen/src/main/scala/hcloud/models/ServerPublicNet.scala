@@ -17,13 +17,13 @@ import com.github.plokhotnyuk.jsoniter_scala.macros.named
    * Public network information. The Server's IPv4 address can be found in `public_net->ipv4->ip`.
    */
 case class ServerPublicNet(
-  /* Firewalls applied to the public network interface of this Server. */
-  @named("firewalls") firewalls: Option[Seq[ServerPublicNetFirewall]] = scala.None,
   /* IDs of Floating IPs assigned to this Server. */
   @named("floating_ips") floatingIps: Seq[Long],
   /* IP address (v4) and its reverse DNS entry of this Server. */
   @named("ipv4") ipv4: Ipv4,
   /* IPv6 network assigned to this Server and its reverse DNS entry. */
-  @named("ipv6") ipv6: Ipv6
+  @named("ipv6") ipv6: Ipv6,
+  /* Firewalls applied to the public network interface of this Server. */
+  @named("firewalls") firewalls: Option[Seq[ServerPublicNetFirewall]] = scala.None
 )
 

@@ -18,12 +18,12 @@ import com.github.plokhotnyuk.jsoniter_scala.macros.named
    * Request for POST https://api.hetzner.cloud/v1/placement_groups
    */
 case class CreatePlacementgroupRequest(
-  /* User-defined labels (`key/value` pairs) for the Resource. For more information, see \"Labels\".  | User-defined labels (`key/value` pairs) for the Resource.  Note that the set of Labels provided in the request will overwrite the existing one.  For more information, see \"Labels\".  */
-  @named("labels") labels: Option[Map[String, String]] = scala.None,
   /* Name of the Placement Group. */
   @named("name") name: String,
   /* Define the Placement Group Type. */
-  @named("type") `type`: CreatePlacementgroupRequestEnums.Type
+  @named("type") `type`: CreatePlacementgroupRequestEnums.Type,
+  /* User-defined labels (`key/value` pairs) for the Resource. For more information, see \"Labels\".  | User-defined labels (`key/value` pairs) for the Resource.  Note that the set of Labels provided in the request will overwrite the existing one.  For more information, see \"Labels\".  */
+  @named("labels") labels: Option[Map[String, String]] = scala.None
 )
 
 object CreatePlacementgroupRequestEnums:

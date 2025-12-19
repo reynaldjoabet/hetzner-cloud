@@ -36,11 +36,11 @@ case class Certificate(
   @named("not_valid_after") notValidAfter: String,
   /* Point in time when the Certificate becomes valid (in ISO-8601 format). */
   @named("not_valid_before") notValidBefore: String,
+  /* Resources currently using the Certificate. */
+  @named("used_by") usedBy: Seq[Resource],
   @named("status") status: Option[CertificateStatus] = scala.None,
   /* Type of the Certificate. */
-  @named("type") `type`: Option[CertificateEnums.Type] = scala.None,
-  /* Resources currently using the Certificate. */
-  @named("used_by") usedBy: Seq[Resource]
+  @named("type") `type`: Option[CertificateEnums.Type] = scala.None
 )
 
 object CertificateEnums:

@@ -18,7 +18,7 @@ import com.github.plokhotnyuk.jsoniter_scala.macros.named
    * Response to POST https://api.hetzner.cloud/v1/primary_ips
    */
 case class CreatePrimaryIpResponse(
-  @named("action") action: Option[Action] = scala.None,
-  @named("primary_ip") primaryIp: PrimaryIP
+  @named("primary_ip") primaryIp: PrimaryIP,
+  @named("action") action: Option[Action] = scala.None
 )
 

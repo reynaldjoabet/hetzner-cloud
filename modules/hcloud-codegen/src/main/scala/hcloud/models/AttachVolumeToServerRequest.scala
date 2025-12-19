@@ -18,9 +18,9 @@ import com.github.plokhotnyuk.jsoniter_scala.macros.named
    * Request for POST https://api.hetzner.cloud/v1/volumes/{id}/actions/attach
    */
 case class AttachVolumeToServerRequest(
-  /* Auto-mount the Volume after attaching it. */
-  @named("automount") automount: Option[Boolean] = scala.None,
   /* ID of the Server the Volume will be attached to. */
-  @named("server") server: Long
+  @named("server") server: Long,
+  /* Auto-mount the Volume after attaching it. */
+  @named("automount") automount: Option[Boolean] = scala.None
 )
 

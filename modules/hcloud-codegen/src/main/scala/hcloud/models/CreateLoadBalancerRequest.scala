@@ -18,15 +18,15 @@ import com.github.plokhotnyuk.jsoniter_scala.macros.named
    * Request for POST https://api.hetzner.cloud/v1/load_balancers
    */
 case class CreateLoadBalancerRequest(
+  /* ID or name of the Load Balancer type this Load Balancer should be created with. */
+  @named("load_balancer_type") loadBalancerType: String,
+  /* Name of the Load Balancer. */
+  @named("name") name: String,
   @named("algorithm") algorithm: Option[LoadBalancerAlgorithm] = scala.None,
   /* User-defined labels (`key/value` pairs) for the Resource. For more information, see \"Labels\".  | User-defined labels (`key/value` pairs) for the Resource.  Note that the set of Labels provided in the request will overwrite the existing one.  For more information, see \"Labels\".  */
   @named("labels") labels: Option[Map[String, String]] = scala.None,
-  /* ID or name of the Load Balancer type this Load Balancer should be created with. */
-  @named("load_balancer_type") loadBalancerType: String,
   /* ID or name of Location to create Load Balancer in. */
   @named("location") location: Option[String] = scala.None,
-  /* Name of the Load Balancer. */
-  @named("name") name: String,
   /* ID of the network the Load Balancer should be attached to on creation. */
   @named("network") network: Option[Long] = scala.None,
   /* Name of network zone. */

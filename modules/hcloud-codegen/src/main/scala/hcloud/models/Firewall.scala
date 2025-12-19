@@ -23,10 +23,10 @@ case class Firewall(
   @named("created") created: String,
   /* ID of the Firewall. */
   @named("id") id: Long,
-  /* User-defined labels (`key/value` pairs) for the Resource. For more information, see \"Labels\".  | User-defined labels (`key/value` pairs) for the Resource.  Note that the set of Labels provided in the request will overwrite the existing one.  For more information, see \"Labels\".  */
-  @named("labels") labels: Option[Map[String, String]] = scala.None,
   /* Name of the Firewall.  Limited to a maximum of 128 characters.  Must be unique per Project.  */
   @named("name") name: String,
-  @named("rules") rules: Seq[RuleResponse]
+  @named("rules") rules: Seq[RuleResponse],
+  /* User-defined labels (`key/value` pairs) for the Resource. For more information, see \"Labels\".  | User-defined labels (`key/value` pairs) for the Resource.  Note that the set of Labels provided in the request will overwrite the existing one.  For more information, see \"Labels\".  */
+  @named("labels") labels: Option[Map[String, String]] = scala.None
 )
 

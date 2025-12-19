@@ -18,14 +18,14 @@ import com.github.plokhotnyuk.jsoniter_scala.macros.named
    * Request for POST https://api.hetzner.cloud/v1/certificates
    */
 case class CreateCertificateRequest(
+  /* Name of the Certificate. */
+  @named("name") name: String,
   /* Certificate and chain in PEM format, in order so that each record directly certifies the one preceding. Required for type `uploaded` Certificates. */
   @named("certificate") certificate: Option[String] = scala.None,
   /* Domains and subdomains that should be contained in the Certificate issued by *Let's Encrypt*. Required for type `managed` Certificates. */
   @named("domain_names") domainNames: Option[Seq[String]] = scala.None,
   /* User-defined labels (`key/value` pairs) for the Resource. For more information, see \"Labels\".  | User-defined labels (`key/value` pairs) for the Resource.  Note that the set of Labels provided in the request will overwrite the existing one.  For more information, see \"Labels\".  */
   @named("labels") labels: Option[Map[String, String]] = scala.None,
-  /* Name of the Certificate. */
-  @named("name") name: String,
   /* Certificate key in PEM format. Required for type `uploaded` Certificates. */
   @named("private_key") privateKey: Option[String] = scala.None,
   /* Choose between uploading a Certificate in PEM format or requesting a managed *Let's Encrypt* Certificate. */

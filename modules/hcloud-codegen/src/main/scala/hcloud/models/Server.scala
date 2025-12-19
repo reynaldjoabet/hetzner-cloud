@@ -34,15 +34,12 @@ case class Server(
   @named("iso") iso: Iso,
   /* User-defined labels (`key/value` pairs) for the Resource. For more information, see \"Labels\".  | User-defined labels (`key/value` pairs) for the Resource.  Note that the set of Labels provided in the request will overwrite the existing one.  For more information, see \"Labels\".  */
   @named("labels") labels: Map[String, String],
-  /* Load Balancer IDs assigned to the server. */
-  @named("load_balancers") loadBalancers: Option[Seq[Long]] = scala.None,
   /* True if Server has been locked and is not available to user. */
   @named("locked") locked: Boolean,
   /* Name of the Server (must be unique per Project and a valid hostname as per RFC 1123). */
   @named("name") name: String,
   /* Outbound Traffic for the current billing period in bytes. */
   @named("outgoing_traffic") outgoingTraffic: Long,
-  @named("placement_group") placementGroup: Option[PlacementGroupNullable] = scala.None,
   /* Size of the primary Disk. */
   @named("primary_disk_size") primaryDiskSize: Int,
   /* Private networks information. */
@@ -54,6 +51,9 @@ case class Server(
   @named("server_type") serverType: ServerType,
   /* Status of the Server. */
   @named("status") status: ServerEnums.Status,
+  /* Load Balancer IDs assigned to the server. */
+  @named("load_balancers") loadBalancers: Option[Seq[Long]] = scala.None,
+  @named("placement_group") placementGroup: Option[PlacementGroupNullable] = scala.None,
   /* IDs of Volumes assigned to this Server. */
   @named("volumes") volumes: Option[Seq[Long]] = scala.None
 )

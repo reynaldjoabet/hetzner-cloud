@@ -18,12 +18,12 @@ import com.github.plokhotnyuk.jsoniter_scala.macros.named
    * Request for POST https://api.hetzner.cloud/v1/firewalls
    */
 case class CreateFirewallRequest(
+  /* Name of the Firewall.  Limited to a maximum of 128 characters.  Must be unique per Project.  */
+  @named("name") name: String,
   /* Resources to apply the Firewall to.  Resources added directly are taking precedence over those added via a Label Selector.  */
   @named("apply_to") applyTo: Option[Seq[FirewallResource]] = scala.None,
   /* User-defined labels (`key/value` pairs) for the Resource. For more information, see \"Labels\".  | User-defined labels (`key/value` pairs) for the Resource.  Note that the set of Labels provided in the request will overwrite the existing one.  For more information, see \"Labels\".  */
   @named("labels") labels: Option[Map[String, String]] = scala.None,
-  /* Name of the Firewall.  Limited to a maximum of 128 characters.  Must be unique per Project.  */
-  @named("name") name: String,
   /* Array of rules.  Rules are limited to 50 entries per Firewall and [500 effective rules](https://docs.hetzner.com/cloud/firewalls/overview#limits).  */
   @named("rules") rules: Option[Seq[Rule]] = scala.None
 )

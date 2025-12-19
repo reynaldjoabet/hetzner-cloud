@@ -19,19 +19,19 @@ import com.github.plokhotnyuk.jsoniter_scala.macros.named
    * Request for POST https://api.hetzner.cloud/v1/primary_ips
    */
 case class CreatePrimaryIpRequest(
-  /* ID of resource to assign the Primary IP to.  Omitted if the Primary IP should not get assigned.  */
-  @named("assignee_id") assigneeId: Option[Long] = scala.None,
   /* Type of resource the Primary IP can get assigned to.  Currently Primary IPs can only be assigned to Servers, therefore this field must be set to `server`.  */
   @named("assignee_type") assigneeType: CreatePrimaryIpRequestEnums.AssigneeType,
+  /* Name of the Resource. Must be unique per Project. */
+  @named("name") name: String,
+  @named("type") `type`: IpType,
+  /* ID of resource to assign the Primary IP to.  Omitted if the Primary IP should not get assigned.  */
+  @named("assignee_id") assigneeId: Option[Long] = scala.None,
   /* Auto deletion state.  If enabled the Primary IP will be deleted once the assigned resource gets deleted.  */
   @named("auto_delete") autoDelete: Option[Boolean] = scala.None,
   /* Data Center ID or name.  The  Primary IP will be bound to this Data Center. Omit if `assignee_id`/`assignee_type` is provided.  */
   @named("datacenter") datacenter: Option[String] = scala.None,
   /* User-defined labels (`key/value` pairs) for the Resource. For more information, see \"Labels\".  | User-defined labels (`key/value` pairs) for the Resource.  Note that the set of Labels provided in the request will overwrite the existing one.  For more information, see \"Labels\".  */
-  @named("labels") labels: Option[Map[String, String]] = scala.None,
-  /* Name of the Resource. Must be unique per Project. */
-  @named("name") name: String,
-  @named("type") `type`: IpType
+  @named("labels") labels: Option[Map[String, String]] = scala.None
 )
 
 object CreatePrimaryIpRequestEnums:

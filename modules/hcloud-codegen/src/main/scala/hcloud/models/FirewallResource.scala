@@ -18,10 +18,10 @@ import com.github.plokhotnyuk.jsoniter_scala.macros.named
    * Resource a Firewall should be applied to.
    */
 case class FirewallResource(
-  @named("label_selector") labelSelector: Option[LabelSelector] = scala.None,
-  @named("server") server: Option[ResourceId] = scala.None,
   /* Type of the resource. */
-  @named("type") `type`: FirewallResourceEnums.Type
+  @named("type") `type`: FirewallResourceEnums.Type,
+  @named("label_selector") labelSelector: Option[LabelSelector] = scala.None,
+  @named("server") server: Option[ResourceId] = scala.None
 )
 
 object FirewallResourceEnums:

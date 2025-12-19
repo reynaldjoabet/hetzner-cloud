@@ -17,7 +17,7 @@ import com.github.plokhotnyuk.jsoniter_scala.macros.named
    * Response to POST https://api.hetzner.cloud/v1/floating_ips
    */
 case class CreateFloatingIpResponse(
-  @named("action") action: Option[Action] = scala.None,
-  @named("floating_ip") floatingIp: FloatingIp
+  @named("floating_ip") floatingIp: FloatingIp,
+  @named("action") action: Option[Action] = scala.None
 )
 

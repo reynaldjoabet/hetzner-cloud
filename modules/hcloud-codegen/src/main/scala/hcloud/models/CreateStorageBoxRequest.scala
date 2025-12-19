@@ -17,18 +17,18 @@ import com.github.plokhotnyuk.jsoniter_scala.macros.named
    * Request for POST https://api.hetzner.com/v1/storage_boxes
    */
 case class CreateStorageBoxRequest(
-  @named("access_settings") accessSettings: Option[CreateStorageBoxRequestAccessSettings] = scala.None,
-  /* User-defined labels (`key/value` pairs) for the Resource. For more information, see \"Labels\".  | User-defined labels (`key/value` pairs) for the Resource.  Note that the set of Labels provided in the request will overwrite the existing one.  For more information, see \"Labels\".  */
-  @named("labels") labels: Option[Map[String, String]] = scala.None,
   /* ID or Name of Location. */
   @named("location") location: String,
   /* Name of the Storage Box.  */
   @named("name") name: String,
   /* Password of the Storage Box.  For more details, see the Storage Boxes password policy.  */
   @named("password") password: String,
-  /* SSH public keys in OpenSSH format to inject into the Storage Box. */
-  @named("ssh_keys") sshKeys: Option[Seq[String]] = scala.None,
   /* ID or Name of the Storage Box Type. */
-  @named("storage_box_type") storageBoxType: String
+  @named("storage_box_type") storageBoxType: String,
+  @named("access_settings") accessSettings: Option[CreateStorageBoxRequestAccessSettings] = scala.None,
+  /* User-defined labels (`key/value` pairs) for the Resource. For more information, see \"Labels\".  | User-defined labels (`key/value` pairs) for the Resource.  Note that the set of Labels provided in the request will overwrite the existing one.  For more information, see \"Labels\".  */
+  @named("labels") labels: Option[Map[String, String]] = scala.None,
+  /* SSH public keys in OpenSSH format to inject into the Storage Box. */
+  @named("ssh_keys") sshKeys: Option[Seq[String]] = scala.None
 )
 

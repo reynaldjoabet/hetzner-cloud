@@ -1,0 +1,73 @@
+
+fullnameOverride: cluster-autoscaler-hcloud
+# image:
+#   tag: v1.27.3
+
+cloudProvider: hetzner
+
+autoscalingGroups:
+  # - name: worker-nbg1
+  #   maxSize: 2
+  #   minSize: 0
+  #   instanceType: CPX31
+  #   region: FSN1
+  - name: worker-fsn1
+    maxSize: 2
+    minSize: 0
+    instanceType: CPX31
+    region: FSN1
+  # - name: worker-hel1
+  #   maxSize: 2
+  #   minSize: 0
+  #   instanceType: CPX31
+  #   region: FSN1
+
+extraEnvSecrets:
+  HCLOUD_TOKEN:
+    name: hcloud
+    key: token
+  HCLOUD_NETWORK:
+    name: hcloud
+    key: network
+  HCLOUD_SSH_KEY:
+    name: hcloud
+    key: sshkey
+  HCLOUD_IMAGE:
+    name: hcloud
+    key: image
+  HCLOUD_CLOUD_INIT:
+    name: hcloud
+    key: init
+
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  seccompProfile:
+    type: RuntimeDefault
+  capabilities:
+    drop: ["ALL"]
+
+extraArgs:
+  node-deletion-delay-timeout: 10m0s
+  scan-interval: 3m
+  regional: true
+  logtostderr: true
+  stderrthreshold: info
+  v: 4
+
+priorityClassName: system-cluster-critical
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 300Mi
+  requests:
+    cpu: 100m
+    memory: 300Mi
+
+nodeSelector:
+  node-role.kubernetes.io/control-plane: ""
+  node.cloudprovider.kubernetes.io/platform: hcloud
+
+tolerations:
+  - key: node-role.kubernetes.io/control-plane
+    effect: NoSchedule

@@ -25,8 +25,6 @@ case class Zone(
   @named("mode") mode: ZoneEnums.Mode,
   /* Name of the Zone.  All names with [well-known public suffixes](https://publicsuffix.org/) (e.g. `.de`, `.com`, `.co.uk`) are supported. Subdomains are not supported.  The name must be in lower case and must not end with a dot. [Internationalized domain names](https://en.wikipedia.org/wiki/Internationalized_domain_name) must be transcribed to [Punycode](https://wikipedia.org/wiki/Punycode) representation with ACE prefix, e.g. `xn--mnchen-3ya.de` (`münchen.de`).  */
   @named("name") name: String,
-  /* Primary nameservers of the Zone.  Only set if Zone is in secondary mode, otherwise empty.  */
-  @named("primary_nameservers") primaryNameservers: Option[Seq[Nameserver]] = scala.None,
   @named("protection") protection: Protection,
   /* Number of resource records (RR) within the Zone. */
   @named("record_count") recordCount: Int,
@@ -35,7 +33,9 @@ case class Zone(
   /* Status of the Zone.  - `ok`: the Zone is pushed to the authoritative nameservers. - `updating`: the Zone is currently being published to the authoritative nameservers. - `error`: the Zone could not be published to the authoritative nameservers.  */
   @named("status") status: ZoneEnums.Status,
   /* Default Time To Live (TTL) of the Zone.  Must be in between 60s and 2147483647s.  This TTL is used for RRSets that do not explicitly define a TTL.  */
-  @named("ttl") ttl: Int
+  @named("ttl") ttl: Int,
+  /* Primary nameservers of the Zone.  Only set if Zone is in secondary mode, otherwise empty.  */
+  @named("primary_nameservers") primaryNameservers: Option[Seq[Nameserver]] = scala.None
 )
 
 object ZoneEnums:

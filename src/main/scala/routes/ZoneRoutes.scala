@@ -45,7 +45,8 @@ import cats.effect.kernel.Concurrent
 import sttp.client4.Backend
 import cats.syntax.flatMap.toFlatMapOps
 
-abstract class ZoneRoutes[F[*]: Concurrent](backend: Backend[F]) extends Http4sDsl[F] {
+abstract class ZoneRoutes[F[*]: Concurrent](backend: Backend[F])
+    extends Http4sDsl[F] {
   def routes[U]: AuthedRoutes[U, F] = AuthedRoutes.of[U, F] {
 
     // --- top-level actions (literal) ----------------

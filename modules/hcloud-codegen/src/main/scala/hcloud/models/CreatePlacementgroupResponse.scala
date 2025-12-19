@@ -18,7 +18,7 @@ import com.github.plokhotnyuk.jsoniter_scala.macros.named
    * Response to POST https://api.hetzner.cloud/v1/placement_groups
    */
 case class CreatePlacementgroupResponse(
-  @named("action") action: Option[Action] = scala.None,
-  @named("placement_group") placementGroup: PlacementGroup
+  @named("placement_group") placementGroup: PlacementGroup,
+  @named("action") action: Option[Action] = scala.None
 )
 

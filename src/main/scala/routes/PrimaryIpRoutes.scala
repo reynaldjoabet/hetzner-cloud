@@ -23,4 +23,5 @@ import cats.effect.kernel.Concurrent
 import sttp.client4.Backend
 import cats.syntax.flatMap.toFlatMapOps
 
-abstract class PrimaryIpRoutes[F[*]: Concurrent](backend: Backend[F]) extends Http4sDsl[F] {}
+abstract class PrimaryIpRoutes[F[*]: Concurrent](backend: Backend[F])
+    extends Http4sDsl[F] {}

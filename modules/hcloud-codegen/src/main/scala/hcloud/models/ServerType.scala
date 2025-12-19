@@ -16,16 +16,12 @@ import com.github.plokhotnyuk.jsoniter_scala.macros.named
 
 case class ServerType(
   @named("architecture") architecture: Architecture,
-  /* Category of Server Type. */
-  @named("category") category: Option[String] = scala.None,
   /* Number of cpu cores a Server of this type will have. */
   @named("cores") cores: Int,
   /* Type of cpu. */
   @named("cpu_type") cpuType: ServerTypeEnums.CpuType,
   /* This field is deprecated. Use the deprecation object instead. */
   @named("deprecated") deprecated: Boolean,
-  /* This field is deprecated.  Use the `deprecation` object in the `locations` field instead (`.locations[].deprecation`).  */
-  @named("deprecation") deprecation: Option[DeprecationInfo] = scala.None,
   /* Description of the Server type. */
   @named("description") description: String,
   /* Disk size a Server of this type will have in GB. */
@@ -41,7 +37,11 @@ case class ServerType(
   /* Price per Location. */
   @named("prices") prices: Seq[PricePerTime],
   /* Type of Server boot drive. Local has higher speed. Network has better availability. */
-  @named("storage_type") storageType: ServerTypeEnums.StorageType
+  @named("storage_type") storageType: ServerTypeEnums.StorageType,
+  /* Category of Server Type. */
+  @named("category") category: Option[String] = scala.None,
+  /* This field is deprecated.  Use the `deprecation` object in the `locations` field instead (`.locations[].deprecation`).  */
+  @named("deprecation") deprecation: Option[DeprecationInfo] = scala.None
 )
 
 object ServerTypeEnums:
