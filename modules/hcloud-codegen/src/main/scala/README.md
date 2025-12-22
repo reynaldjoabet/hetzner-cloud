@@ -2,7 +2,7 @@
 
 Hetzner Cloud API
 - API version: f6511ca-dirty
-    - Generator version: 7.17.0
+    - Generator version: 7.18.0
 
 Copied from the official API documentation for the Public Hetzner Cloud.
 

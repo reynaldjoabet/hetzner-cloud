@@ -884,3 +884,484 @@ Inside that network, all subnets (like 10.0.1.0/24, 10.0.9.0/24, etc.) are:
 
 - `Allow Cloudflare IPs for tunnel (egress only, no ingress needed)`
 - cloudflared establishes outbound connections
+
+[K3s on Hetzner with Terraform](https://renanhillesheim.com/posts/newpost/)
+
+[setup-highly-available-kubernetus-cluster-with-hetzner-cloud-and-terraform-](https://alexslubsky.medium.com/setup-highly-available-kubernetus-cluster-with-hetzner-cloud-and-terraform-941a9e25ddf6)
+
+DNS (Domain Name System) is the most fundamental and widely used form of Service Discovery.
+
+![alt text](image-12.png)
+
+[components-of-kubernetes](https://schoenwald.aero/posts/2025-02-26_components-of-kubernetes/)
+
+[What Is a YubiKey and When to Use It vs. Authenticator Apps](https://supertokens.com/blog/yubikeys#:~:text=When%20you%20register%20a%20YubiKey%20with%20a%20service%2C%20here's%20what,stores%20public%20key%20%2B%20credential%20ID)
+
+![alt text](image-13.png)
+
+![alt text](image-14.png)
+
+![alt text](image-15.png)
+
+[set-up-infrastructure-in-hetzner-cloud-using-terraform-](https://medium.com/@orestovyevhen/set-up-infrastructure-in-hetzner-cloud-using-terraform-ce85491e92d)
+
+```sh
+command will attempt to use the autoscaling/v2 API first, in case of an error, it will fall back to autoscaling/v1 API.
+
+ Looks up a deployment, replica set, stateful set, or replication controller by name and creates an autoscaler that uses
+the given resource as a reference. An autoscaler can automatically increase or decrease number of pods deployed within
+the system as needed.
+
+Examples:
+  # Auto scale a deployment "foo", with the number of pods between 2 and 10, no target CPU utilization specified so a default autoscaling policy will be used
+  kubectl autoscale deployment foo --min=2 --max=10
+  
+  # Auto scale a replication controller "foo", with the number of pods between 1 and 5, target CPU utilization at 80%
+  kubectl autoscale rc foo --max=5 --cpu=80%
+  
+  # Auto scale a deployment "bar", with the number of pods between 3 and 6, target average CPU of 500m and memory of
+200Mi
+  kubectl autoscale deployment bar --min=3 --max=6 --cpu=500m --memory=200Mi
+  
+  # Auto scale a deployment "bar", with the number of pods between 2 and 8, target CPU utilization 60% and memory utilization 70%
+  kubectl autoscale deployment bar --min=3 --max=6 --cpu=60% --memory=70%
+  ```
+
+```sh
+kubectl controls the Kubernetes cluster manager.
+
+ Find more information at: https://kubernetes.io/docs/reference/kubectl/
+
+Basic Commands (Beginner):
+  create          Create a resource from a file or from stdin
+  expose          Take a replication controller, service, deployment or pod and expose it as a new Kubernetes service
+  run             Run a particular image on the cluster
+  set             Set specific features on objects
+
+Basic Commands (Intermediate):
+  explain         Get documentation for a resource
+  get             Display one or many resources
+  edit            Edit a resource on the server
+  delete          Delete resources by file names, stdin, resources and names, or by resources and label selector
+
+Deploy Commands:
+  rollout         Manage the rollout of a resource
+  scale           Set a new size for a deployment, replica set, or replication controller
+  autoscale       Auto-scale a deployment, replica set, stateful set, or replication controller
+
+Cluster Management Commands:
+  certificate     Modify certificate resources
+  cluster-info    Display cluster information
+  top             Display resource (CPU/memory) usage
+  cordon          Mark node as unschedulable
+  uncordon        Mark node as schedulable
+  drain           Drain node in preparation for maintenance
+  taint           Update the taints on one or more nodes
+
+Troubleshooting and Debugging Commands:
+  describe        Show details of a specific resource or group of resources
+  logs            Print the logs for a container in a pod
+  attach          Attach to a running container
+  exec            Execute a command in a container
+  port-forward    Forward one or more local ports to a pod
+  proxy           Run a proxy to the Kubernetes API server
+  cp              Copy files and directories to and from containers
+  auth            Inspect authorization
+  debug           Create debugging sessions for troubleshooting workloads and nodes
+  events          List events
+
+Advanced Commands:
+  diff            Diff the live version against a would-be applied version
+  apply           Apply a configuration to a resource by file name or stdin
+  patch           Update fields of a resource
+  replace         Replace a resource by file name or stdin
+  wait            Wait for a specific condition on one or many resources
+  kustomize       Build a kustomization target from a directory or URL
+
+Settings Commands:
+  label           Update the labels on a resource
+  annotate        Update the annotations on a resource
+  completion      Output shell completion code for the specified shell (bash, zsh, fish, or powershell)
+
+Subcommands provided by plugins:
+
+Other Commands:
+  alpha           Commands for features in alpha
+  api-resources   Print the supported API resources on the server
+  api-versions    Print the supported API versions on the server, in the form of "group/version"
+  config          Modify kubeconfig files
+  plugin          Provides utilities for interacting with plugins
+  version         Print the client and server version information
+
+Usage:
+  kubectl [flags] [options]
+```  
+
+```sh
+kubectl create --help
+Create a resource from a file or from stdin.
+
+ JSON and YAML formats are accepted.
+
+Examples:
+  # Create a pod using the data in pod.json
+  kubectl create -f ./pod.json
+  
+  # Create a pod based on the JSON passed into stdin
+  cat pod.json | kubectl create -f -
+  
+  # Edit the data in registry.yaml in JSON then create the resource using the edited data
+  kubectl create -f registry.yaml --edit -o json
+
+Available Commands:
+  clusterrole           Create a cluster role
+  clusterrolebinding    Create a cluster role binding for a particular cluster role
+  configmap             Create a config map from a local file, directory or literal value
+  cronjob               Create a cron job with the specified name
+  deployment            Create a deployment with the specified name
+  ingress               Create an ingress with the specified name
+  job                   Create a job with the specified name
+  namespace             Create a namespace with the specified name
+  poddisruptionbudget   Create a pod disruption budget with the specified name
+  priorityclass         Create a priority class with the specified name
+  quota                 Create a quota with the specified name
+  role                  Create a role with single rule
+  rolebinding           Create a role binding for a particular role or cluster role
+  secret                Create a secret using a specified subcommand
+  service               Create a service using a specified subcommand
+  serviceaccount        Create a service account with the specified name
+  token                 Request a service account token
+
+```
+
+```sh
+ kubectl expose --help
+Expose a resource as a new Kubernetes service.
+
+ Looks up a deployment, service, replica set, replication controller or pod by name and uses the selector for that
+resource as the selector for a new service on the specified port. A deployment or replica set will be exposed as a
+service only if its selector is convertible to a selector that service supports, i.e. when the selector contains only
+the matchLabels component. Note that if no port is specified via --port and the exposed resource has multiple ports, all
+will be re-used by the new service. Also if no labels are specified, the new service will re-use the labels from the
+resource it exposes.
+
+ Possible resources include (case insensitive):
+
+ pod (po), service (svc), replicationcontroller (rc), deployment (deploy), replicaset (rs)
+
+Examples:
+  # Create a service for a replicated nginx, which serves on port 80 and connects to the containers on port 8000
+  kubectl expose rc nginx --port=80 --target-port=8000
+  
+  # Create a service for a replication controller identified by type and name specified in "nginx-controller.yaml",
+which serves on port 80 and connects to the containers on port 8000
+  kubectl expose -f nginx-controller.yaml --port=80 --target-port=8000
+  
+  # Create a service for a pod valid-pod, which serves on port 444 with the name "frontend"
+  kubectl expose pod valid-pod --port=444 --name=frontend
+  
+  # Create a second service based on the above service, exposing the container port 8443 as port 443 with the name
+"nginx-https"
+  kubectl expose service nginx --port=443 --target-port=8443 --name=nginx-https
+  
+  # Create a service for a replicated streaming application on port 4100 balancing UDP traffic and named 'video-stream'.
+  kubectl expose rc streamer --port=4100 --protocol=UDP --name=video-stream
+  
+  # Create a service for a replicated nginx using replica set, which serves on port 80 and connects to the containers on
+port 8000
+  kubectl expose rs nginx --port=80 --target-port=8000
+  
+  # Create a service for an nginx deployment, which serves on port 80 and connects to the containers on port 8000
+  kubectl expose deployment nginx --port=80 --target-port=8000
+  ```
+
+```sh
+kubectl run --help   
+Create and run a particular image in a pod.
+
+Examples:
+  # Start a nginx pod
+  kubectl run nginx --image=nginx
+  
+  # Start a hazelcast pod and let the container expose port 5701
+  kubectl run hazelcast --image=hazelcast/hazelcast --port=5701
+  
+  # Start a hazelcast pod and set environment variables "DNS_DOMAIN=cluster" and "POD_NAMESPACE=default" in the
+container
+  kubectl run hazelcast --image=hazelcast/hazelcast --env="DNS_DOMAIN=cluster" --env="POD_NAMESPACE=default"
+  
+  # Start a hazelcast pod and set labels "app=hazelcast" and "env=prod" in the container
+  kubectl run hazelcast --image=hazelcast/hazelcast --labels="app=hazelcast,env=prod"
+  
+  # Dry run; print the corresponding API objects without creating them
+  kubectl run nginx --image=nginx --dry-run=client
+  
+  # Start a nginx pod, but overload the spec with a partial set of values parsed from JSON
+  kubectl run nginx --image=nginx --overrides='{ "apiVersion": "v1", "spec": { ... } }'
+  
+  # Start a busybox pod and keep it in the foreground, don't restart it if it exits
+  kubectl run -i -t busybox --image=busybox --restart=Never
+  ```
+
+```sh
+   kubectl get --help
+Display one or many resources.
+
+ Prints a table of the most important information about the specified resources. You can filter the list using a label
+selector and the --selector flag. If the desired resource type is namespaced you will only see results in the current
+namespace if you don't specify any namespace.
+
+ By specifying the output as 'template' and providing a Go template as the value of the --template flag, you can filter
+the attributes of the fetched resources.
+
+Use "kubectl api-resources" for a complete list of supported resources.
+
+Examples:
+  # List all pods in ps output format
+  kubectl get pods
+  
+  # List all pods in ps output format with more information (such as node name)
+  kubectl get pods -o wide
+  
+  # List a single replication controller with specified NAME in ps output format
+  kubectl get replicationcontroller web
+  
+  # List deployments in JSON output format, in the "v1" version of the "apps" API group
+  kubectl get deployments.v1.apps -o json
+  
+  # List a single pod in JSON output format
+  kubectl get -o json pod web-pod-13je7
+  
+  # List a pod identified by type and name specified in "pod.yaml" in JSON output format
+  kubectl get -f pod.yaml -o json
+  
+  # List resources from a directory with kustomization.yaml - e.g. dir/kustomization.yaml
+  kubectl get -k dir/
+  
+  # Return only the phase value of the specified pod
+  kubectl get -o template pod/web-pod-13je7 --template={{.status.phase}}
+  
+  # List resource information in custom columns
+  kubectl get pod test-pod -o custom-columns=CONTAINER:.spec.containers[0].name,IMAGE:.spec.containers[0].image
+  
+  # List all replication controllers and services together in ps output format
+  kubectl get rc,services
+  
+  # List one or more resources by their type and names
+  kubectl get rc/web service/frontend pods/web-pod-13je7
+  
+  # List the 'status' subresource for a single pod
+  kubectl get pod web-pod-13je7 --subresource status
+  
+  # List all deployments in namespace 'backend'
+  kubectl get deployments.apps --namespace backend
+  
+  # List all pods existing in all namespaces
+  kubectl get pods --all-namespaces
+
+```
+
+```sh
+kubectl scale --help
+Set a new size for a deployment, replica set, replication controller, or stateful set.
+
+ Scale also allows users to specify one or more preconditions for the scale action.
+
+ If --current-replicas or --resource-version is specified, it is validated before the scale is attempted, and it is
+guaranteed that the precondition holds true when the scale is sent to the server.
+
+Examples:
+  # Scale a replica set named 'foo' to 3
+  kubectl scale --replicas=3 rs/foo
+  
+  # Scale a resource identified by type and name specified in "foo.yaml" to 3
+  kubectl scale --replicas=3 -f foo.yaml
+  
+  # If the deployment named mysql's current size is 2, scale mysql to 3
+  kubectl scale --current-replicas=2 --replicas=3 deployment/mysql
+  
+  # Scale multiple replication controllers
+  kubectl scale --replicas=5 rc/example1 rc/example2 rc/example3
+  
+  # Scale stateful set named 'web' to 3
+  kubectl scale --replicas=3 statefulset/web
+```
+
+```scala
+
+case class LoadBalancer(
+  @named("algorithm") algorithm: LoadBalancerAlgorithm,
+  /* Point in time when the Resource was created (in ISO-8601 format). */
+  @named("created") created: String,
+  /* ID of the Load Balancer. */
+  @named("id") id: Long,
+  /* Free Traffic for the current billing period in bytes. */
+  @named("included_traffic") includedTraffic: Long,
+  /* Inbound Traffic for the current billing period in bytes. */
+  @named("ingoing_traffic") ingoingTraffic: Long,
+  /* User-defined labels (`key/value` pairs) for the Resource. For more information, see \"Labels\".  | User-defined labels (`key/value` pairs) for the Resource.  Note that the set of Labels provided in the request will overwrite the existing one.  For more information, see \"Labels\".  */
+  @named("labels") labels: Map[String, String],
+  @named("load_balancer_type") loadBalancerType: LoadBalancerType,
+  @named("location") location: Location,
+  /* Name of the Resource. Must be unique per Project. */
+  @named("name") name: String,
+  /* Outbound Traffic for the current billing period in bytes. */
+  @named("outgoing_traffic") outgoingTraffic: Long,
+  /* Private networks information. */
+  @named("private_net") privateNet: Seq[LoadBalancerPrivateNet],
+  @named("protection") protection: Protection,
+  @named("public_net") publicNet: LoadBalancerPublicNet,
+  /* List of services that belong to this Load Balancer. */
+  @named("services") services: Seq[LoadBalancerService],
+  /* List of targets that belong to this Load Balancer. */
+  @named("targets") targets: Seq[LoadBalancerTarget]
+)
+
+```
+
+[Load Balancers Made Easy on Hetzner Cloud with Terraform](https://www.youtube.com/watch?v=_GB5HHnA0zE&t=172s)
+
+There are 3 loadbalancer types lb11,lb21 and lb31
+- lb11 supports five services, 25 targets and 10 ssl certificates
+- lb21 supports 15 services,75 targets and 25 ssl certificates
+- lb31 supports 30 services, 150 targets and 50 ssl certificates
+
+A loadbalancer must be located in the same network zone as the targets
+
+```scala
+  /**
+   * LoadBalancerTarget
+   * A target of a Load Balancer.
+   */
+case class LoadBalancerTarget(
+  /* Type of the resource. */
+  @named("type") `type`: LoadBalancerTargetEnums.Type,
+  /* List of health statuses of the services on this target. Only present for target types \"server\" and \"ip\". */
+  @named("health_status") healthStatus: Option[Seq[LoadBalancerTargetHealthStatus]] = scala.None,
+  @named("ip") ip: Option[LoadBalancerTargetIp] = scala.None,
+  @named("label_selector") labelSelector: Option[LabelSelector] = scala.None,
+  @named("server") server: Option[ResourceId] = scala.None,
+  /* List of resolved label selector target Servers. Only present for type \"label_selector\". */
+  @named("targets") targets: Option[Seq[LoadBalancerSelectedTarget]] = scala.None,
+  /* Use the private network IP instead of the public IP. Only present for target types \"server\" and \"label_selector\". */
+  @named("use_private_ip") usePrivateIp: Option[Boolean] = scala.None
+)
+
+object LoadBalancerTargetEnums:
+  enum Type:
+    case `ip`
+    case `label_selector`
+    case `server`
+
+```
+sets up the targets that we want the loadbalancer to route traffic to
+A target tells the loadbalancer which servers it should use to route its traffic when we have it setup
+`LoadBalancerTarget.Type` tells the loadbalancer the kind of services we want to identify for its routing
+
+- `server` allows us to specify the server by its id
+- `ip` allows us use an ip address that points to a cloud server located in the same network zone
+
+These two work but have their limitations:
+- if we want to setup the loadbalancer to look up the target by IP, we will likely need to use static IP addresses in case we recreate the server and that incurs some additional costs
+- The main limitation with setting the targets by server id or IP adddress is that if we scale our infrastructure up and add new servers,we will need to manually add these targets to the load balancer configuration,which is really easy to forget
+
+A more convenient and maintainable approach is to configure the targets by using the `label selector` type. This seting tells the loadbalancer to look for any server that has specific label setup and automatically set them as targets.
+When you create new servers on hetzner cloud or almost any cloud provider for that matter, you can optionally seet labels to identify them for different purposes.
+
+
+### Service
+
+```scala
+  /**
+   * LoadBalancerService
+   * A service for a Load Balancer.
+   */
+case class LoadBalancerService(
+  /* Port the Load Balancer will balance to. */
+  @named("destination_port") destinationPort: Int,
+  @named("health_check") healthCheck: LoadBalancerServiceHealthCheck,
+  /* Port the Load Balancer listens on. */
+  @named("listen_port") listenPort: Int,
+  /* Protocol of the Load Balancer. */
+  @named("protocol") protocol: LoadBalancerServiceEnums.Protocol,
+  /* Is Proxyprotocol enabled or not. */
+  @named("proxyprotocol") proxyprotocol: Boolean,
+  @named("http") http: Option[Http] = scala.None
+)
+
+
+
+  /**
+   * LoadBalancerServiceHealthCheck
+   * Service health check.
+   */
+case class LoadBalancerServiceHealthCheck(
+  /* Time interval in seconds health checks are performed. */
+  @named("interval") interval: Int,
+  /* Port the health check will be performed on. */
+  @named("port") port: Int,
+  /* Type of the health check. */
+  @named("protocol") protocol: LoadBalancerServiceHealthCheckEnums.Protocol,
+  /* Unsuccessful retries needed until a target is considered unhealthy; an unhealthy target needs the same number of successful retries to become healthy again. */
+  @named("retries") retries: Int,
+  /* Time in seconds after an attempt is considered a timeout. */
+  @named("timeout") timeout: Int,
+  @named("http") http: Option[LoadBalancerServiceHealthCheckHttp] = scala.None
+)
+```
+
+- specifies the protocol(http,https or tcp) and the port (80,443 etc) for handling traffic
+- performs health checks on targets to ensure they are available
+
+For loadbalancers, a service the protocol and port the loadbalancer will use for handling traffic
+- it is also responsible for performing health checks on targets to check if any of them are unavailable, so the loadbalancer doesn't send traffic to a server that is not working
+
+for web servers, we use http or https and for this we need health checks to keep track of active servers
+
+`LoadBalancerServiceHealthCheckEnums.Protocol` is different from `LoadBalancerServiceEnums.Protocol`.. The loadbalancer service protocol tells the service which protocol to use for the type of traffic the loadbalancer will accept while `LoadBalancerServiceHealthCheckEnums.Protocol` tells the service which protocol to use for checking that a server is up..Typpically, both would use the same protocol
+
+We need to specify which port the health check should ping. the application for each web server is accessible on port `80`
+`path` specifies where the health check needs to make its requests
+indicates the path of the http requests made to the target..Let's say my application has a health check endpoint at `/health` or `/up`
+`statusCode` is an array of strings containing the http status codes that the health check uses to determine whether a target is healthy or unhealthy.. By default health checks pass if the path returns `2xx` or `3xx` status code
+
+if the load balancer does tls termination then route the unencrypted traffic to the target through normal http
+
+if you need to ensure encrypted communication between the loadbalancer and the targets(servers), you need to setup your loadbalancer service to use the tcp protocol
+loadbalancers can work with https using protocol using TLS termination. secure requests end at the load balancer and then route the unencrypted traffic to the Target through normal HTTP
+
+### https
+when setting up a aloadbalancer service that uses tls termination
+- you first need to setup an ssl certificate for your hetzner cloud project
+There are two ways
+- upload an existing ssl certifcate and its private key to hetzner cloud
+- let hetzner cloud generate an ssl certificate using let's Encrypt
+
+
+Terraform relies on plugins called providers to interact with cloud providers, SaaS providers, and other APIs.
+
+
+## Terraform
+Terraform configurations must declare which providers they require so that Terraform can install and use them
+Every resource type is implemented by a provider; without providers, Terraform can't manage any kind of infrastructure
+
+Terraform Core has zero knowledge of AWS, Azure, GCP, or Kubernetes.
+It doesn’t know what an EC2 instance is, or how to spin up a Kubernetes pod.
+
+Terraform’s core engine only knows how to:
+- Read your .tf files.
+- Build a dependency graph.
+- Compare desired vs actual state.
+- Plan and apply changes.
+
+On its own, Terraform is just a really smart orchestrator. But it has no clue how to actually talk to cloud APIs.
+`So Providers act as an interface between Terraform and the cloud APIs`
+`Providers = API Translators`
+
+Every cloud or service (AWS, Azure, Kubernetes, GitLab, Datadog, MongoDB etc.) exposes an API.The problem? Each one looks different.
+
+That’s where providers step in:
+- They know the API endpoints.
+- They handle authentication.
+- They define the schema for resources (ami, instance_type, bucket_name, etc.).
+- They translate Terraform configs into real Create/Read/Update/Delete (CRUD) API calls.

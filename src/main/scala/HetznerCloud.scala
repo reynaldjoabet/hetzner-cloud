@@ -1408,7 +1408,7 @@ object HetznerCloud extends App {
   )
 
   val addRouteToNetwork = HetznerClient.networks.addRouteToNetwork(
-    token="token",
+    token = "token",
     id = 123456,
     body = Route(
       destination = "10.10.0.0/16",
@@ -1417,7 +1417,7 @@ object HetznerCloud extends App {
   )
 
   val addSubnetToNetwork = HetznerClient.networks.addSubnetToNetwork(
-    token="token",
+    token = "token",
     id = 123456,
     body = Subnet(
       networkZone = "fsn1",
@@ -3605,5 +3605,305 @@ runcmd:
 // Network zone to use for private network
   val networkZone = "eu-central"
 
-  // clients.HetznerClient.servers.listServers()
+  clients.HetznerClient.servers.listServers(
+    "token",
+    None,
+    None,
+    List.empty,
+    List.empty
+  )
+
+  val privateNetwork3 = CreateNetworkRequest(
+    name = "kubernetes-cluster",
+    ipRange = "10.0.0.0/16"
+  )
+
+  val privateSubnet3 = Subnet(
+    networkZone = "eu-central",
+    `type` = SubnetEnums.Type.`cloud`,
+    ipRange = Some("10.0.1.0/24")
+  )
+
+//Set the Cluster CIDR to 10.244.0.0/16
+
+  val webLoadBalancer = CreateLoadBalancerRequest(
+    loadBalancerType = "lb11",
+    name = "web-load-balancer",
+    algorithm = Some(
+      LoadBalancerAlgorithm(LoadBalancerAlgorithmEnums.Type.`round_robin`)
+    ),
+    labels = Some(
+      Map("type" -> "web")
+    ),
+    location = Some("nbg1"),
+    network = Some( /* ID of the private network created earlier */ 123456),
+    networkZone = None,
+    publicInterface = Some(true),
+    services = Some(
+      Seq(
+        LoadBalancerService(
+          destinationPort = 80,
+          healthCheck = LoadBalancerServiceHealthCheck(
+            interval = 10,
+            port = 80,
+            protocol = LoadBalancerServiceHealthCheckEnums.Protocol.http,
+            retries = 3,
+            timeout = 10,
+            http = Some(
+              LoadBalancerServiceHealthCheckHttp(
+                domain = "example.com",
+                path = "/",
+                response = None,
+                statusCodes = Some(Seq("2??", "3??")),
+                tls = Some(false)
+              )
+            )
+          ),
+          listenPort = 80,
+          protocol = LoadBalancerServiceEnums.Protocol.http,
+          proxyprotocol = false,
+          http = None
+        )
+      )
+    ),
+    targets = Some(
+      Seq(
+        LoadBalancerAddTarget(
+          `type` = LoadBalancerAddTargetEnums.Type.`server`,
+          ip = None,
+          labelSelector = None,
+          server = Some(
+            ResourceId( /* ID of one of your web servers */ 123456)
+          ),
+          usePrivateIp = Some(false)
+        ),
+        LoadBalancerAddTarget(
+          `type` = LoadBalancerAddTargetEnums.Type.`server`,
+          ip = None,
+          labelSelector = None,
+          server = Some(
+            ResourceId( /* ID of one of your web servers */ 123456)
+          ),
+          usePrivateIp = Some(false)
+        ),
+        LoadBalancerAddTarget(
+          `type` = LoadBalancerAddTargetEnums.Type.`server`,
+          ip = None,
+          labelSelector = None,
+          server = Some(
+            ResourceId( /* ID of one of your web servers */ 123456)
+          ),
+          usePrivateIp = Some(false)
+        )
+      )
+    )
+  )
+
+  val webNetwork = CreateNetworkRequest(
+    name = "web-private-network",
+    ipRange = "10.10.0.0/16"
+  )
+  val webSubnet = Subnet(
+    networkZone = "eu-central",
+    `type` = SubnetEnums.Type.`cloud`,
+    ipRange = Some("10.10.0.0/24")
+  )
+
+  val attachWebLbToNetwork = AttachLoadBalancerToNetworkRequest(
+    network = 123456,
+    ip = Some("10.10.0.1"),
+    ipRange = Some("10.10.0.0/24")
+  )
+
+  val webLoadBalancerTarget1 = LoadBalancerAddTarget(
+    `type` = LoadBalancerAddTargetEnums.Type.`server`,
+    ip = None,
+    labelSelector = None,
+    server = Some(
+      ResourceId( /* ID of one of your web servers */ 123456)
+    ),
+    usePrivateIp = Some(false)
+  )
+
+  val webLoadBalancerTarget2 = LoadBalancerAddTarget(
+    `type` = LoadBalancerAddTargetEnums.Type.`server`,
+    ip = None,
+    labelSelector = None,
+    server = Some(
+      ResourceId( /* ID of one of your web servers */ 123456)
+    ),
+    usePrivateIp = Some(false)
+  )
+
+  val webLoadBalancerTarget3 = LoadBalancerAddTarget(
+    `type` = LoadBalancerAddTargetEnums.Type.`server`,
+    ip = None,
+    labelSelector = None,
+    server = Some(
+      ResourceId( /* ID of one of your web servers */ 123456)
+    ),
+    usePrivateIp = Some(false)
+  )
+
+  val webLoadBalancerService = LoadBalancerService(
+    destinationPort = 80,
+    healthCheck = LoadBalancerServiceHealthCheck(
+      interval = 10,
+      port = 80,
+      protocol = LoadBalancerServiceHealthCheckEnums.Protocol.http,
+      retries = 3,
+      timeout = 10,
+      http = Some(
+        LoadBalancerServiceHealthCheckHttp(
+          domain = "example.com",
+          path = "/",
+          response = None,
+          statusCodes = Some(Seq("2??", "3??")),
+          tls = Some(false)
+        )
+      )
+    ),
+    listenPort = 80,
+    protocol = LoadBalancerServiceEnums.Protocol.http,
+    proxyprotocol = false,
+    http = Some(
+      Http(
+        certificates = None,
+        cookieLifetime = None,
+        cookieName = None,
+        redirectHttp = Some(false),
+        stickySessions = Some(false)
+      )
+    )
+  )
+
+  val webServer01 = CreateServerRequest(
+    image = "ubuntu-24.04",
+    name = "web-server-01",
+    serverType = "cx11",
+    automount = Some(true),
+    datacenter = None,
+    firewalls = None,
+    labels = Some(
+      Map(
+        "type" -> "web"
+      )
+    ),
+    location = Some("nbg1"),
+    networks = Some(List(123456)),
+    placementGroup = None,
+    publicNet = Some(
+      CreateServerRequestPublicNet(
+        enableIpv4 = Some(true),
+        enableIpv6 = Some(false),
+        ipv4 = None,
+        ipv6 = None
+      )
+    ),
+    sshKeys = Some(List("my-ssh-key")),
+    startAfterCreate = Some(true),
+    userData = None,
+    volumes = Some(List(123456))
+  )
+
+  val webServer02 = CreateServerRequest(
+    image = "ubuntu-24.04",
+    name = "web-server-02",
+    serverType = "cx11",
+    automount = Some(true),
+    datacenter = None,
+    firewalls = None,
+    labels = Some(
+      Map(
+        "type" -> "web"
+      )
+    ),
+    location = Some("nbg1"),
+    networks = Some(List(123456)),
+    placementGroup = None,
+    publicNet = Some(
+      CreateServerRequestPublicNet(
+        enableIpv4 = Some(true),
+        enableIpv6 = Some(false),
+        ipv4 = None,
+        ipv6 = None
+      )
+    ),
+    sshKeys = Some(List("my-ssh-key")),
+    startAfterCreate = Some(true),
+    userData = None,
+    volumes = Some(List(123456))
+  )
+
+  val webServer03 = CreateServerRequest(
+    image = "ubuntu-24.04",
+    name = "web-server-03",
+    serverType = "cx11",
+    automount = Some(true),
+    datacenter = None,
+    firewalls = None,
+    labels = Some(
+      Map(
+        "type" -> "web"
+      )
+    ),
+    location = Some("nbg1"),
+    networks = Some(List(123456)),
+    placementGroup = None,
+    publicNet = Some(
+      CreateServerRequestPublicNet(
+        enableIpv4 = Some(true),
+        enableIpv6 = Some(false),
+        ipv4 = None,
+        ipv6 = None
+      )
+    ),
+    sshKeys = Some(List("my-ssh-key")),
+    startAfterCreate = Some(true),
+    userData = None,
+    volumes = Some(List(123456))
+  )
+
+  val webServerVolume01 = CreateVolumeRequest(
+    name = "web-server-volume-01",
+    size = 20,
+    automount = Some(true),
+    format = Some("xfs"),
+    labels = Some(
+      Map(
+        "type" -> "web"
+      )
+    ),
+    location = Some("nbg1"),
+    server = Some( /* ID of your web server 01 */ 123456)
+  )
+
+  val webServerVolume02 = CreateVolumeRequest(
+    name = "web-server-volume-02",
+    size = 20,
+    automount = Some(true),
+    format = Some("xfs"),
+    labels = Some(
+      Map(
+        "type" -> "web"
+      )
+    ),
+    location = Some("nbg1"),
+    server = Some( /* ID of your web server 02 */ 123456)
+  )
+
+  val webServerVolume03 = CreateVolumeRequest(
+    name = "web-server-volume-03",
+    size = 20,
+    automount = Some(true),
+    format = Some("xfs"),
+    labels = Some(
+      Map(
+        "type" -> "web"
+      )
+    ),
+    location = Some("nbg1"),
+    server = Some( /* ID of your web server 03 */ 123456)
+  )
+
 }

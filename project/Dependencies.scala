@@ -5,7 +5,7 @@ object Dependencies {
     val catsEffect = "3.6.3"
     val http4s = "0.23.33"
     val tapir = "1.10.6"
-    val jsoniter = "2.38.4"
+    val jsoniter = "2.38.6"
     val sttp4 = "4.0.13"
     val doobie = "1.0.0-RC5"
     val flyway = "10.18.2"
