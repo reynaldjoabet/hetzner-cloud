@@ -3906,4 +3906,124 @@ runcmd:
     server = Some( /* ID of your web server 03 */ 123456)
   )
 
+  val mySubnet = Subnet(
+    networkZone = "eu-central",
+    `type` = SubnetEnums.Type.vswitch, // Link to Dedicated world
+    ipRange = Some("10.0.1.0/24"),
+    vswitchId = Some(12345L) // Your ID from Robot
+  )
+
+  val request = CreateNetworkRequest(
+    name = "hybrid-network",
+    ipRange = "10.0.0.0/16",
+    exposeRoutesToVswitch = Some(true), // Allow dedicated to see cloud routes
+    subnets = Some(Seq(mySubnet))
+  )
+  val privateNetworkSubnetRange = "10.10.0.0/16"
+
+  val sshSubnetRange = "10.10.2.0/24"
+
+  val apiSubnetRange = "10.10.200.0/24"
+
+  val clusterCidr = "10.244.0.0/16"
+  val serviceCidr = "10.43.0.0/16"
+  val clusterDns = "10.43.0.10"
+
+  val firewallRules = List(
+    Rule(
+      direction = RuleEnums.Direction.in,
+      protocol = RuleEnums.Protocol.tcp,
+      port = Some("22"),
+      sourceIps = Some(List("10.10.10.0/24")),
+      description = Some("Allow SSH from private network")
+    ),
+    Rule(
+      direction = RuleEnums.Direction.in,
+      protocol = RuleEnums.Protocol.tcp,
+      port = Some("443"),
+      sourceIps = Some(List("10.10.2.0/24")),
+      description = Some("Allow HTTPS from VPN network")
+    ),
+    Rule(
+      direction = RuleEnums.Direction.in,
+      protocol = RuleEnums.Protocol.icmp,
+      sourceIps = Some(List("10.10.10.0/24")),
+      description = Some("Allow ICMP from private network")
+    ),
+    Rule(
+      description = Some("Node port range TCP"),
+      direction = RuleEnums.Direction.in,
+      protocol = RuleEnums.Protocol.tcp,
+      port = Some("30000-32767"),
+      sourceIps = Some(List("0.0.0.0/0", "::/0"))
+    ),
+    Rule(
+      description = Some("Node port range UDP"),
+      direction = RuleEnums.Direction.in,
+      protocol = RuleEnums.Protocol.udp,
+      port = Some("30000-32767"),
+      sourceIps = Some(List("0.0.0.0/0", "::/0"))
+    ),
+    Rule(
+      description = Some("Allow Kubernetes API access to allowed networks"),
+      direction = RuleEnums.Direction.in,
+      protocol = RuleEnums.Protocol.tcp,
+      port = Some("6443"),
+      sourceIps = Some(List("10.10.2.0/24", "192.168.6.0/24"))
+    ),
+    Rule(
+      description =
+        Some("Allow all TCP traffic between nodes on the private network"),
+      direction = RuleEnums.Direction.in,
+      protocol = RuleEnums.Protocol.tcp,
+      port = None,
+      sourceIps = Some(List("10.10.10.0/24"))
+    ),
+    Rule(
+      description =
+        Some("Allow all UDP traffic between nodes on the private network"),
+      direction = RuleEnums.Direction.in,
+      protocol = RuleEnums.Protocol.udp,
+      port = None,
+      sourceIps = Some(List("10.10.200.0/24"))
+    ),
+    Rule(
+      description =
+        Some("Allow port 6443 (Kubernetes API server) between masters"),
+      direction = RuleEnums.Direction.in,
+      protocol = RuleEnums.Protocol.tcp,
+      port = Some("6443"),
+      sourceIps = Some(List("0.0.0.0/0", "::/0"))
+    ),
+    Rule(
+      description = Some("Allow wireguard traffic (Cilium)"),
+      direction = RuleEnums.Direction.in,
+      protocol = RuleEnums.Protocol.tcp,
+      port = Some("51820"),
+      sourceIps = Some(List("0.0.0.0/0", "::/0"))
+    ),
+    Rule(
+      description = Some("Allow etcd traffic between masters"),
+      direction = RuleEnums.Direction.in,
+      protocol = RuleEnums.Protocol.tcp,
+      port = Some("2379"),
+      sourceIps = Some(List("10.10.89.0/24"))
+    ),
+    Rule(
+      description = Some("Allow etcd traffic between masters"),
+      direction = RuleEnums.Direction.in,
+      protocol = RuleEnums.Protocol.tcp,
+      port = Some("2380"),
+      sourceIps = Some(List("10.10.89.0/24"))
+    ),
+    Rule(
+      description =
+        Some("Allow traffic between nodes for peer-to-peer image distribution"),
+      direction = RuleEnums.Direction.in,
+      protocol = RuleEnums.Protocol.tcp,
+      port = Some("5001"),
+      sourceIps = Some(List("0.0.0.0/0", "::/0"))
+    )
+  )
+
 }

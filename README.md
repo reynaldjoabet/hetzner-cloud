@@ -116,8 +116,6 @@ The vRack adapts to the needs of your business. Build your infrastructure using 
 ### Internet Gateway
 ![alt text](image-5.png)
 
-
-
 ```sh
   .dependsOn(`hcloud-codegen` % "compile->compile;test->test")
   ```
@@ -209,8 +207,6 @@ You can use Scaleway Public Gateways to provide resources on a Private Network w
 
 Azure firewall works at layer 4 while azure waf protects in layer 7
 
-
-
 ![alt text](cloudflare-waf.png)
 
 [Kubernetes in Hetzner Cloud with Terraform, Kubespray, HCLOUD Controller Manager and Storage Driver](https://www.youtube.com/watch?v=S424jkxtEf0)
@@ -223,7 +219,6 @@ Azure firewall works at layer 4 while azure waf protects in layer 7
 (Your Intermediate certificate(s))
 -----END CERTIFICATE-----
 ```
-
 
 ### Hetzner Cloud Controller Manager (hcloud-CCM)
 The [hcloud-cloud-controller-manager](https://github.com/hetznercloud/hcloud-cloud-controller-manager) is the Kubernetes integration that allows a K8s cluster running on Hetzner Cloud to:
@@ -417,11 +412,9 @@ A CIDR prefix like /16 means:
 - First 16 bits of the address are fixed (network portion)
 - Remaining 16 bits are available for hosts
 
-Dokcer network MTU shuld always be equal to or smaller than the host MTU
+Dokcer network MTU should always be equal to or smaller than the host MTU
 
 192.168.0.0/16 => 192.168.0.0/17 and 192.168.128.0/17
-
-198.19.0.0/16
 
 [kubernetes-based-dev-environment-on-hetzner](https://oleg.smetan.in/posts/2025-04-15-kubernetes-based-dev-environment-on-hetzner)
 
@@ -584,8 +577,8 @@ Subnet allocation:
 - 10.0.10.0/24+  Reserved for expansion (room for ~240 subnets)
 ```            
 
-    Intra-VPC traffic stays local: Must never exit and re-enter
-    Internet traffic always goes through NAT gateway: Centralized control
+Intra-VPC traffic stays local: Must never exit and re-enter
+Internet traffic always goes through NAT gateway: Centralized control
 
 Routing Table: Management Network
 
@@ -905,287 +898,6 @@ DNS (Domain Name System) is the most fundamental and widely used form of Service
 
 [set-up-infrastructure-in-hetzner-cloud-using-terraform-](https://medium.com/@orestovyevhen/set-up-infrastructure-in-hetzner-cloud-using-terraform-ce85491e92d)
 
-```sh
-command will attempt to use the autoscaling/v2 API first, in case of an error, it will fall back to autoscaling/v1 API.
-
- Looks up a deployment, replica set, stateful set, or replication controller by name and creates an autoscaler that uses
-the given resource as a reference. An autoscaler can automatically increase or decrease number of pods deployed within
-the system as needed.
-
-Examples:
-  # Auto scale a deployment "foo", with the number of pods between 2 and 10, no target CPU utilization specified so a default autoscaling policy will be used
-  kubectl autoscale deployment foo --min=2 --max=10
-  
-  # Auto scale a replication controller "foo", with the number of pods between 1 and 5, target CPU utilization at 80%
-  kubectl autoscale rc foo --max=5 --cpu=80%
-  
-  # Auto scale a deployment "bar", with the number of pods between 3 and 6, target average CPU of 500m and memory of
-200Mi
-  kubectl autoscale deployment bar --min=3 --max=6 --cpu=500m --memory=200Mi
-  
-  # Auto scale a deployment "bar", with the number of pods between 2 and 8, target CPU utilization 60% and memory utilization 70%
-  kubectl autoscale deployment bar --min=3 --max=6 --cpu=60% --memory=70%
-  ```
-
-```sh
-kubectl controls the Kubernetes cluster manager.
-
- Find more information at: https://kubernetes.io/docs/reference/kubectl/
-
-Basic Commands (Beginner):
-  create          Create a resource from a file or from stdin
-  expose          Take a replication controller, service, deployment or pod and expose it as a new Kubernetes service
-  run             Run a particular image on the cluster
-  set             Set specific features on objects
-
-Basic Commands (Intermediate):
-  explain         Get documentation for a resource
-  get             Display one or many resources
-  edit            Edit a resource on the server
-  delete          Delete resources by file names, stdin, resources and names, or by resources and label selector
-
-Deploy Commands:
-  rollout         Manage the rollout of a resource
-  scale           Set a new size for a deployment, replica set, or replication controller
-  autoscale       Auto-scale a deployment, replica set, stateful set, or replication controller
-
-Cluster Management Commands:
-  certificate     Modify certificate resources
-  cluster-info    Display cluster information
-  top             Display resource (CPU/memory) usage
-  cordon          Mark node as unschedulable
-  uncordon        Mark node as schedulable
-  drain           Drain node in preparation for maintenance
-  taint           Update the taints on one or more nodes
-
-Troubleshooting and Debugging Commands:
-  describe        Show details of a specific resource or group of resources
-  logs            Print the logs for a container in a pod
-  attach          Attach to a running container
-  exec            Execute a command in a container
-  port-forward    Forward one or more local ports to a pod
-  proxy           Run a proxy to the Kubernetes API server
-  cp              Copy files and directories to and from containers
-  auth            Inspect authorization
-  debug           Create debugging sessions for troubleshooting workloads and nodes
-  events          List events
-
-Advanced Commands:
-  diff            Diff the live version against a would-be applied version
-  apply           Apply a configuration to a resource by file name or stdin
-  patch           Update fields of a resource
-  replace         Replace a resource by file name or stdin
-  wait            Wait for a specific condition on one or many resources
-  kustomize       Build a kustomization target from a directory or URL
-
-Settings Commands:
-  label           Update the labels on a resource
-  annotate        Update the annotations on a resource
-  completion      Output shell completion code for the specified shell (bash, zsh, fish, or powershell)
-
-Subcommands provided by plugins:
-
-Other Commands:
-  alpha           Commands for features in alpha
-  api-resources   Print the supported API resources on the server
-  api-versions    Print the supported API versions on the server, in the form of "group/version"
-  config          Modify kubeconfig files
-  plugin          Provides utilities for interacting with plugins
-  version         Print the client and server version information
-
-Usage:
-  kubectl [flags] [options]
-```  
-
-```sh
-kubectl create --help
-Create a resource from a file or from stdin.
-
- JSON and YAML formats are accepted.
-
-Examples:
-  # Create a pod using the data in pod.json
-  kubectl create -f ./pod.json
-  
-  # Create a pod based on the JSON passed into stdin
-  cat pod.json | kubectl create -f -
-  
-  # Edit the data in registry.yaml in JSON then create the resource using the edited data
-  kubectl create -f registry.yaml --edit -o json
-
-Available Commands:
-  clusterrole           Create a cluster role
-  clusterrolebinding    Create a cluster role binding for a particular cluster role
-  configmap             Create a config map from a local file, directory or literal value
-  cronjob               Create a cron job with the specified name
-  deployment            Create a deployment with the specified name
-  ingress               Create an ingress with the specified name
-  job                   Create a job with the specified name
-  namespace             Create a namespace with the specified name
-  poddisruptionbudget   Create a pod disruption budget with the specified name
-  priorityclass         Create a priority class with the specified name
-  quota                 Create a quota with the specified name
-  role                  Create a role with single rule
-  rolebinding           Create a role binding for a particular role or cluster role
-  secret                Create a secret using a specified subcommand
-  service               Create a service using a specified subcommand
-  serviceaccount        Create a service account with the specified name
-  token                 Request a service account token
-
-```
-
-```sh
- kubectl expose --help
-Expose a resource as a new Kubernetes service.
-
- Looks up a deployment, service, replica set, replication controller or pod by name and uses the selector for that
-resource as the selector for a new service on the specified port. A deployment or replica set will be exposed as a
-service only if its selector is convertible to a selector that service supports, i.e. when the selector contains only
-the matchLabels component. Note that if no port is specified via --port and the exposed resource has multiple ports, all
-will be re-used by the new service. Also if no labels are specified, the new service will re-use the labels from the
-resource it exposes.
-
- Possible resources include (case insensitive):
-
- pod (po), service (svc), replicationcontroller (rc), deployment (deploy), replicaset (rs)
-
-Examples:
-  # Create a service for a replicated nginx, which serves on port 80 and connects to the containers on port 8000
-  kubectl expose rc nginx --port=80 --target-port=8000
-  
-  # Create a service for a replication controller identified by type and name specified in "nginx-controller.yaml",
-which serves on port 80 and connects to the containers on port 8000
-  kubectl expose -f nginx-controller.yaml --port=80 --target-port=8000
-  
-  # Create a service for a pod valid-pod, which serves on port 444 with the name "frontend"
-  kubectl expose pod valid-pod --port=444 --name=frontend
-  
-  # Create a second service based on the above service, exposing the container port 8443 as port 443 with the name
-"nginx-https"
-  kubectl expose service nginx --port=443 --target-port=8443 --name=nginx-https
-  
-  # Create a service for a replicated streaming application on port 4100 balancing UDP traffic and named 'video-stream'.
-  kubectl expose rc streamer --port=4100 --protocol=UDP --name=video-stream
-  
-  # Create a service for a replicated nginx using replica set, which serves on port 80 and connects to the containers on
-port 8000
-  kubectl expose rs nginx --port=80 --target-port=8000
-  
-  # Create a service for an nginx deployment, which serves on port 80 and connects to the containers on port 8000
-  kubectl expose deployment nginx --port=80 --target-port=8000
-  ```
-
-```sh
-kubectl run --help   
-Create and run a particular image in a pod.
-
-Examples:
-  # Start a nginx pod
-  kubectl run nginx --image=nginx
-  
-  # Start a hazelcast pod and let the container expose port 5701
-  kubectl run hazelcast --image=hazelcast/hazelcast --port=5701
-  
-  # Start a hazelcast pod and set environment variables "DNS_DOMAIN=cluster" and "POD_NAMESPACE=default" in the
-container
-  kubectl run hazelcast --image=hazelcast/hazelcast --env="DNS_DOMAIN=cluster" --env="POD_NAMESPACE=default"
-  
-  # Start a hazelcast pod and set labels "app=hazelcast" and "env=prod" in the container
-  kubectl run hazelcast --image=hazelcast/hazelcast --labels="app=hazelcast,env=prod"
-  
-  # Dry run; print the corresponding API objects without creating them
-  kubectl run nginx --image=nginx --dry-run=client
-  
-  # Start a nginx pod, but overload the spec with a partial set of values parsed from JSON
-  kubectl run nginx --image=nginx --overrides='{ "apiVersion": "v1", "spec": { ... } }'
-  
-  # Start a busybox pod and keep it in the foreground, don't restart it if it exits
-  kubectl run -i -t busybox --image=busybox --restart=Never
-  ```
-
-```sh
-   kubectl get --help
-Display one or many resources.
-
- Prints a table of the most important information about the specified resources. You can filter the list using a label
-selector and the --selector flag. If the desired resource type is namespaced you will only see results in the current
-namespace if you don't specify any namespace.
-
- By specifying the output as 'template' and providing a Go template as the value of the --template flag, you can filter
-the attributes of the fetched resources.
-
-Use "kubectl api-resources" for a complete list of supported resources.
-
-Examples:
-  # List all pods in ps output format
-  kubectl get pods
-  
-  # List all pods in ps output format with more information (such as node name)
-  kubectl get pods -o wide
-  
-  # List a single replication controller with specified NAME in ps output format
-  kubectl get replicationcontroller web
-  
-  # List deployments in JSON output format, in the "v1" version of the "apps" API group
-  kubectl get deployments.v1.apps -o json
-  
-  # List a single pod in JSON output format
-  kubectl get -o json pod web-pod-13je7
-  
-  # List a pod identified by type and name specified in "pod.yaml" in JSON output format
-  kubectl get -f pod.yaml -o json
-  
-  # List resources from a directory with kustomization.yaml - e.g. dir/kustomization.yaml
-  kubectl get -k dir/
-  
-  # Return only the phase value of the specified pod
-  kubectl get -o template pod/web-pod-13je7 --template={{.status.phase}}
-  
-  # List resource information in custom columns
-  kubectl get pod test-pod -o custom-columns=CONTAINER:.spec.containers[0].name,IMAGE:.spec.containers[0].image
-  
-  # List all replication controllers and services together in ps output format
-  kubectl get rc,services
-  
-  # List one or more resources by their type and names
-  kubectl get rc/web service/frontend pods/web-pod-13je7
-  
-  # List the 'status' subresource for a single pod
-  kubectl get pod web-pod-13je7 --subresource status
-  
-  # List all deployments in namespace 'backend'
-  kubectl get deployments.apps --namespace backend
-  
-  # List all pods existing in all namespaces
-  kubectl get pods --all-namespaces
-
-```
-
-```sh
-kubectl scale --help
-Set a new size for a deployment, replica set, replication controller, or stateful set.
-
- Scale also allows users to specify one or more preconditions for the scale action.
-
- If --current-replicas or --resource-version is specified, it is validated before the scale is attempted, and it is
-guaranteed that the precondition holds true when the scale is sent to the server.
-
-Examples:
-  # Scale a replica set named 'foo' to 3
-  kubectl scale --replicas=3 rs/foo
-  
-  # Scale a resource identified by type and name specified in "foo.yaml" to 3
-  kubectl scale --replicas=3 -f foo.yaml
-  
-  # If the deployment named mysql's current size is 2, scale mysql to 3
-  kubectl scale --current-replicas=2 --replicas=3 deployment/mysql
-  
-  # Scale multiple replication controllers
-  kubectl scale --replicas=5 rc/example1 rc/example2 rc/example3
-  
-  # Scale stateful set named 'web' to 3
-  kubectl scale --replicas=3 statefulset/web
-```
 
 ```scala
 
@@ -1289,8 +1001,6 @@ case class LoadBalancerService(
   @named("http") http: Option[Http] = scala.None
 )
 
-
-
   /**
    * LoadBalancerServiceHealthCheck
    * Service health check.
@@ -1365,3 +1075,461 @@ That’s where providers step in:
 - They handle authentication.
 - They define the schema for resources (ami, instance_type, bucket_name, etc.).
 - They translate Terraform configs into real Create/Read/Update/Delete (CRUD) API calls.
+
+L4 loadbalancers use Network address translation while l7 do not
+
+`.dependsOn(hcloud-codegen % "compile->compile")`
+Those compiled `.class` files are added to the classpath.
+
+You write this in `root/src/main/scala`:
+`import authlete.codegen.Client`
+For this to compile, the compiler must find:
+`authlete/codegen/Client.class`
+on the classpath.
+
+## Bastion
+The Private Network: You have several VMs that do not have public IP addresses. They are safe from the open internet but you can't access them directly from your home computer.
+
+The Bastion (The "Bridge"): You create one small VM that has two network interfaces: one connected to the public internet and one connected to the Hetzner private network.
+
+The Access Flow: You SSH into the Bastion first, and from there, you "jump" to the other private VMs.
+
+`ssh -J root@bastion-ip root@private-vm-ip`
+
+Instead of typing out that long command every time, you can save it in your local SSH configuration file. This is also a general Linux/Mac feature.
+
+Open (or create) the file ~/.ssh/config on your laptop.
+```sh
+# The Bastion (Public Facing)
+Host bastion
+    HostName 1.2.3.4  # The Public IP
+    User root
+
+# The Private Server
+Host internal-server
+    HostName 10.0.0.5 # The Private IP
+    User root
+    ProxyJump bastion
+```
+The Result: Now, you don't need the `-J` flag or the IP addresses anymore. You can just type: `ssh internal-server`
+
+
+### What is a vSwitch
+
+A vSwitch is a virtual layer 2 switch. Think of it as a private network just for your servers. Any Hetzner server you own in the same location whether it is a cloud instance or a dedicated machine can be connected to it.
+
+Once connected your servers can talk to each other using private IP addresses like 10.0.0.1. This traffic never touches the public internet. It is fast secure and free. 
+
+### Connecting "Robot" to "Cloud"
+The biggest reason to use a vSwitch at Hetzner is that Cloud Networks and Dedicated Servers (Robot) live in two different worlds.
+
+`Subnets in Cloud Console`: These only work for Cloud VMs. You c`annot simply "add" a physical Dedicated server to a standard Cloud Network.
+`vSwitch`: This acts as a bridge. It allows a physical machine in the Hetzner datacenter to "plug in" to the same virtual wire that your Cloud VMs are using
+
+### VLAN Isolation
+When you use a vSwitch, Hetzner gives you a VLAN ID (usually between 4000 and 4091).
+- This VLAN ID ensures that your "10.0.0.1" is completely isolated from another customer who might also be using "10.0.0.1" in the same datacenter.
+- The vSwitch handles the "tagging" of your traffic so it only goes to your servers and nowhere else
+
+[Hetzner Private Networking The Simple Way](https://banerjeerishi.com/text/hetzner-private-networking-the-simple-way.html#:~:text=For%20a%20dedicated%20server%20you,on%20the%20same%20private%20network.)
+
+For a dedicated server you go back to the Robot panel and simply attach it. For a cloud server you navigate to your project go to Networks and add a subnet to your vSwitch. Then you can attach your cloud servers to this network. The key is that both server types can live on the same private network. This is powerful if you run your database on a powerful dedicated server and your web servers on flexible cloud instances
+
+Inside each dedicated server's OS, you create a sub-interface (like eth0.4000) that matches that ID.
+
+
+`every pod has a unique IP address from other pods in the cluster`
+
+ip address reachable from all other pods in the cluster
+
+pods address the issue of container port mapping.. bind host port to application port in container eg 5432:5432
+
+when you have hundreds of containers on your server, how can you keep track of what pods are still available? kubernetes solves this issue by abstracting containers using pods
+
+## Wireguard
+![alt text](image-16.png)
+
+ WireGuard is a high-performance VPN that runs in the Linux kernel. It uses modern cryptography and is easier to configure than other VPN solutions.
+
+  WireGuard uses the following protocols and primitives:
+
+- ChaCha20 for symmetric encryption, authenticated with Poly1305, using Authenticated Encryption with Associated Data (AEAD) construction
+- Curve25519 for Elliptic-curve Diffie-Hellman (ECDH) key exchange
+- BLAKE2s for hashing and keyed hashing
+- SipHash24 for hash table keys
+- HKDF for key derivation 
+
+WireGuard operates on the network layer (layer 3). Therefore, you cannot use DHCP and must assign static IP addresses or IPv6 global addresses to the tunnel devices on both the server and clients
+
+### How WireGuard uses tunnel IP addresses, public keys, and remote endpoints
+
+WireGuard’s design tightly couples network routing with cryptographic identity, creating a Cryptokey Routing Table. This system enables the protocol to function as both a routing mechanism for outgoing traffic and an access control list for incoming packets, ensuring that only authenticated and authorized traffic is processed.
+
+When WireGuard sends a network packet to a peer:
+
+- WireGuard reads the destination IP from the packet and compares it to the list of allowed IP addresses in the local configuration. If the peer is not found, WireGuard drops the packet.
+- If the peer is valid, WireGuard encrypts the packet using the peer’s public key.
+- The sending host looks up the most recent Internet IP address of the host and sends the encrypted packet to it. 
+
+When WireGuard receives a packet:
+
+- WireGuard decrypts the packet using the private key of the remote host.
+- WireGuard reads the internal source address from the packet and looks up whether the IP is configured in the list of allowed IP addresses in the settings for the peer on the local host. If the source IP is on the allowlist, WireGuard accepts the packet. If the IP address is not on the list, WireGuard drops the packet. 
+
+### Using a WireGuard client behind NAT and firewalls
+
+WireGuard uses the UDP protocol and transmits data only when a peer sends packets. Stateful firewalls and network address translation (NAT) on routers track connections to enable a peer behind NAT or a firewall to receive packets. 
+
+Create a private key and a corresponding public key for the host: 
+`wg genkey | tee /etc/wireguard/$HOSTNAME.private.key | wg pubkey > /etc/wireguard/$HOSTNAME.public.key`
+
+Set secure permissions on the key files: 
+`chmod 600 /etc/wireguard/$HOSTNAME.private.key /etc/wireguard/$HOSTNAME.public.key`
+600 =
+- read + write for the owner (root)
+- no permissions for group
+- no permissions for others
+```sh
+#On this host
+[Interface]
+PrivateKey = <contents of .private.key>
+Address = 10.0.0.1/32
+# On other peers
+[Peer]
+PublicKey = <contents of .public.key>
+AllowedIPs = 10.0.0.1/32
+```
+Make sure the directory itself is protected:
+`chmod 700 /etc/wireguard`
+
+- File permissions control access to the file’s contents.
+- Directory permissions control access to the file’s name and path.
+
+#### Why file permissions alone are NOT enough
+Let’s say you do this:
+`chmod 600 /etc/wireguard/host.private.key`
+But the directory is still:
+`drwxr-xr-x  /etc/wireguard`
+What others can still do
+Even though they can’t read the file contents, they can still:
+- list the directory
+- see that a private key exists
+- see filenames
+- see timestamps, sizes
+- potentially replace or delete files (depending on perms)
+Example attack surface:
+```sh
+ls /etc/wireguard
+# host.private.key
+# host.public.key
+```
+This leaks metadata and structure.
+
+Directory permissions mean something different:
+Permission	Meaning on directory
+- r	Can list filenames
+- w	Can create/delete/rename files
+- x	Can access files if you know the name
+This is crucial.
+What `chmod 700 /etc/wireguard` does
+`drwx------  root root  /etc/wireguard`
+This means:
+Only root can:
+- list files
+- access files
+- create/delete files
+
+Important attributes of a WireGuard interface are:
+- **Private key**: together with the corresponding public key, they are used to authenticate and encrypt data. This is generated with the wg genkey command.
+- **Listen port**: the UDP port that WireGuard will be listening to for incoming traffic.
+- **List of peers**, each one with:
+ - Public key: the public counterpart of the private key. Generated from the private key of that peer, using the wg pubkey command.
+
+ - Endpoint: where to send the encrypted traffic to. This is optional, but at least one of the corresponding peers must have it to bootstrap the connection.
+ - Allowed IPs: list of inner tunnel destination networks or addresses for this peer when sending traffic, or, when receiving traffic, which source networks or addresses are allowed to send traffic to us.
+
+ ```sh
+[Interface]
+PrivateKey = eJdSgoS7BZ/uWkuSREN+vhCJPPr3M3UlB3v1Su/amWk=
+ListenPort = 51000
+Address = 10.10.11.10/24
+
+[Peer]
+# office
+PublicKey = xeWmdxiLjgebpcItF1ouRo0ntrgFekquRJZQO+vsQVs=
+Endpoint = wg.example.com:51000 # fake endpoint, just an example
+AllowedIPs = 10.10.11.0/24, 10.10.10.0/24
+```
+
+This is what it looks like when this interface is brought up by wg-quick:
+```sh
+$ sudo wg-quick up wg0
+[#] ip link add wg0 type wireguard
+[#] wg setconf wg0 /dev/fd/63
+[#] ip -4 address add 10.10.11.10/24 dev wg0
+[#] ip link set mtu 1420 up dev wg0
+[#] ip -4 route add 10.10.10.0/24 dev wg0
+```
+This is what wg-quick:
+- Created the WireGuard `wg0` interface.
+- Configured it with the data from the configuration file.
+- Added the IP/CIDR from the Address field to the `wg0` interface.
+- Calculated a proper MTU (which can be overridden in the config if needed).
+- Added a route for `AllowedIPs`.
+
+Note that in this example `AllowedIPs` is a list of two CIDR network blocks, but `wg-quick` only added a route for `10.10.10.0/24` and skipped `10.10.11.0/24`. That’s because the Address was already specified as a /24 one. Had we specified the address as 10.10.11.10/32 instead, then wg-quick would have added a route for 10.10.11.0/24 explicitly.
+
+o better understand how AllowedIPs work, let’s go through a quick example.
+
+Let’s say this system wants to send traffic to `10.10.10.201/24`. There is a route for it which says to use the wg0 interface for that:
+
+```sh
+$ ip route get 10.10.10.201
+10.10.10.201 dev wg0 src 10.10.11.10 uid 1000
+    cache
+```
+
+Since `wg0` is a WireGuard interface, it will consult its configuration to see if any peer has that target address in the `AllowedIPs` list. Turns out one peer has it, in which case the traffic will:
+
+a) Be authenticated as us, and encrypted for that peer. b) Sent away via the configured Endpoint.
+
+Now let’s picture the reverse. This system received traffic on the ListenPort UDP port. If it can be decrypted, and verified as having come from one of the listed peers using its respective public key, and if the source IP matches the corresponding `AllowedIPs` list, then the traffic is accepted.
+
+What if there is no Endpoint? Well, to bootstrap the VPN, at least one of the peers must have an Endpoint, or else it won’t know where to send the traffic to, and you will get an error saying “Destination address required”
+
+But once the peers know each other, the one that didn’t have an Endpoint setting in the interface will remember where the traffic came from, and use that address as the current endpoint. This has a very nice side effect of automatically tracking the so called “road warrior” peer, which keeps changing its IP. This is very common with laptops that keep being suspended and awakened in a new network, and then try to establish the VPN again from that new address.
+
+- Each peer participating in the WireGuard VPN has a private key and a public key.
+- AllowedIPs is used as a routing key when sending traffic, and as an ACL when receiving traffic.
+- To establish a VPN with a remote peer, you need its public key. Likewise, the remote peer will need your public key.
+- At least one of the peers needs an Endpoint configured in order to be able to initiate the VPN.
+
+
+`A connected route is a route to a network that is directly attached to an interface because the interface has an IP address in that network.`
+
+`ip addr add 192.168.1.50/24 dev eth0`
+Linux adds:
+`192.168.1.0/24 dev eth0 proto kernel scope link`
+`traffic can leave a device without a connected route to the destination — but it can never leave without a connected route (or equivalent) to the next hop`
+
+Why this design exists
+Because:
+- Ethernet requires a MAC address
+- MAC addresses are resolved via ARP
+- ARP only works on connected networks
+
+## WireGuard VPN peer-to-site
+
+This is probably the most common setup for a VPN: connecting a single system to a remote site, and getting access to the remote network “as if you were there”.
+
+```sh
+               public internet
+     
+                xxxxxx      ppp0 ┌────────┐
+ ┌────┐         xx   xxxx      ──┤ router │
+ │    ├─ppp0  xxx      xx        └───┬────┘
+ │    │       xx        x            │         home 10.10.10.0/24
+ │    │        xxx    xxx            └───┬─────────┬─────────┐
+ └────┘          xxxxx                   │         │         │
+                                       ┌─┴─┐     ┌─┴─┐     ┌─┴─┐
+                                       │   │     │   │     │   │
+                                       │pi4│     │NAS│     │...│
+                                       │   │     │   │     │   │
+                                       └───┘     └───┘     └───┘
+```
+This diagram represents a typical simple home network setup. You have a router/modem, usually provided by the ISP (Internet Service Provider), and some internal devices like a Raspberry PI perhaps, a NAS (Network Attached Storage), and some other device.
+
+There are basically two approaches that can be taken here: install WireGuard on the router, or on another system in the home network.
+
+`Note that in this scenario the “fixed” side, the home network, normally won’t have a WireGuard Endpoint configured, as the peer is typically “on the road” and will have a dynamic IP address.`
+
+### WireGuard VPN peer-to-site (on router)
+
+In this diagram, we are depicting a home network with some devices and a router where we can install WireGuard.
+
+```sh
+                       public internet              ┌─── wg0 10.10.11.1/24
+10.10.11.2/24                                       │        VPN network
+        home0│            xxxxxx       ppp0 ┌───────┴┐
+           ┌─┴──┐         xx   xxxxx  ──────┤ router │
+           │    ├─wlan0  xx       xx        └───┬────┘    home network, .home domain
+           │    │       xx        x             │.1       10.10.10.0/24
+           │    │        xxx    xxx             └───┬─────────┬─────────┐
+           └────┘          xxxxxx                   │         │         │
+Laptop in                                         ┌─┴─┐     ┌─┴─┐     ┌─┴─┐
+Coffee shop                                       │   │     │   │     │   │
+                                                  │pi4│     │NAS│     │...│
+                                                  │   │     │   │     │   │
+                                                  └───┘     └───┘     └───┘
+```
+
+`router`: the existing router at the home network. It has a public interface ppp0 that has a routable but dynamic IPv4 address (not CGNAT), and an internal interface at 10.10.10.1/24 which is the default gateway for the home network.
+`home network`: the existing home network (`10.10.10.0/24 `in this example), with existing devices that the user wishes to access remotely over the WireGuard VPN.
+
+`10.10.11.0/24`: the WireGuard VPN network. This is a whole new network that was created just for the VPN users.
+
+`wg0` on the router: this is the WireGuard interface that we will bring up on the router, at the `10.10.11.1/24` address. It is the gateway for the 1`0.10.11.0/24` VPN network.
+
+With this topology, if, say, the NAS wants to send traffic to `10.10.11.2/24`, it will send it to the default gateway (since the NAS has no specific route to 10.10.11.0/24), and the gateway will know how to send it to `10.10.11.2/24` because it has the wg0 interface on that network.
+
+The [Peer] section is identifying a peer via its public key, and listing who can connect from that peer. This AllowedIPs setting has two meanings:
+- When sending packets, the AllowedIPs list serves as a routing table, indicating that this peer’s public key should be used to encrypt the traffic.
+- When receiving packets, AllowedIPs behaves like an access control list. After decryption, the traffic is only allowed if it matches the list.
+
+```sh
+sudo wg-quick up wg0
+[#] ip link add wg0 type wireguard
+[#] wg setconf wg0 /dev/fd/63
+[#] ip -4 address add 10.10.11.1/24 dev wg0
+[#] ip link set mtu 1378 up dev wg0
+```
+Verify you have a `wg0` interface up with an address of `10.10.11.1/24`:
+```sh
+$ ip a show dev wg0
+9: wg0: <POINTOPOINT,NOARP,UP,LOWER_UP> mtu 1378 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/none
+    inet 10.10.11.1/24 scope global wg0
+       valid_lft forever preferred_lft forever
+```
+And a route to the `10.10.1.0/24` network via the wg0 interface:
+
+```sh
+$ ip route | grep wg0
+10.10.11.0/24 dev wg0 proto kernel scope link src 10.10.11.1
+```
+
+on router `sysctl net.ipv4.ip_forward=1`
+
+Destination: 10.10.10.20
+Is 10.10.10.20 in 10.10.10.0/24? 
+Route says: dev wg0
+
+So Linux sends the packet into the WireGuard interface.
+
+```sh
+src = 10.10.11.2
+dst = 10.10.10.20
+```
+WireGuard encrypts it
+Wraps it in UDP
+Sends it to:
+router_public_ip:51000
+
+
+### WireGuard on an internal system (peer-to-site)
+To recap, our home network has the 10.10.10.0/24 address, and we want to connect to it from a remote location and be “inserted” into that network as if we were there:
+
+```sh
+                       public internet
+10.10.10.11/24
+        home0│            xxxxxx       ppp0 ┌────────┐
+           ┌─┴──┐         xx   xxxxx  ──────┤ router │
+           │    ├─ppp0  xxx       xx        └───┬────┘    home network, .home domain
+           │    │       xx        x             │         10.10.10.0/24
+           │    │        xxx    xxx             └───┬─────────┬─────────┐
+           └────┘          xxxxxx                   │         │         │
+                                                  ┌─┴─┐     ┌─┴─┐     ┌─┴─┐
+                                            wg0 ──┤   │     │   │     │   │
+                                  10.10.10.10/32  │pi4│     │NAS│     │...│
+                                                  │   │     │   │     │   │
+                                                  └───┘     └───┘     └───┘
+Reserved for VPN users:
+10.10.10.10-49
+```
+
+[wireguard-vpn/on-an-internal-system](https://documentation.ubuntu.com/server/how-to/wireguard-vpn/on-an-internal-system/)
+
+
+### WireGuard VPN site-to-site
+Another usual VPN configuration where one could deploy WireGuard is to connect two distinct networks over the internet
+```sh
+                      ┌─────── WireGuard tunnel ──────┐
+                      │         10.10.9.0/31          │
+                      │                               │
+         10.10.9.0 wgA│               xx              │wgB 10.10.9.1
+                    ┌─┴─┐          xxx  xxxx        ┌─┴─┐
+    alpha site      │   │ext     xx        xx    ext│   │  beta site
+                    │   ├───    x           x    ───┤   │
+    10.10.10.0/24   │   │      xx           xx      │   │  10.10.11.0/24
+                    │   │      x             x      │   │
+                    └─┬─┘      x              x     └─┬─┘
+            10.10.10.1│        xx             x       │10.10.11.1
+    ...┌─────────┬────┘          xx   xxx    xx       └───┬─────────┐...
+       │         │                  xx   xxxxx            │         │
+       │         │                                        │         │
+     ┌─┴─┐     ┌─┴─┐           public internet          ┌─┴─┐     ┌─┴─┐
+     │   │     │   │                                    │   │     │   │
+     └───┘     └───┘                                    └───┘     └───┘
+```
+
+Since we are not assigning VPN IPs to all systems on each side, the VPN network here will be very small (a /31, which allows for two IPs) and only used for routing. The only systems with an IP in the VPN network are the gateways themselves.
+
+There will be no NAT applied to traffic going over the WireGuard network. Therefore, the networks of both sites must be different and not overlap.
+
+Technically, a /31 Classless Inter-Domain Routing (CIDR) network has no usable IP addresses, since the first one is the network address, and the second (and last) one is the broadcast address. RFC 3021 allows for it, but if you encounter routing or other networking issues, switch to a /30 CIDR and its two valid host IPs.
+
+```sh
+WireGuard is being set up on the gateways for these two networks. As such, there are no changes needed on individual hosts of each network, but keep in mind that the WireGuard tunneling and encryption is only happening between the alpha and beta gateways, and NOT between the hosts of each network.
+```
+
+[wireguard-vpn-site-to-site](https://documentation.ubuntu.com/server/how-to/wireguard-vpn/site-to-site/#wireguard-vpn-site-to-site)
+
+
+### Using the VPN as the default gateway
+
+WireGuard can be set up to route all traffic through the VPN, and not just specific remote networks. There could be many reasons to do this, but mostly they are related to privacy
+
+```sh
+                       public untrusted          ┌── wg0 10.90.90.2/24
+10.90.90.1/24          network/internet          │   VPN network
+        wg0│            xxxxxx            ┌──────┴─┐
+         ┌─┴──┐         xx   xxxxx  ──────┤ VPN gw │
+         │    ├─wlan0  xx       xx   eth0 └────────┘
+         │    │       xx        x 
+         │    │        xxx    xxx
+         └────┘          xxxxxx
+         Laptop
+
+```
+
+### DNS leaks
+
+The traffic is now being routed through the VPN to the gateway server that you control, and from there onward, to the Internet at large. The local network you are in cannot see the contents of that traffic, because it’s encrypted. But you are still leaking information about the sites you access via DNS.
+
+When the laptop got its IP address in the local (untrusted) network it is in, it likely also got a pair of IPs for DNS servers to use. These might be servers from that local network, or other DNS servers from the internet like 1.1.1.1 or 8.8.8.8. When you access an internet site, a DNS query will be sent to those servers to discover their IP addresses. Sure, that traffic goes over the VPN, but at some point it exits the VPN, and then reaches those servers, which will then know what you are trying to access.
+[Using the VPN as the default gateway](https://documentation.ubuntu.com/server/how-to/wireguard-vpn/vpn-as-the-default-gateway/#using-the-vpn-as-the-default-gateway)
+
+### dev eth0 with a gateway (most common)
+`10.10.21.0/24 via 192.168.1.1 dev eth0`
+
+- Routing selects this route
+- Kernel sees via 192.168.1.1
+- Kernel must answer:
+“Can I reach 192.168.1.1 directly on eth0?”
+That requires a connected route such as:
+192.168.1.0/24 dev eth0 scope link
+
+### dev eth0 without a gateway (directly connected)
+`192.168.1.0/24 dev eth0 scope link`
+
+a gateway (`via`)
+
+`[ 8 bits ] [ 6 net | 2 host ] [ 8 host ] [ 8 host ]`
+
+We vary only 2 bits in the second octet because the other 16 host bits are in the third and fourth octets, which are already understood to vary fully.
+
+172.16.0.0/14
+172.16.0.0 – 172.19.255.255
+
+172.16 = 00010000
+172.17 = 00010001
+172.18 = 00010010
+172.19 = 00010011
+All of these preserve the first 6 bits of the second octet.
+When you reach 20:
+The network bits change from:
+000100 → 000101
+
+/14 is 2 bits longer than /12 (14 − 12 = 2), so you must take two bits from the host portion and make them network bits.
+
+Those 2 newly-networked bits can take 4 combinations (00, 01, 10, 11), so the /12 is split into 4 /14 subnets:

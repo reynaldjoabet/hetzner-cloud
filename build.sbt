@@ -56,7 +56,7 @@ lazy val root = (project in file("."))
     buildInfoPackage := "hcloud.generated",
     buildInfoObject := "HCloudBuildInfo",
     scalacOptions ++= Seq("-no-indent")
-  )
+  ).aggregate(`hcloud-codegen`)
 
 lazy val `hcloud-codegen` = (project in file("modules/hcloud-codegen"))
   .enablePlugins(OpenApiGeneratorPlugin)
@@ -67,7 +67,6 @@ lazy val `hcloud-codegen` = (project in file("modules/hcloud-codegen"))
     openApiModelNamePrefix := "",
     openApiModelNameSuffix := "",
     // openApiRemoveOperationIdPrefix := Some(true),
-    openApiGenerateMetadata := Some(false),
     openApiGenerateMetadata := SettingDisabled,
     // Use the same JSON so CLI and SBT stay in sync
     openApiConfigFile := ((Compile / baseDirectory).value / "config.json").getPath,
