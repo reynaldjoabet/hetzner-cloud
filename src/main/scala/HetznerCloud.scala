@@ -3530,7 +3530,7 @@ runcmd:
     )
   )
 
-  val clusterFirewall = CreateFirewallRequest(
+  val clusterFirewall: CreateFirewallRequest = CreateFirewallRequest(
     name = "k8s-cluster-firewall",
     rules = Some(
       List(

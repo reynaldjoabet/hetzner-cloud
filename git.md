@@ -2,7 +2,6 @@
 git worktree list
 /Projects/hetzner-cloud  565fad0 [main]
 ```
-
 All worktrees share:
 - commits
 - branches
@@ -27,7 +26,6 @@ Add worktree with an existing branch
 git worktree add ../feature-login feature-login
 git worktree add <path>, <branch-or-commit>
 ```
-
 Add worktree and create a new branch
 ```sh
 git worktree add -b feature-api ../api-work main
@@ -46,7 +44,6 @@ Removes a worktree directory safely.
 git worktree remove <path>
 git worktree remove ../feature-login
 ```
-
 ### git worktree prune
 Cleans up stale or deleted worktrees.
 `git worktree prune`
@@ -62,7 +59,6 @@ Moves a worktree to a new location.
 git worktree add -b feature-a ../feature-a
 git worktree add -b feature-b ../feature-b
 ```
-
 Hotfix without disturbing main work
 `git worktree add ../hotfix hotfix`
 cd ../hotfix

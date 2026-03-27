@@ -56,7 +56,8 @@ lazy val root = (project in file("."))
     buildInfoPackage := "hcloud.generated",
     buildInfoObject := "HCloudBuildInfo",
     scalacOptions ++= Seq("-no-indent")
-  ).aggregate(`hcloud-codegen`)
+  )
+  .aggregate(`hcloud-codegen`)
 
 lazy val `hcloud-codegen` = (project in file("modules/hcloud-codegen"))
   .enablePlugins(OpenApiGeneratorPlugin)
