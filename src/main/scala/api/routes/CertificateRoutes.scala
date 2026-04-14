@@ -3,13 +3,8 @@ import hcloud.models.Certificate
 import hcloud.api.Certificates
 import hcloud.models.CreateCertificateRequest
 import hcloud.models.CreateCertificateResponse
-import hcloud.models.GetActionResponse
-import hcloud.models.GetCertificateResponse
-import hcloud.models.ListActionsResponse
-import hcloud.models.ListCertificatesResponse
-import hcloud.models.ReplaceCertificateRequest
-import hcloud.models.ReplaceCertificateResponse
-import hcloud.models.RetryIssuanceOrRenewalResponse
+import hcloud.models.CertificateResponse
+import hcloud.models.UpdateCertificateRequest
 import hcloud.JsonSupport.{*, given}
 import org.http4s.AuthedRoutes
 import org.http4s.dsl.Http4sDsl

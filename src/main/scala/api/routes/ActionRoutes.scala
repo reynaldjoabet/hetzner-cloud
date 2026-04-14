@@ -1,8 +1,12 @@
 package routes
 import hcloud.models.Action
 import hcloud.api.Actions
-import hcloud.models.GetActionResponse
-import hcloud.models.GetMultipleActionsResponse
+import hcloud.models.GetActions4xxResponse
+import hcloud.models.GetActions4xxResponseError
+import hcloud.models.ActionListResponse
+import hcloud.models.GetActions5xxResponse
+import hcloud.models.ActionListResponseWithMeta
+
 import hcloud.JsonSupport.{*, given}
 import org.http4s.AuthedRoutes
 import org.http4s.dsl.Http4sDsl
@@ -19,7 +23,7 @@ abstract class ActionRoutes[F[*]: Concurrent](backend: Backend[F])
     case GET -> Root / "actions" as user =>
       Actions()
         .withBearerTokenAuth("token")
-        .getMultipleActions(Seq())
+        .getActions(Seq())
         .send(backend)
         .flatMap { resp =>
           resp.code match {

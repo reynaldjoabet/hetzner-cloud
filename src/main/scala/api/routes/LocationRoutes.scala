@@ -1,8 +1,4 @@
 package routes
-import hcloud.models.Location
-import hcloud.api.Locations
-import hcloud.models.GetLocationResponse
-import hcloud.models.ListLocationsResponse
 import hcloud.JsonSupport.{*, given}
 import org.http4s.AuthedRoutes
 import org.http4s.dsl.Http4sDsl

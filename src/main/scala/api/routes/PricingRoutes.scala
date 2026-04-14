@@ -1,7 +1,5 @@
 package routes
-import hcloud.models.Price
 import hcloud.api.Pricing
-import hcloud.models.ListPricesResponse
 import hcloud.JsonSupport.{*, given}
 import org.http4s.AuthedRoutes
 import org.http4s.dsl.Http4sDsl

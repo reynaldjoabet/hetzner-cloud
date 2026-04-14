@@ -1,8 +1,4 @@
 package routes
-import hcloud.models.LoadBalancerType
-import hcloud.api.LoadBalancerTypes
-import hcloud.models.GetLoadBalancerTypeResponse
-import hcloud.models.ListLoadBalancerTypesResponse
 import hcloud.JsonSupport.{*, given}
 import org.http4s.AuthedRoutes
 import org.http4s.dsl.Http4sDsl

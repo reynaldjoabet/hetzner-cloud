@@ -1,10 +1,11 @@
 import hcloud.api.*
 import hcloud.models.*
-import hcloud.models.ZoneEnums.Mode
+import hcloud.models.PrimaryZoneEnums.Mode
 //import sttp.client4.logging.slf4j.Slf4jLoggingBackend
 //import sttp.client4.prometheus.*
 //import sttp.client4.scribe.ScribeLoggingBackend
 import java.util.UUID
+import java.time.OffsetDateTime
 import hcloud.models.*
 import clients.*
 object HetznerCloud extends App {
@@ -31,7 +32,7 @@ object HetznerCloud extends App {
   )
 
   val createFirewallRequest =
-    CreateFirewallRequest(name = "web server", None, None, Some(webserverrules))
+    CreateFirewallRequest(name = "web server", rules = Some(webserverrules))
 
   val sshrules = Rule(
     direction = RuleEnums.Direction.in,
@@ -43,7 +44,7 @@ object HetznerCloud extends App {
   )
 
   val ssh =
-    CreateFirewallRequest(name = "ssh", None, None, Some(List(sshrules)))
+    CreateFirewallRequest(name = "ssh", rules = Some(List(sshrules)))
   val postgresrules = List(
     Rule(
       direction = RuleEnums.Direction.in,
@@ -56,7 +57,7 @@ object HetznerCloud extends App {
   )
 
   val postgres =
-    CreateFirewallRequest(name = "postgres", None, None, Some((postgresrules)))
+    CreateFirewallRequest(name = "postgres", rules = Some(postgresrules))
 
   val redisrules = List(
     Rule(
@@ -69,20 +70,20 @@ object HetznerCloud extends App {
     )
   )
   val redis =
-    CreateFirewallRequest(name = "redis", None, None, Some((redisrules)))
+    CreateFirewallRequest(name = "redis", rules = Some(redisrules))
 
-  val privateNetwork = CreateNetworkRequest(
-    ipRange = "10.0.0.0/16",
+  val privateNetwork = NetworkCreateRequest(
     name = "Airport Gap Private Network",
+    ipRange = "10.0.0.0/16",
     exposeRoutesToVswitch = None,
     labels = None,
     routes = None,
     subnets = None
   )
 
-  val privateNetworkSubnet = Subnet(
+  val privateNetworkSubnet = NetworkCreateRequestSubnetsInner(
+    `type` = NetworkCreateRequestSubnetsInnerEnums.Type.`cloud`,
     networkZone = "us-west",
-    `type` = SubnetEnums.Type.`cloud`,
     ipRange = Some("10.0.1.0/24"),
     vswitchId = None
   )
@@ -90,24 +91,23 @@ object HetznerCloud extends App {
   val myfirewall = CreateFirewallRequest(
     "my-firewall",
     None,
-    None,
     Some(
       List(
         Rule(
           direction = RuleEnums.Direction.in,
           protocol = RuleEnums.Protocol.icmp,
-          Some("Allow icmp traffic"),
-          None,
-          None,
-          Some(List("0.0.0.0/0", "::/0"))
+          description = Some("Allow icmp traffic"),
+          sourceIps = Some(Seq("0.0.0.0/0", "::/0")),
+          destinationIps = None,
+          port = None
         ),
         Rule(
           direction = RuleEnums.Direction.in,
           protocol = RuleEnums.Protocol.tcp,
-          Some("Allow http traffic"),
-          None,
-          Some("80-85"),
-          Some(List("0.0.0.0/0", "::/0"))
+          description = Some("Allow http traffic"),
+          sourceIps = Some(Seq("0.0.0.0/0", "::/0")),
+          destinationIps = None,
+          port = Some("80-85")
         )
       )
     )
@@ -119,7 +119,7 @@ object HetznerCloud extends App {
     serverType = "cx23",
     automount = None,
     datacenter = None,
-    firewalls = Some(List(CreateServerRequestFirewalls(12))),
+    firewalls = Some(List(CreateServerRequestFirewallsInner(12))),
     labels = None,
     location = None,
     networks = None,
@@ -137,7 +137,7 @@ object HetznerCloud extends App {
     ipRange = Some("192.168.8.0/24")
   )
 
-  val attachServerToNetworkRequest = AttachServerToNetworkRequest(
+  val attachServerToNetworkRequest = AttachToNetworkRequest(
     network = 1234,
     aliasIps = Some(Seq("10.8.6.7/24")),
     ip = Some("192.168.4.7"),
@@ -147,15 +147,15 @@ object HetznerCloud extends App {
   val certificate = Certificate(
     certificate =
       "-----BEGIN CERTIFICATE-----\nMIIDdzCCAl+gAwIBAgIEUz5b6DANBgkqhkiG9w0BAQsFADBoMQswCQYDVQQGEwJV\nUzELMAkGA1UECAwCTkMxEDAOBgNVBAcMB0R1cmhhbTEMMAoGA1UECgwDSGV0ejEM\nMAoGA1UECwwDSGV0ejEUMBIGA1UEAwwLKi5oZXR6bmVyLmNvbTAeFw0yMTA1MTkx\nNzI0MDBaFw0yMjA1MTkxNzI0MDBaMGgxCzAJBgNVBAYTAlVTMQswCQYDVQQIDAJO\nQzEQMA4GA1UEBwwHRHVyaGFtMQwwCgYDVQQKDANIZXR6MQwwCgYDVQQLDANIZXR6\nMRQwEgYDVQQDDAsqLmhldHpuZXIuY29tMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8A\nMIIBCgKCAQEAzV6j6u8G7b3p6k9i2n5k3Z2K1rOqvXh5j3Z2K1rOqvXh5j3Z2K1rO\n",
-    created = "2021-05-19T17:24:00+00:00",
+    created = OffsetDateTime.parse("2021-05-19T17:24:00+00:00"),
     domainNames = Seq("example.com", "www.example.com"),
     fingerprint =
       "AB:CD:EF:12:34:56:78:90:AB:CD:EF:12:34:56:78:90:AB:CD:EF:12:34:56:78:90",
     id = 123456,
     labels = Map("env" -> "production", "team" -> "devops"),
     name = "example-certificate",
-    notValidAfter = "2023-05-19T17:24:00+00:00",
-    notValidBefore = "2021-05-19T17:24:00+00:00",
+    notValidAfter = OffsetDateTime.parse("2023-05-19T17:24:00+00:00"),
+    notValidBefore = OffsetDateTime.parse("2021-05-19T17:24:00+00:00"),
     usedBy = Seq(),
     status = None,
     `type` = Some(CertificateEnums.Type.`uploaded`)
@@ -183,36 +183,36 @@ object HetznerCloud extends App {
         Rule(
           direction = RuleEnums.Direction.in,
           protocol = RuleEnums.Protocol.icmp,
-          Some("Allow icmp traffic"),
-          None,
-          None,
-          Some(List("0.0.0.0/0", "::/0"))
+          description = Some("Allow icmp traffic"),
+          sourceIps = Some(Seq("0.0.0.0/0", "::/0")),
+          destinationIps = None,
+          port = None
         ),
         Rule(
           direction = RuleEnums.Direction.in,
           protocol = RuleEnums.Protocol.tcp,
-          Some("Allow http traffic"),
-          None,
-          Some("80-85"),
-          Some(List("0.0.0.0/0", "::/0"))
+          description = Some("Allow http traffic"),
+          sourceIps = Some(Seq("0.0.0.0/0", "::/0")),
+          destinationIps = None,
+          port = Some("80-85")
         )
       )
     )
   )
 
-  val createFloatingIpRequest = CreateFloatingIpRequest(
-    `type` = IpType.ipv4,
+  val createFloatingIpRequest = FloatingIPCreateRequest(
+    `type` = FloatingIPCreateRequestEnums.Type.ipv4,
     description = Some("My Floating IP"),
-    homeLocation = Some("fsn1"),
+    homeLocation = None,
     labels = Some(Map("env" -> "production")),
     name = Some("my-floating-ip"),
     server = Some(123456)
   )
 
-  val createImageFromServerRequest = CreateImageFromServerRequest(
+  val createImageFromServerRequest = CreateImageRequest(
     description = Some("My server image"),
     labels = Some(Map("env" -> "production", "team" -> "devops")),
-    `type` = Some(CreateImageFromServerRequestEnums.Type.`snapshot`)
+    `type` = Some(CreateImageRequestEnums.Type.`snapshot`)
   )
 
   val loadBalancerAlgorithm = LoadBalancerAlgorithm(
@@ -223,7 +223,7 @@ object HetznerCloud extends App {
     `type` = LoadBalancerAlgorithmEnums.Type.`least_connections`
   )
 
-  val http = Http(
+  val http = LoadBalancerServiceHTTP(
     certificates = Some(Seq(123456, 789012)),
     cookieLifetime = Some(300),
     cookieName = Some("MYSESSIONID"),
@@ -256,20 +256,20 @@ object HetznerCloud extends App {
     http = Some(http)
   )
 
-  val loadBalancerTargetIp = LoadBalancerTargetIp(
+  val loadBalancerTargetIp = LoadBalancerTargetIP(
     ip = "192.168.0.1"
   )
-  val resourceId = ResourceId(id = 123456)
+  val resourceId = LoadBalancerTargetServer(id = 123456)
 
-  val selector = LabelSelector(
+  val selector = LoadBalancerTargetLabelSelector1(
     selector = "env=production"
   )
 
-  val loadBalancerAddTarget = LoadBalancerAddTarget(
-    `type` = LoadBalancerAddTargetEnums.Type.`ip`,
-    ip = Some(loadBalancerTargetIp),
+  val loadBalancerAddTarget = LoadBalancerTarget1(
+    `type` = LoadBalancerTarget1Enums.Type.`ip`,
+    ip = Some(LoadBalancerTargetIP1(loadBalancerTargetIp.ip)),
     labelSelector = None,
-    server = Some(resourceId),
+    server = Some(LoadBalancerTargetServer1(resourceId.id)),
     usePrivateIp = Some(false)
   )
 
@@ -323,42 +323,48 @@ object HetznerCloud extends App {
       )
     )
   )
-  val loadBalancerPrivateNet = LoadBalancerPrivateNet(
-    ip = Some("192.168.0.1"),
-    network = Some(123456)
-  )
-
-  val loadBalancerPublicNet = LoadBalancerPublicNet(
-    enabled = true,
-    ipv4 = LoadBalancerPublicNetIpv4(
-      dnsPtr = None,
-      ip = Some("192.168.2.8")
-    ),
-    ipv6 = LoadBalancerPublicNetIpv6(
-      dnsPtr = None,
-      ip = Some("2001:db8::1")
+  val loadBalancerPrivateNet =
+    ListLoadBalancers200ResponseLoadBalancersInnerPrivateNetInner(
+      ip = Some("192.168.0.1"),
+      network = Some(123456)
     )
-  )
 
-  val pricePerTime = PricePerTime(
-    includedTraffic = 107374182,
-    location = "fsn1",
-    priceHourly = Price(
-      net = 0.012,
-      gross = 0.01428
-    ),
-    priceMonthly = Price(
-      net = 8.0,
-      gross = 9.52
-    ),
-    pricePerTbTraffic = Price(
-      net = 1.0,
-      gross = 1.19
+  val loadBalancerPublicNet =
+    ListLoadBalancers200ResponseLoadBalancersInnerPublicNet(
+      enabled = true,
+      ipv4 = ListLoadBalancers200ResponseLoadBalancersInnerPublicNetIpv4(
+        dnsPtr = None,
+        ip = Some("192.168.2.8")
+      ),
+      ipv6 = ListLoadBalancers200ResponseLoadBalancersInnerPublicNetIpv6(
+        dnsPtr = None,
+        ip = Some("2001:db8::1")
+      )
     )
-  )
 
-  val loadBalancerType = LoadBalancerType(
-    deprecated = "2023-12-31T23:59:59+00:00",
+  val pricePerTime =
+    ListLoadBalancerTypes200ResponseLoadBalancerTypesInnerPricesInner(
+      includedTraffic = 107374182,
+      location = "fsn1",
+      priceHourly =
+        ListLoadBalancerTypes200ResponseLoadBalancerTypesInnerPricesInnerPriceHourly(
+          net = BigDecimal(0.012),
+          gross = BigDecimal(0.01428)
+        ),
+      priceMonthly =
+        ListLoadBalancerTypes200ResponseLoadBalancerTypesInnerPricesInnerPriceMonthly(
+          net = BigDecimal(8.0),
+          gross = BigDecimal(9.52)
+        ),
+      pricePerTbTraffic =
+        ListLoadBalancerTypes200ResponseLoadBalancerTypesInnerPricesInnerPricePerTbTraffic(
+          net = BigDecimal(1.0),
+          gross = BigDecimal(1.19)
+        )
+    )
+
+  val loadBalancerType = ListLoadBalancerTypes200ResponseLoadBalancerTypesInner(
+    deprecated = OffsetDateTime.parse("2023-12-31T23:59:59+00:00"),
     description = "Basic Load Balancer",
     id = 1,
     maxAssignedCertificates = 5,
@@ -371,8 +377,8 @@ object HetznerCloud extends App {
     )
   )
 
-  val sshKey = SshKey(
-    created = "2021-05-19T17:24:00+00:00",
+  val sshKey = ListSshKeys200ResponseSshKeysInner(
+    created = OffsetDateTime.parse("2021-05-19T17:24:00+00:00"),
     fingerprint =
       "AB:CD:EF:12:34:56:78:90:AB:CD:EF:12:34:56:78:90:AB:CD:EF:12:34:56:78:90",
     id = 123456,
@@ -380,25 +386,27 @@ object HetznerCloud extends App {
     name = "example-ssh-key",
     publicKey = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCz..."
   )
-  val authoritativeNameservers = ZoneAuthoritativeNameservers(
+  val authoritativeNameservers = PrimaryZoneAllOfAuthoritativeNameservers(
     assigned = Seq("ns1.hetzner.com", "ns2.hetzner.com", "ns3.hetzner.com"),
     delegated = Seq("ns1.hetzner.com", "ns2.hetzner.com", "ns3.hetzner.com"),
-    delegationLastCheck = "2024-06-01T12:00:00+00:00",
-    delegationStatus =
-      Some(ZoneAuthoritativeNameserversEnums.DelegationStatus.`valid`)
+    delegationLastCheck = OffsetDateTime.parse("2024-06-01T12:00:00+00:00"),
+    delegationStatus = Some(
+      PrimaryZoneAllOfAuthoritativeNameserversEnums.DelegationStatus.`valid`
+    )
   )
 
-  val zone = Zone(
+  val zone = PrimaryZone(
     authoritativeNameservers = authoritativeNameservers,
-    created = "2024-06-01T12:00:00+00:00",
+    created = OffsetDateTime.parse("2024-06-01T12:00:00+00:00"),
     id = 123456,
     labels = Map("env" -> "production", "team" -> "devops"),
-    mode = Mode.primary,
+    mode = PrimaryZoneEnums.Mode.primary,
     name = "example.com",
-    protection = Protection(delete = false),
+    protection =
+      ListFloatingIps200ResponseFloatingIpsInnerProtection(delete = false),
     recordCount = 42,
-    registrar = ZoneEnums.Registrar.`hetzner`,
-    status = ZoneEnums.Status.`ok`,
+    registrar = PrimaryZoneEnums.Registrar.`hetzner`,
+    status = PrimaryZoneEnums.Status.`ok`,
     ttl = 3600,
     primaryNameservers = None
   )
@@ -409,7 +417,7 @@ object HetznerCloud extends App {
     serverType = "cx23",
     automount = None,
     datacenter = None,
-    firewalls = Some(List(CreateServerRequestFirewalls(12))),
+    firewalls = Some(List(CreateServerRequestFirewallsInner(12))),
     labels = None,
     location = None,
     networks = None,
@@ -427,7 +435,7 @@ object HetznerCloud extends App {
     serverType = "cpx22",
     automount = Some(false),
     datacenter = Some("nbg1-dc3"),
-    firewalls = Some(List(CreateServerRequestFirewalls(38))),
+    firewalls = Some(List(CreateServerRequestFirewallsInner(38))),
     labels = Some(
       Map(
         "environment" -> "prod",
@@ -457,15 +465,16 @@ object HetznerCloud extends App {
     `type` = LoadBalancerTargetEnums.Type.`server`,
     healthStatus = Some(
       Seq(
-        LoadBalancerTargetHealthStatus(
+        LoadBalancerTargetHealthStatusInner(
           listenPort = Some(80),
-          status = Some(LoadBalancerTargetHealthStatusEnums.Status.`healthy`)
+          status =
+            Some(LoadBalancerTargetHealthStatusInnerEnums.Status.`healthy`)
         )
       )
     ),
     ip = None,
     labelSelector = None,
-    server = Some(ResourceId(123456)),
+    server = Some(LoadBalancerTargetServer(123456)),
     targets = None,
     usePrivateIp = Some(true)
   )
@@ -474,35 +483,37 @@ object HetznerCloud extends App {
     `type` = LoadBalancerTargetEnums.Type.`label_selector`,
     healthStatus = None,
     ip = None,
-    labelSelector = Some(LabelSelector("env=production")),
+    labelSelector = Some(LoadBalancerTargetLabelSelector("env=production")),
     server = None,
     targets = Some(
       Seq(
-        LoadBalancerSelectedTarget(
+        LoadBalancerTargetTarget(
           healthStatus = Some(
             Seq(
-              LoadBalancerTargetHealthStatus(
+              LoadBalancerTargetHealthStatusInner(
                 listenPort = Some(80),
-                status =
-                  Some(LoadBalancerTargetHealthStatusEnums.Status.`healthy`)
+                status = Some(
+                  LoadBalancerTargetHealthStatusInnerEnums.Status.`healthy`
+                )
               )
             )
           ),
-          server = Some(ResourceId(234567)),
+          server = Some(LoadBalancerTargetServer(234567)),
           `type` = Some("server"),
           usePrivateIp = Some(false)
         ),
-        LoadBalancerSelectedTarget(
+        LoadBalancerTargetTarget(
           healthStatus = Some(
             Seq(
-              LoadBalancerTargetHealthStatus(
+              LoadBalancerTargetHealthStatusInner(
                 listenPort = Some(80),
-                status =
-                  Some(LoadBalancerTargetHealthStatusEnums.Status.`unhealthy`)
+                status = Some(
+                  LoadBalancerTargetHealthStatusInnerEnums.Status.`unhealthy`
+                )
               )
             )
           ),
-          server = Some(ResourceId(345678)),
+          server = Some(LoadBalancerTargetServer(345678)),
           `type` = Some("server"),
           usePrivateIp = Some(true)
         )
@@ -515,13 +526,14 @@ object HetznerCloud extends App {
     `type` = LoadBalancerTargetEnums.Type.`ip`,
     healthStatus = Some(
       Seq(
-        LoadBalancerTargetHealthStatus(
+        LoadBalancerTargetHealthStatusInner(
           listenPort = Some(80),
-          status = Some(LoadBalancerTargetHealthStatusEnums.Status.`healthy`)
+          status =
+            Some(LoadBalancerTargetHealthStatusInnerEnums.Status.`healthy`)
         )
       )
     ),
-    ip = Some(LoadBalancerTargetIp("203.0.113.1")),
+    ip = Some(LoadBalancerTargetIP("203.0.113.1")),
     labelSelector = None,
     server = None,
     targets = None,
@@ -530,7 +542,7 @@ object HetznerCloud extends App {
 
   val cp = LoadBalancerTarget(
     `type` = LoadBalancerTargetEnums.Type.`label_selector`,
-    labelSelector = Some(LabelSelector("vm-type=cp")),
+    labelSelector = Some(LoadBalancerTargetLabelSelector("vm-type=cp")),
     usePrivateIp = Some(true)
   )
 
@@ -586,9 +598,9 @@ object HetznerCloud extends App {
     http = None
   )
 
-  val labelSelectorTarget = LoadBalancerAddTarget(
-    `type` = LoadBalancerAddTargetEnums.Type.`label_selector`,
-    labelSelector = Some(LabelSelector("vm-type=cp")),
+  val labelSelectorTarget = LoadBalancerTarget1(
+    `type` = LoadBalancerTarget1Enums.Type.`label_selector`,
+    labelSelector = Some(LoadBalancerTargetLabelSelector1("vm-type=cp")),
     usePrivateIp = Some(true)
   )
 
@@ -606,18 +618,18 @@ object HetznerCloud extends App {
 
 //Create Private network
 //All our servers will be connected to this private network, and external access to internal resources will only be possible through VPN or Load Balancers.
-  val createPrivateNetworkRequest = CreateNetworkRequest(
-    ipRange = "10.10.0.0/16",
+  val createPrivateNetworkRequest = NetworkCreateRequest(
     name = "k8s-private-network",
+    ipRange = "10.10.0.0/16",
     exposeRoutesToVswitch = Some(true),
     labels = Some(Map("environment" -> "production", "project" -> "k8s")),
     routes = Some(
       List(
-        Route(
+        ListNetworks200ResponseNetworksInnerRoutesInner(
           destination = "10.10.3.0/24",
           gateway = "10.10.3.1"
         ),
-        Route(
+        ListNetworks200ResponseNetworksInnerRoutesInner(
           destination = "10.10.4.0/24",
           gateway = "10.10.4.1"
         )
@@ -625,9 +637,9 @@ object HetznerCloud extends App {
     ),
     subnets = Some(
       List(
-        Subnet(
+        NetworkCreateRequestSubnetsInner(
+          `type` = NetworkCreateRequestSubnetsInnerEnums.Type.`cloud`,
           networkZone = "fsn1",
-          `type` = SubnetEnums.Type.`cloud`,
           ipRange = Some("10.10.3.0/24"),
           vswitchId = None
         )
@@ -705,7 +717,7 @@ object HetznerCloud extends App {
           protocol = LoadBalancerServiceEnums.Protocol.http,
           proxyprotocol = false,
           http = Some(
-            Http(
+            LoadBalancerServiceHTTP(
               certificates = None,
               cookieLifetime = None,
               cookieName = None,
@@ -793,7 +805,7 @@ object HetznerCloud extends App {
     datacenter = Some("nbg1-dc3"),
     firewalls = Some(
       List(
-        CreateServerRequestFirewalls(
+        CreateServerRequestFirewallsInner(
           /* ID of the website firewall created earlier */ 123456
         )
       )
@@ -887,7 +899,7 @@ object HetznerCloud extends App {
           protocol = LoadBalancerServiceEnums.Protocol.http,
           proxyprotocol = false,
           http = Some(
-            Http(
+            LoadBalancerServiceHTTP(
               certificates = None,
               cookieLifetime = None,
               cookieName = None,
@@ -900,12 +912,15 @@ object HetznerCloud extends App {
     )
   )
 
-  val mywebsitelbtarget = LoadBalancerAddTarget(
-    `type` = LoadBalancerAddTargetEnums.Type.`server`,
+  val mywebsitelbtarget = LoadBalancerTarget1(
+    `type` = LoadBalancerTarget1Enums.Type.`server`,
     ip = None,
     labelSelector = None,
-    server =
-      Some(ResourceId( /* ID of the website server created earlier */ 123456)),
+    server = Some(
+      LoadBalancerTargetServer1(
+        /* ID of the website server created earlier */ 123456
+      )
+    ),
     usePrivateIp = Some(false)
   )
 
@@ -944,7 +959,7 @@ object HetznerCloud extends App {
           protocol = LoadBalancerServiceEnums.Protocol.http,
           proxyprotocol = false,
           http = Some(
-            Http(
+            LoadBalancerServiceHTTP(
               certificates = None,
               cookieLifetime = None,
               cookieName = None,
@@ -1294,7 +1309,7 @@ object HetznerCloud extends App {
           protocol = LoadBalancerServiceEnums.Protocol.http,
           proxyprotocol = false,
           http = Some(
-            Http(
+            LoadBalancerServiceHTTP(
               certificates = None,
               cookieLifetime = None,
               cookieName = None,
@@ -1332,11 +1347,11 @@ object HetznerCloud extends App {
     delete = Some(true)
   )
 
-  val changeNetworkProtectionRequest = ChangeNetworkProtectionRequest(
+  val changeNetworkProtectionRequest = ChangeProtectionRequest(
     delete = Some(true)
   )
 
-  val changeNetworkProtectionRequest2 = ChangeNetworkProtectionRequest(
+  val changeNetworkProtectionRequest2 = ChangeProtectionRequest(
     delete = Some(true)
   )
 
@@ -1348,8 +1363,8 @@ object HetznerCloud extends App {
     delete = Some(true)
   )
 
-  val changeRrsetsProtectionRequest = ChangeRrsetsProtectionRequest(
-    change = true
+  val changeRrsetsProtectionRequest = ChangeProtectionRequest(
+    delete = Some(true)
   )
 
   val changeServerProtectionRequest = ChangeServerProtectionRequest(
@@ -1361,165 +1376,50 @@ object HetznerCloud extends App {
     delete = Some(true)
   )
 
-  val changeZoneProtectionRequest = ChangeZonesProtectionRequest(
+  val changeZoneProtectionRequest = ChangeZoneProtectionRequest(
     delete = Some(true)
   )
 
-  val subnet1 = Subnet(
+  val subnet1 = NetworkCreateRequestSubnetsInner(
     networkZone = "fsn1",
-    `type` = SubnetEnums.Type.`cloud`,
+    `type` = NetworkCreateRequestSubnetsInnerEnums.Type.`cloud`,
     ipRange = Some("192.168.0.0/24"),
     vswitchId = None
   )
 
-  val subnet2 = Subnet(
+  val subnet2 = NetworkCreateRequestSubnetsInner(
     networkZone = "fsn1",
-    `type` = SubnetEnums.Type.`vswitch`,
+    `type` = NetworkCreateRequestSubnetsInnerEnums.Type.`vswitch`,
     ipRange = Some("192.168.1.0/24"),
     vswitchId = None
   )
 
-  val subnet3 = Subnet(
+  val subnet3 = NetworkCreateRequestSubnetsInner(
     networkZone = "fsn1",
-    `type` = SubnetEnums.Type.`cloud`,
+    `type` = NetworkCreateRequestSubnetsInnerEnums.Type.`cloud`,
     ipRange = Some("192.168.2.0/24"),
     vswitchId = None
   )
 
-  val subnet4 = Subnet(
+  val subnet4 = NetworkCreateRequestSubnetsInner(
     networkZone = "fsn1",
-    `type` = SubnetEnums.Type.`vswitch`,
+    `type` = NetworkCreateRequestSubnetsInnerEnums.Type.`vswitch`,
     ipRange = Some("192.168.3.0/24"),
     vswitchId = None
   )
 
-  val subnet5 = Subnet(
+  val subnet5 = NetworkCreateRequestSubnetsInner(
     networkZone = "fsn1",
-    `type` = SubnetEnums.Type.`server`,
+    `type` = NetworkCreateRequestSubnetsInnerEnums.Type.`server`,
     ipRange = Some("192.168.4.0/24"),
     vswitchId = None
   )
 
-  val subnet6 = Subnet(
+  val subnet6 = NetworkCreateRequestSubnetsInner(
     networkZone = "fsn1",
-    `type` = SubnetEnums.Type.`cloud`,
+    `type` = NetworkCreateRequestSubnetsInnerEnums.Type.`cloud`,
     ipRange = Some("192.168.5.0/24"),
     vswitchId = None
-  )
-
-  val addRouteToNetwork = HetznerClient.networks.addRouteToNetwork(
-    token = "token",
-    id = 123456,
-    body = Route(
-      destination = "10.10.0.0/16",
-      gateway = "10.10.0.1"
-    )
-  )
-
-  val addSubnetToNetwork = HetznerClient.networks.addSubnetToNetwork(
-    token = "token",
-    id = 123456,
-    body = Subnet(
-      networkZone = "fsn1",
-      `type` = SubnetEnums.Type.`cloud`,
-      ipRange = Some("10.8.0.0/18"),
-      vswitchId = None
-    )
-  )
-
-  val changeIpRangeOfNetwork =
-    HetznerClient.networks.changeIpRangeOfNetwork(
-      "token",
-      id = 123456,
-      changeIpRangeOfNetworkRequest = ChangeIpRangeOfNetworkRequest(
-        ipRange = "10.10.0.0/15"
-      )
-    )
-
-  val changeNetworkProtection =
-    HetznerClient.networks.changeNetworkProtection(
-      "token",
-      id = 123456,
-      changeNetworkProtectionRequest = ChangeNetworkProtectionRequest(
-        delete = Some(true)
-      )
-    )
-
-  val createNetwork = HetznerClient.networks.createNetwork(
-    "token",
-    createNetworkRequest = CreateNetworkRequest(
-      name = "my-network",
-      ipRange = "10.200.0.0/16",
-      subnets = Some(
-        Seq(
-          Subnet(
-            networkZone = "fsn1",
-            `type` = SubnetEnums.Type.`cloud`,
-            ipRange = Some("10.200.0.0/18"),
-            vswitchId = None
-          ),
-          Subnet(
-            networkZone = "fsn1",
-            `type` = SubnetEnums.Type.`vswitch`,
-            ipRange = Some("10.200.64.0/18"),
-            vswitchId = Some(87654321L)
-          )
-        )
-      ),
-      exposeRoutesToVswitch = Some(true),
-      labels = Some(
-        Map(
-          "environment" -> "production",
-          "project" -> "alpha"
-        )
-      ),
-      routes = Some(
-        Seq(
-          Route(
-            destination = "10.200.0.0/16",
-            gateway = "10.200.0.1"
-          )
-        )
-      )
-    )
-  )
-
-  val deleteNetwork = HetznerClient.networks.deleteNetwork(
-    "token",
-    id = 123456
-  )
-
-  val deleteRouteFromNetwork =
-    HetznerClient.networks.deleteRouteFromNetwork(
-      "token",
-      id = 123456,
-      body = Route(
-        destination = "10.10.0.0/16",
-        gateway = "10.10.0.1"
-      )
-    )
-
-  val deleteSubnetFromNetwork =
-    HetznerClient.networks.deleteSubnetFromNetwork(
-      "token",
-      id = 123456,
-      deleteSubnetFromNetworkRequest = DeleteSubnetFromNetworkRequest(
-        ipRange = "10.10.0.0/16"
-      )
-    )
-
-  val network = HetznerClient.networks.getNetwork(
-    "token",
-    id = 123456
-  )
-
-  val networks = HetznerClient.networks.listNetworks(
-    "token",
-    sort = Seq("name:asc"),
-    name = Some("my-network"),
-    labelSelector = Some("environment=production"),
-    page = Some(1),
-    perPage = Some(20)
   )
 
   val controlPlaneFirewall = CreateFirewallRequest(
@@ -1836,12 +1736,14 @@ object HetznerCloud extends App {
     ipRange = Some("10.20.3.0/24")
   )
 
-  val managementlbTarget = LoadBalancerAddTarget(
-    `type` = LoadBalancerAddTargetEnums.Type.`server`,
+  val managementlbTarget = LoadBalancerTarget1(
+    `type` = LoadBalancerTarget1Enums.Type.`server`,
     ip = None,
     labelSelector = None,
     server = Some(
-      ResourceId( /* ID of the management server created earlier */ 123456)
+      LoadBalancerTargetServer1(
+        /* ID of the management server created earlier */ 123456
+      )
     ),
     usePrivateIp = Some(true)
   )
@@ -1904,7 +1806,7 @@ object HetznerCloud extends App {
     serverType = "cx11",
     automount = Some(true),
     datacenter = Some("nbg1-dc3"),
-    firewalls = Some(List(CreateServerRequestFirewalls(123456))),
+    firewalls = Some(List(CreateServerRequestFirewallsInner(123456))),
     labels = Some(
       Map(
         "environment" -> "production",
@@ -1994,7 +1896,7 @@ object HetznerCloud extends App {
     http = None
   )
 
-  val kubernetesInternalNetwork = CreateNetworkRequest(
+  val kubernetesInternalNetwork = NetworkCreateRequest(
     name = "kubernetes-internal-network",
     ipRange = "172.16.0.0/12",
     labels = Some(
@@ -2081,29 +1983,29 @@ runcmd:
   )
 
 //This is the actual IP range the servers and Load Balancer will use for their private communication.
-  val rancherManagementSubnet = Subnet(
+  val rancherManagementSubnet = NetworkCreateRequestSubnetsInner(
     networkZone = "fsn1",
-    `type` = SubnetEnums.Type.`cloud`,
+    `type` = NetworkCreateRequestSubnetsInnerEnums.Type.`cloud`,
     ipRange = Some("172.16.0.0/24"),
     vswitchId = None
   )
-  val rancherManagementSubnet2 = Subnet(
+  val rancherManagementSubnet2 = NetworkCreateRequestSubnetsInner(
     networkZone = "fsn1",
-    `type` = SubnetEnums.Type.cloud,
+    `type` = NetworkCreateRequestSubnetsInnerEnums.Type.cloud,
     ipRange = Some("172.16.10.0/24"),
     vswitchId = None
   )
 
-  val rancherManagementSubnet3 = Subnet(
+  val rancherManagementSubnet3 = NetworkCreateRequestSubnetsInner(
     networkZone = "fsn1",
-    `type` = SubnetEnums.Type.`cloud`,
+    `type` = NetworkCreateRequestSubnetsInnerEnums.Type.`cloud`,
     ipRange = Some("172.16.20.0/24"),
     vswitchId = None
   )
 
-  val rancherManagementSubnet4 = Subnet(
+  val rancherManagementSubnet4 = NetworkCreateRequestSubnetsInner(
     networkZone = "fsn1",
-    `type` = SubnetEnums.Type.server,
+    `type` = NetworkCreateRequestSubnetsInnerEnums.Type.server,
     ipRange = Some("172.16.29.0/24"),
     vswitchId = None
   )
@@ -2118,12 +2020,14 @@ runcmd:
       ipRange = Some("172.16.10.0/24")
     )
 
-  val rancherManagementTarget = LoadBalancerAddTarget(
-    `type` = LoadBalancerAddTargetEnums.Type.`server`,
+  val rancherManagementTarget = LoadBalancerTarget1(
+    `type` = LoadBalancerTarget1Enums.Type.`server`,
     ip = None,
     labelSelector = None,
     server = Some(
-      ResourceId( /* ID of the management server created earlier */ 123456)
+      LoadBalancerTargetServer1(
+        /* ID of the management server created earlier */ 123456
+      )
     ),
     usePrivateIp = Some(true)
   )
@@ -2203,18 +2107,18 @@ runcmd:
     )
   )
 
-  val attachIsoToServerRequest = AttachIsoToServerRequest(
+  val attachIsoToServerRequest = AttachServerIsoRequest(
     iso = "ubuntu-24.04"
   )
 
-  val attachServerToNetworkRequest3 = AttachServerToNetworkRequest(
+  val attachServerToNetworkRequest3 = AttachToNetworkRequest(
     network = 123456,
     aliasIps = Some(Seq("172.16.10.8", "192.168.1.1")),
     ip = Some("10.10.4.10"),
     ipRange = Some("10.10.4.0/24")
   )
 
-  val attachVolumeToServerRequest = AttachVolumeToServerRequest(
+  val attachVolumeToServerRequest = AttachVolumeRequest(
     server = 123456,
     automount = Some(true)
   )
@@ -2226,9 +2130,9 @@ runcmd:
   )
 
 // 1. Create a Placement Group to ensure hardware diversity
-  val k8sPlacementGroup = CreatePlacementgroupRequest(
+  val k8sPlacementGroup = CreatePlacementGroupRequest(
     name = "k8s-compute-spread",
-    `type` = CreatePlacementgroupRequestEnums.Type.spread, // Critical for HA
+    `type` = CreatePlacementGroupRequestEnums.Type.spread, // Critical for HA
     labels = Some(Map("stack" -> "production", "tier" -> "control-plane"))
   )
 
@@ -2290,7 +2194,7 @@ runcmd:
     healthCheck = prodHealthCheck,
     proxyprotocol = true, // Pass client IP to the server
     http = Some(
-      Http(
+      LoadBalancerServiceHTTP(
         /* IDs of the Certificates to use for TLS/SSL termination by the Load Balancer; empty for TLS/SSL passthrough or if `protocol` is `http`. */
         certificates = Some(Seq(987654)), // Your Managed Certificate ID
         /* Lifetime of the cookie used for sticky sessions (in seconds). */
@@ -2318,12 +2222,15 @@ runcmd:
     services = Some(Seq(productionHttpsService)),
     targets = Some(
       Seq(
-        LoadBalancerAddTarget(
-          `type` = LoadBalancerAddTargetEnums.Type.label_selector,
+        LoadBalancerTarget1(
+          `type` = LoadBalancerTarget1Enums.Type.label_selector,
           ip = None,
-          server = Some(ResourceId(123456)),
-          labelSelector =
-            Some(LabelSelector("role=worker,environment=production")),
+          server = Some(LoadBalancerTargetServer1(123456)),
+          labelSelector = Some(
+            LoadBalancerTargetLabelSelector1(
+              "role=worker,environment=production"
+            )
+          ),
           usePrivateIp = Some(true)
         )
       )
@@ -2333,9 +2240,9 @@ runcmd:
   // In production, your databases and application servers should never have public IP addresses. You reach them via a Bastion/VPN host
 
   // 1. The Secure Private Subnet
-  val secureSubnet = Subnet(
+  val secureSubnet = NetworkCreateRequestSubnetsInner(
     /* Type of subnet.  - `cloud` - Used to connect cloud Servers and Load Balancers. - `server` - Same as the `cloud` type. **Deprecated**, use the `cloud` type instead. - `vswitch` - Used to [connect cloud Servers and Load Balancers with dedicated Servers](https://docs.hetzner.com/cloud/networks/connect-dedi-vswitch).  */
-    `type` = SubnetEnums.Type.cloud,
+    `type` = NetworkCreateRequestSubnetsInnerEnums.Type.cloud,
     networkZone = "eu-central",
     ipRange = Some("10.0.1.0/24") // Dedicated subnet for databases
   )
@@ -2365,19 +2272,19 @@ runcmd:
 
   // Define subnets for different regions within the same Private Network
   val networkRegions = List(
-    Subnet(
+    NetworkCreateRequestSubnetsInner(
       networkZone = "eu-central",
-      `type` = SubnetEnums.Type.cloud,
+      `type` = NetworkCreateRequestSubnetsInnerEnums.Type.cloud,
       ipRange = Some("10.0.1.0/24")
     ), // Germany
-    Subnet(
+    NetworkCreateRequestSubnetsInner(
       networkZone = "us-east",
-      `type` = SubnetEnums.Type.cloud,
+      `type` = NetworkCreateRequestSubnetsInnerEnums.Type.cloud,
       ipRange = Some("10.0.2.0/24")
     ) // USA (Ashburn)
   )
 
-  val globalVPC = CreateNetworkRequest(
+  val globalVPC = NetworkCreateRequest(
     name = "global-production-backbone",
     ipRange = "10.0.0.0/16",
     subnets = Some(networkRegions)
@@ -2462,20 +2369,20 @@ runcmd:
   )
 
   // 1. Define the Route
-  val officeRoute = Route(
+  val officeRoute = ListNetworks200ResponseNetworksInnerRoutesInner(
     destination = "192.168.1.0/24", // Your remote office network
     gateway = "10.10.0.5" // The Private IP of your VPN server
   )
 
   // 2. Create the Network with the Route
-  val networkWithGateway = CreateNetworkRequest(
+  val networkWithGateway = NetworkCreateRequest(
     name = "prod-network-with-vpn",
     ipRange = "10.10.0.0/16",
     subnets = Some(
       List(
-        Subnet(
+        NetworkCreateRequestSubnetsInner(
           networkZone = "eu-central",
-          `type` = SubnetEnums.Type.cloud,
+          `type` = NetworkCreateRequestSubnetsInnerEnums.Type.cloud,
           ipRange = Some("10.10.0.0/24")
         )
       )
@@ -2484,32 +2391,32 @@ runcmd:
     labels = Some(Map("environment" -> "production"))
   )
   // Production VPC with Segmented Subnets
-  val productionVPC = CreateNetworkRequest(
+  val productionVPC = NetworkCreateRequest(
     name = "production-vpc",
     ipRange = "10.0.0.0/16", // The "Supernet"
     subnets = Some(
       List(
         // 1. PUBLIC TIER
-        Subnet(
-          `type` = SubnetEnums.Type.cloud,
+        NetworkCreateRequestSubnetsInner(
+          `type` = NetworkCreateRequestSubnetsInnerEnums.Type.cloud,
           networkZone = "eu-central",
           ipRange = Some("10.0.1.0/24")
         ),
         // 2. PRIVATE TIER (Larger range for scaling app nodes)
-        Subnet(
-          `type` = SubnetEnums.Type.cloud,
+        NetworkCreateRequestSubnetsInner(
+          `type` = NetworkCreateRequestSubnetsInnerEnums.Type.cloud,
           networkZone = "eu-central",
           ipRange = Some("10.0.10.0/22")
         ),
         // 3. DATABASE TIER
-        Subnet(
-          `type` = SubnetEnums.Type.cloud,
+        NetworkCreateRequestSubnetsInner(
+          `type` = NetworkCreateRequestSubnetsInnerEnums.Type.cloud,
           networkZone = "eu-central",
           ipRange = Some("10.0.20.0/24")
         ),
         // 4. MANAGEMENT TIER (Isolated admin access)
-        Subnet(
-          `type` = SubnetEnums.Type.cloud,
+        NetworkCreateRequestSubnetsInner(
+          `type` = NetworkCreateRequestSubnetsInnerEnums.Type.cloud,
           networkZone = "eu-central",
           ipRange = Some("10.0.30.0/24")
         )
@@ -2566,7 +2473,7 @@ runcmd:
     ),
     proxyprotocol = false,
     http = Some(
-      Http(
+      LoadBalancerServiceHTTP(
         redirectHttp = Some(true) // Redirect all HTTP to HTTPS
       )
     )
@@ -2594,7 +2501,7 @@ runcmd:
     ),
     proxyprotocol = true,
     http = Some(
-      Http(
+      LoadBalancerServiceHTTP(
         certificates = Some(Seq(987654)), // Your Managed Certificate ID
         stickySessions = Some(true),
         cookieName = Some("APPSESSIONID"),
@@ -2635,28 +2542,31 @@ runcmd:
     ),
     targets = Some(
       Seq(
-        LoadBalancerAddTarget(
-          `type` = LoadBalancerAddTargetEnums.Type.label_selector,
+        LoadBalancerTarget1(
+          `type` = LoadBalancerTarget1Enums.Type.label_selector,
           ip = None,
-          server = Some(ResourceId(123456)),
-          labelSelector =
-            Some(LabelSelector("role=web,environment=production")),
+          server = Some(LoadBalancerTargetServer1(123456)),
+          labelSelector = Some(
+            LoadBalancerTargetLabelSelector1("role=web,environment=production")
+          ),
           usePrivateIp = Some(true)
         )
       )
     )
   )
 
-  val kubelbTarget = LoadBalancerAddTarget(
-    `type` = LoadBalancerAddTargetEnums.Type.`server`,
+  val kubelbTarget = LoadBalancerTarget1(
+    `type` = LoadBalancerTarget1Enums.Type.`server`,
     ip = None,
     labelSelector = None,
     server = Some(
-      ResourceId( /* ID of one of your Kubernetes servers */ 123456)
+      LoadBalancerTargetServer1(
+        /* ID of one of your Kubernetes servers */ 123456
+      )
     ),
     usePrivateIp = Some(true)
   )
-  val kubeNetworkRequest = CreateNetworkRequest(
+  val kubeNetworkRequest = NetworkCreateRequest(
     name = "kube-network",
     ipRange = "10.0.0.0/16",
     labels = Some(
@@ -2703,23 +2613,23 @@ runcmd:
     )
   )
 
-  val kubeSubnetCommon = Subnet(
+  val kubeSubnetCommon = NetworkCreateRequestSubnetsInner(
     networkZone = "eu-central",
-    `type` = SubnetEnums.Type.`cloud`,
+    `type` = NetworkCreateRequestSubnetsInnerEnums.Type.`cloud`,
     ipRange = Some("10.0.7.0/24"),
     vswitchId = None
   )
 
-  val kubeSubnetServers = Subnet(
+  val kubeSubnetServers = NetworkCreateRequestSubnetsInner(
     networkZone = "eu-central",
-    `type` = SubnetEnums.Type.`cloud`,
+    `type` = NetworkCreateRequestSubnetsInnerEnums.Type.`cloud`,
     ipRange = Some("10.0.8.0/24"),
     vswitchId = None
   )
 
-  val kubeSubnetWorkers = Subnet(
+  val kubeSubnetWorkers = NetworkCreateRequestSubnetsInner(
     networkZone = "eu-central",
-    `type` = SubnetEnums.Type.`cloud`,
+    `type` = NetworkCreateRequestSubnetsInnerEnums.Type.`cloud`,
     ipRange = Some("10.0.9.0/24"),
     vswitchId = None
   )
@@ -2866,7 +2776,7 @@ runcmd:
 
 //firewall_attachment
   (1 to 10).map(x =>
-    AttachServerToNetworkRequest(
+    AttachToNetworkRequest(
       network = 123456,
       aliasIps = Some(Seq(s"10.0.1.${10 + x}")),
       ip = Some(s"10.0.1.${10 + x}"),
@@ -2877,14 +2787,14 @@ runcmd:
   val dedicatedServerTarget = LoadBalancerTarget(
     `type` = LoadBalancerTargetEnums.Type.ip,
     ip = Some(
-      LoadBalancerTargetIp(ip = "10.0.20.55")
+      LoadBalancerTargetIP(ip = "10.0.20.55")
     ) // The IP of your bare-metal server
   )
 
 // Adding it to a Load Balancer
-  val addTargetRequest = LoadBalancerAddTarget(
-    `type` = LoadBalancerAddTargetEnums.Type.ip,
-    ip = Some(LoadBalancerTargetIp(ip = "10.0.20.55")),
+  val addTargetRequest = LoadBalancerTarget1(
+    `type` = LoadBalancerTarget1Enums.Type.ip,
+    ip = Some(LoadBalancerTargetIP1(ip = "10.0.20.55")),
     labelSelector = None,
     server = None,
     usePrivateIp = None
@@ -2924,12 +2834,12 @@ runcmd:
     ),
     targets = Some(
       Seq(
-        LoadBalancerAddTarget(
-          `type` = LoadBalancerAddTargetEnums.Type.`server`,
+        LoadBalancerTarget1(
+          `type` = LoadBalancerTarget1Enums.Type.`server`,
           ip = None,
           labelSelector = None,
           server = Some(
-            ResourceId( /* ID of one of your servers */ 123456)
+            LoadBalancerTargetServer1( /* ID of one of your servers */ 123456)
           ),
           usePrivateIp = Some(true)
         )
@@ -2937,7 +2847,7 @@ runcmd:
     )
   )
 
-  val mainNetwork = CreateNetworkRequest(
+  val mainNetwork = NetworkCreateRequest(
     name = "main-network",
     ipRange = "10.0.0.0/16",
     labels = Some(
@@ -2945,9 +2855,9 @@ runcmd:
     )
   )
 
-  val mainSubnet = Subnet(
+  val mainSubnet = NetworkCreateRequestSubnetsInner(
     networkZone = "eu-central",
-    `type` = SubnetEnums.Type.`cloud`,
+    `type` = NetworkCreateRequestSubnetsInnerEnums.Type.`cloud`,
     ipRange = Some("10.0.1.0/24"),
     vswitchId = None
   )
@@ -3059,12 +2969,14 @@ runcmd:
     ),
     targets = Some(
       Seq(
-        LoadBalancerAddTarget(
-          `type` = LoadBalancerAddTargetEnums.Type.`server`,
+        LoadBalancerTarget1(
+          `type` = LoadBalancerTarget1Enums.Type.`server`,
           ip = None,
           labelSelector = None,
           server = Some(
-            ResourceId( /* ID of one of your Kubernetes servers */ 123456)
+            LoadBalancerTargetServer1(
+              /* ID of one of your Kubernetes servers */ 123456
+            )
           ),
           usePrivateIp = Some(true)
         )
@@ -3118,12 +3030,14 @@ runcmd:
     ),
     targets = Some(
       Seq(
-        LoadBalancerAddTarget(
-          `type` = LoadBalancerAddTargetEnums.Type.`server`,
+        LoadBalancerTarget1(
+          `type` = LoadBalancerTarget1Enums.Type.`server`,
           ip = None,
           labelSelector = None,
           server = Some(
-            ResourceId( /* ID of one of your Kubernetes servers */ 123456)
+            LoadBalancerTargetServer1(
+              /* ID of one of your Kubernetes servers */ 123456
+            )
           ),
           usePrivateIp = Some(true)
         )
@@ -3165,12 +3079,14 @@ runcmd:
     ),
     targets = Some(
       Seq(
-        LoadBalancerAddTarget(
-          `type` = LoadBalancerAddTargetEnums.Type.`server`,
+        LoadBalancerTarget1(
+          `type` = LoadBalancerTarget1Enums.Type.`server`,
           ip = None,
           labelSelector = None,
           server = Some(
-            ResourceId( /* ID of one of your Kubernetes servers */ 123456)
+            LoadBalancerTargetServer1(
+              /* ID of one of your Kubernetes servers */ 123456
+            )
           ),
           usePrivateIp = Some(true)
         )
@@ -3184,22 +3100,26 @@ runcmd:
     ipRange = Some("10.10.0.0/24")
   )
 
-  val apiLoadBalancerTarget = LoadBalancerAddTarget(
-    `type` = LoadBalancerAddTargetEnums.Type.label_selector,
+  val apiLoadBalancerTarget = LoadBalancerTarget1(
+    `type` = LoadBalancerTarget1Enums.Type.label_selector,
     ip = None,
-    labelSelector = Some(LabelSelector("lb=api")),
+    labelSelector = Some(LoadBalancerTargetLabelSelector1("lb=api")),
     server = Some(
-      ResourceId( /* ID of one of your Kubernetes servers */ 123456)
+      LoadBalancerTargetServer1(
+        /* ID of one of your Kubernetes servers */ 123456
+      )
     ),
     usePrivateIp = Some(true)
   )
 
-  val ingressLoadBalancerTarget = LoadBalancerAddTarget(
-    `type` = LoadBalancerAddTargetEnums.Type.label_selector,
+  val ingressLoadBalancerTarget = LoadBalancerTarget1(
+    `type` = LoadBalancerTarget1Enums.Type.label_selector,
     ip = None,
-    labelSelector = Some(LabelSelector("lb=ingress")),
+    labelSelector = Some(LoadBalancerTargetLabelSelector1("lb=ingress")),
     server = Some(
-      ResourceId( /* ID of one of your Kubernetes servers */ 123456)
+      LoadBalancerTargetServer1(
+        /* ID of one of your Kubernetes servers */ 123456
+      )
     ),
     usePrivateIp = Some(true)
   )
@@ -3333,12 +3253,12 @@ runcmd:
     ),
     targets = Some(
       Seq(
-        LoadBalancerAddTarget(
-          `type` = LoadBalancerAddTargetEnums.Type.`server`,
+        LoadBalancerTarget1(
+          `type` = LoadBalancerTarget1Enums.Type.`server`,
           ip = None,
           labelSelector = None,
           server = Some(
-            ResourceId(
+            LoadBalancerTargetServer1(
               /* ID of one of your Kubernetes master servers */ 123456
             )
           ),
@@ -3349,36 +3269,38 @@ runcmd:
   )
 
   val kubeNetworkRegions = List(
-    Subnet(
+    NetworkCreateRequestSubnetsInner(
       networkZone = "eu-central",
-      `type` = SubnetEnums.Type.cloud,
+      `type` = NetworkCreateRequestSubnetsInnerEnums.Type.cloud,
       ipRange = Some("10.10.1.0/24")
     ),
-    Subnet(
+    NetworkCreateRequestSubnetsInner(
       networkZone = "us-west",
-      `type` = SubnetEnums.Type.cloud,
+      `type` = NetworkCreateRequestSubnetsInnerEnums.Type.cloud,
       ipRange = Some("10.10.2.0/24")
     ),
-    Subnet(
+    NetworkCreateRequestSubnetsInner(
       networkZone = "asia-east",
-      `type` = SubnetEnums.Type.cloud,
+      `type` = NetworkCreateRequestSubnetsInnerEnums.Type.cloud,
       ipRange = Some("10.10.3.0/24")
     )
   )
 
-  val kubeNetwork = CreateNetworkRequest(
+  val kubeNetwork = NetworkCreateRequest(
     name = "global-kube-network",
     ipRange = "10.10.0.0/16",
     subnets = Some(kubeNetworkRegions),
     labels = Some(Map("environment" -> "production", "role" -> "kube-network"))
   )
 
-  val masterLoadBalancerTarget = LoadBalancerAddTarget(
-    `type` = LoadBalancerAddTargetEnums.Type.label_selector,
+  val masterLoadBalancerTarget = LoadBalancerTarget1(
+    `type` = LoadBalancerTarget1Enums.Type.label_selector,
     ip = None,
-    labelSelector = Some(LabelSelector("role=kube-master")),
+    labelSelector = Some(LoadBalancerTargetLabelSelector1("role=kube-master")),
     server = Some(
-      ResourceId( /* ID of one of your Kubernetes master servers */ 123456)
+      LoadBalancerTargetServer1(
+        /* ID of one of your Kubernetes master servers */ 123456
+      )
     ),
     usePrivateIp = Some(true)
   )
@@ -3464,15 +3386,15 @@ runcmd:
     location = Some("nbg1"),
     server = Some( /* ID of your Postgres server */ 123456)
   )
-  val k8sSubnet = Subnet(
+  val k8sSubnet = NetworkCreateRequestSubnetsInner(
     networkZone = "eu-central",
-    `type` = SubnetEnums.Type.cloud,
+    `type` = NetworkCreateRequestSubnetsInnerEnums.Type.cloud,
     ipRange = Some("10.0.1.0/24")
   )
 
-  val databaseSubnet = Subnet(
+  val databaseSubnet = NetworkCreateRequestSubnetsInner(
     networkZone = "eu-central",
-    `type` = SubnetEnums.Type.cloud,
+    `type` = NetworkCreateRequestSubnetsInnerEnums.Type.cloud,
     ipRange = Some("10.0.2.0/24")
   )
 
@@ -3605,22 +3527,22 @@ runcmd:
 // Network zone to use for private network
   val networkZone = "eu-central"
 
-  clients.HetznerClient.servers.listServers(
-    "token",
-    None,
-    None,
-    List.empty,
-    List.empty
-  )
+  // clients.HetznerClient.servers.listServers(
+  //   "token",
+  //   None,
+  //   None,
+  //   List.empty,
+  //   List.empty
+  // )
 
-  val privateNetwork3 = CreateNetworkRequest(
+  val privateNetwork3 = NetworkCreateRequest(
     name = "kubernetes-cluster",
     ipRange = "10.0.0.0/16"
   )
 
-  val privateSubnet3 = Subnet(
+  val privateSubnet3 = NetworkCreateRequestSubnetsInner(
     networkZone = "eu-central",
-    `type` = SubnetEnums.Type.`cloud`,
+    `type` = NetworkCreateRequestSubnetsInnerEnums.Type.`cloud`,
     ipRange = Some("10.0.1.0/24")
   )
 
@@ -3668,30 +3590,36 @@ runcmd:
     ),
     targets = Some(
       Seq(
-        LoadBalancerAddTarget(
-          `type` = LoadBalancerAddTargetEnums.Type.`server`,
+        LoadBalancerTarget1(
+          `type` = LoadBalancerTarget1Enums.Type.`server`,
           ip = None,
           labelSelector = None,
           server = Some(
-            ResourceId( /* ID of one of your web servers */ 123456)
+            LoadBalancerTargetServer1(
+              /* ID of one of your web servers */ 123456
+            )
           ),
           usePrivateIp = Some(false)
         ),
-        LoadBalancerAddTarget(
-          `type` = LoadBalancerAddTargetEnums.Type.`server`,
+        LoadBalancerTarget1(
+          `type` = LoadBalancerTarget1Enums.Type.`server`,
           ip = None,
           labelSelector = None,
           server = Some(
-            ResourceId( /* ID of one of your web servers */ 123456)
+            LoadBalancerTargetServer1(
+              /* ID of one of your web servers */ 123456
+            )
           ),
           usePrivateIp = Some(false)
         ),
-        LoadBalancerAddTarget(
-          `type` = LoadBalancerAddTargetEnums.Type.`server`,
+        LoadBalancerTarget1(
+          `type` = LoadBalancerTarget1Enums.Type.`server`,
           ip = None,
           labelSelector = None,
           server = Some(
-            ResourceId( /* ID of one of your web servers */ 123456)
+            LoadBalancerTargetServer1(
+              /* ID of one of your web servers */ 123456
+            )
           ),
           usePrivateIp = Some(false)
         )
@@ -3699,13 +3627,13 @@ runcmd:
     )
   )
 
-  val webNetwork = CreateNetworkRequest(
+  val webNetwork = NetworkCreateRequest(
     name = "web-private-network",
     ipRange = "10.10.0.0/16"
   )
-  val webSubnet = Subnet(
+  val webSubnet = NetworkCreateRequestSubnetsInner(
     networkZone = "eu-central",
-    `type` = SubnetEnums.Type.`cloud`,
+    `type` = NetworkCreateRequestSubnetsInnerEnums.Type.`cloud`,
     ipRange = Some("10.10.0.0/24")
   )
 
@@ -3715,32 +3643,32 @@ runcmd:
     ipRange = Some("10.10.0.0/24")
   )
 
-  val webLoadBalancerTarget1 = LoadBalancerAddTarget(
-    `type` = LoadBalancerAddTargetEnums.Type.`server`,
+  val webLoadBalancerTarget1 = LoadBalancerTarget1(
+    `type` = LoadBalancerTarget1Enums.Type.`server`,
     ip = None,
     labelSelector = None,
     server = Some(
-      ResourceId( /* ID of one of your web servers */ 123456)
+      LoadBalancerTargetServer1( /* ID of one of your web servers */ 123456)
     ),
     usePrivateIp = Some(false)
   )
 
-  val webLoadBalancerTarget2 = LoadBalancerAddTarget(
-    `type` = LoadBalancerAddTargetEnums.Type.`server`,
+  val webLoadBalancerTarget2 = LoadBalancerTarget1(
+    `type` = LoadBalancerTarget1Enums.Type.`server`,
     ip = None,
     labelSelector = None,
     server = Some(
-      ResourceId( /* ID of one of your web servers */ 123456)
+      LoadBalancerTargetServer1( /* ID of one of your web servers */ 123456)
     ),
     usePrivateIp = Some(false)
   )
 
-  val webLoadBalancerTarget3 = LoadBalancerAddTarget(
-    `type` = LoadBalancerAddTargetEnums.Type.`server`,
+  val webLoadBalancerTarget3 = LoadBalancerTarget1(
+    `type` = LoadBalancerTarget1Enums.Type.`server`,
     ip = None,
     labelSelector = None,
     server = Some(
-      ResourceId( /* ID of one of your web servers */ 123456)
+      LoadBalancerTargetServer1( /* ID of one of your web servers */ 123456)
     ),
     usePrivateIp = Some(false)
   )
@@ -3767,7 +3695,7 @@ runcmd:
     protocol = LoadBalancerServiceEnums.Protocol.http,
     proxyprotocol = false,
     http = Some(
-      Http(
+      LoadBalancerServiceHTTP(
         certificates = None,
         cookieLifetime = None,
         cookieName = None,
@@ -3906,14 +3834,15 @@ runcmd:
     server = Some( /* ID of your web server 03 */ 123456)
   )
 
-  val mySubnet = Subnet(
+  val mySubnet = NetworkCreateRequestSubnetsInner(
     networkZone = "eu-central",
-    `type` = SubnetEnums.Type.vswitch, // Link to Dedicated world
+    `type` =
+      NetworkCreateRequestSubnetsInnerEnums.Type.vswitch, // Link to Dedicated world
     ipRange = Some("10.0.1.0/24"),
     vswitchId = Some(12345L) // Your ID from Robot
   )
 
-  val request = CreateNetworkRequest(
+  val request = NetworkCreateRequest(
     name = "hybrid-network",
     ipRange = "10.0.0.0/16",
     exposeRoutesToVswitch = Some(true), // Allow dedicated to see cloud routes

@@ -1,12 +1,451 @@
 # openapi-client
 
 Hetzner Cloud API
-- API version: f6511ca-dirty
+- API version: 1.0.0
     - Generator version: 7.18.0
 
-Copied from the official API documentation for the Public Hetzner Cloud.
+# Overview
 
-    For more information, please visit [https://docs.hetzner.cloud/](https://docs.hetzner.cloud/)
+This is the official documentation for the Hetzner Cloud API.
+
+## Introduction
+
+The Hetzner Cloud API operates over HTTPS and uses JSON as its data format. The API is a RESTful API and utilizes HTTP methods and HTTP status codes to specify requests and responses.
+
+As an alternative to working directly with our API you may also consider to use:
+
+- Our CLI program [hcloud](https://github.com/hetznercloud/cli)
+- Our [library for Go](https://github.com/hetznercloud/hcloud-go)
+- Our [library for Python](https://github.com/hetznercloud/hcloud-python)
+
+You can find even more libraries, tools and integrations on our [Awesome List on GitHub](https://github.com/hetznercloud/awesome-hcloud).
+
+### Open source credits
+
+If you are developing an open-source project that supports or intends to add support for Hetzner APIs, you may be eligible for a free one-time credit of up to € 50 / $ 50 on your account. Please contact us via the support page on your [Hetzner Console](https://console.hetzner.cloud/support) and let us know the following:
+
+- The name of the project you are working on
+- A short description of the project
+- Link to the project website or repo where the project is hosted
+- Affiliation with / role in the project (e.g. project maintainer)
+- Link to some other open-source work you have already done (if you have done so)
+
+**Note:** We only consider rewards for projects that provide Hetzner-specific functionality or integrations. For example, our Object Storage exposes a standard S3 API without any Hetzner-specific extensions. Projects that focus solely on generic S3 capabilities (e.g., general S3 clients or SDKs) are not Hetzner-specific and are therefore not eligible for Hetzner Rewards.
+
+## Getting Started
+
+To get started using the API you first need an API token. Sign in into the [Hetzner Console](https://console.hetzner.com/) choose a Project, go to `Security` → `API Tokens`, and generate a new token. Make sure to copy the token because it won’t be shown to you again. A token is bound to a Project, to interact with the API of another Project you have to create a new token inside the Project. Let’s say your new token is `LRK9DAWQ1ZAEFSrCNEEzLCUwhYX1U3g7wMg4dTlkkDC96fyDuyJ39nVbVjCKSDfj`.
+
+You’re now ready to do your first request against the API. To get a list of all Servers in your Project, issue the example request on the right side using [curl](https://curl.se/).
+
+Make sure to replace the token in the example command with the token you have just created. Since your Project probably does not contain any Servers yet, the example response will look like the response on the right side. We will almost always provide a resource root like `servers` inside the example response. A response can also contain a `meta` object with information like [Pagination](#description/pagination).
+
+**Example Request**
+
+```shell
+curl -H \"Authorization: Bearer LRK9DAWQ1ZAEFSrCNEEzLCUwhYX1U3g7wMg4dTlkkDC96fyDuyJ39nVbVjCKSDfj\" \\
+  https://api.hetzner.cloud/v1/servers
+```
+
+**Example Response**
+
+```json
+{
+  \"servers\": [],
+  \"meta\": {
+    \"pagination\": {
+      \"page\": 1,
+      \"per_page\": 25,
+      \"previous_page\": null,
+      \"next_page\": null,
+      \"last_page\": 1,
+      \"total_entries\": 0
+    }
+  }
+}
+```
+
+## Authentication
+
+All requests to the Hetzner Cloud API must be authenticated via a API token. Include your secret API token in every request you send to the API with the `Authorization` HTTP header.
+
+To create a new API token for your Project, switch into the [Hetzner Console](https://console.hetzner.com/) choose a Project, go to `Security` → `API Tokens`, and generate a new token.
+
+**Example Authorization header**
+
+```http
+Authorization: Bearer LRK9DAWQ1ZAEFSrCNEEzLCUwhYX1U3g7wMg4dTlkkDC96fyDuyJ39nVbVjCKSDfj
+```
+
+## Query Parameters
+
+The API makes use of query parameters to sort and filter responses. The parameter names and values must be URI encoded according to [RFC2396](https://datatracker.ietf.org/doc/html/rfc2396). Query parameters of type `array` can be used multiple times:
+
+**Example query parameters for pagination**
+
+```
+https://api.hetzner.cloud/v1/certificates?page=1&page_size=12
+```
+
+**Example use of multiple values for a parameter**
+
+```
+https://api.hetzner.cloud/v1/certificates?type=uploaded&type=managed
+```
+
+**Example use of an encoded parameter**
+
+```
+https://api.hetzner.cloud/v1/certificates?label_selector=key%3Dvalue
+```
+
+## Errors
+
+Errors are indicated by HTTP status codes. Further, the response of the request which generated the error contains an error code, an error message, and, optionally, error details. The schema of the error details object depends on the error code.
+
+The error response contains the following keys:
+
+| Keys      | Meaning                                                               |
+| --------- | --------------------------------------------------------------------- |
+| `code`    | Short string indicating the type of error (machine-parsable)          |
+| `message` | Textual description on what has gone wrong                            |
+| `details` | An object providing for details on the error (schema depends on code) |
+
+**Example response**
+
+```json
+{
+  \"error\": {
+    \"code\": \"invalid_input\",
+    \"message\": \"invalid input in field 'broken_field': is too long\",
+    \"details\": {
+      \"fields\": [
+        {
+          \"name\": \"broken_field\",
+          \"messages\": [\"is too long\"]
+        }
+      ]
+    }
+  }
+}
+```
+
+### Error Codes
+
+| Status | Code | Description |
+| --- | --- | --- |
+| `400` | `json_error` | Invalid JSON input in your request. |
+| `401` | `unauthorized` | Request was made with an invalid or unknown token. |
+| `401` | `token_readonly` | The token is only allowed to perform GET requests. |
+| `403` | `forbidden` | Insufficient permissions for this request. |
+| `403` | `maintenance` | Cannot perform operation due to maintenance. |
+| `403` | `resource_limit_exceeded` | Error when exceeding the maximum quantity of a resource for an account. |
+| `404` | `not_found` | Entity not found. |
+| `405` | `method_not_allowed` | The request method is not allowed |
+| `409` | `uniqueness_error` | One or more of the objects fields must be unique. |
+| `409` | `conflict` | The resource has changed during the request, please retry. |
+| `410` | `deprecated_api_endpoint` | The API endpoint functionality was removed. |
+| `412` | `resource_unavailable` | The requested resource is currently unavailable (e.g. not available for order). |
+| `422` | `invalid_input` | Error while parsing or processing the input. |
+| `422` | `service_error` | Error within a service. |
+| `422` | `unsupported_error` | The corresponding resource does not support the Action. |
+| `423` | `locked` | The item you are trying to access is locked (there is already an Action running). |
+| `423` | `protected` | The Action you are trying to start is protected for this resource. |
+| `429` | `rate_limit_exceeded` | Error when sending too many requests. |
+| `500` | `server_error` | Error within the API backend. |
+| `503` | `unavailable` | A service or product is currently not available. |
+| `504` | `timeout` | The request could not be answered in time, please retry. |
+
+**invalid_input**
+
+```json
+{
+  \"error\": {
+    \"code\": \"invalid_input\",
+    \"message\": \"invalid input in field 'broken_field': is too long\",
+    \"details\": {
+      \"fields\": [
+        {
+          \"name\": \"broken_field\",
+          \"messages\": [\"is too long\"]
+        }
+      ]
+    }
+  }
+}
+```
+
+**uniqueness_error**
+
+```json
+{
+  \"error\": {
+    \"code\": \"uniqueness_error\",
+    \"message\": \"SSH key with the same fingerprint already exists\",
+    \"details\": {
+      \"fields\": [
+        {
+          \"name\": \"public_key\"
+        }
+      ]
+    }
+  }
+}
+```
+
+**resource_limit_exceeded**
+
+```json
+{
+  \"error\": {
+    \"code\": \"resource_limit_exceeded\",
+    \"message\": \"project limit exceeded\",
+    \"details\": {
+      \"limits\": [
+        {
+          \"name\": \"project_limit\"
+        }
+      ]
+    }
+  }
+}
+```
+
+**deprecated_api_endpoint**
+
+```json
+{
+  \"error\": {
+    \"code\": \"deprecated_api_endpoint\",
+    \"message\": \"API functionality was removed\",
+    \"details\": {
+      \"announcement\": \"https://docs.hetzner.cloud/changelog#2023-07-20-foo-endpoint-is-deprecated\"
+    }
+  }
+}
+```
+
+## Actions
+
+Actions represent asynchronous tasks within the API, targeting one or more resources. Triggering changes in the API may return a `running` action.
+
+An action should be waited upon, until it reaches either the `success` or `error` state. Avoid polling the action's state too frequently to reduce the risk of exhausting your API requests and hitting the [rate limit](#description/rate-limiting).
+
+If an action fails, it will contain details about the underlying error.
+
+Once the asynchronous tasks have completed and the targeted resources are in a consistent state, the action is marked as succeeded.
+
+In some cases, you may trigger multiple changes at once, and only wait for the returned actions at a later stage.
+
+## Labels
+
+Labels are `key/value` pairs that can be attached to all resources.
+
+Valid label keys have two segments: an optional prefix and name, separated by a slash (`/`). The name segment is required and must be a string of 63 characters or less, beginning and ending with an alphanumeric character (`[a-z0-9A-Z]`) with dashes (`-`), underscores (`_`), dots (`.`), and alphanumerics between. The prefix is optional. If specified, the prefix must be a DNS subdomain: a series of DNS labels separated by dots (`.`), not longer than 253 characters in total, followed by a slash (`/`).
+
+Valid label values must be a string of 63 characters or less and must be empty or begin and end with an alphanumeric character (`[a-z0-9A-Z]`) with dashes (`-`), underscores (`_`), dots (`.`), and alphanumerics between.
+
+The `hetzner.cloud/` prefix is reserved and cannot be used.
+
+**Example Labels**
+
+```json
+{
+  \"labels\": {
+    \"environment\": \"development\",
+    \"service\": \"backend\",
+    \"example.com/my\": \"label\",
+    \"just-a-key\": \"\"
+  }
+}
+```
+
+## Label Selector
+
+For resources with labels, you can filter resources by their labels using the label selector query language.
+
+| Expression           | Meaning                                              |
+| -------------------- | ---------------------------------------------------- |
+| `k==v` / `k=v`       | Value of key `k` does equal value `v`                |
+| `k!=v`               | Value of key `k` does not equal value `v`            |
+| `k`                  | Key `k` is present                                   |
+| `!k`                 | Key `k` is not present                               |
+| `k in (v1,v2,v3)`    | Value of key `k` is `v1`, `v2`, or `v3`              |
+| `k notin (v1,v2,v3)` | Value of key `k` is neither `v1`, nor `v2`, nor `v3` |
+| `k1==v,!k2`          | Value of key `k1` is `v` and key `k2` is not present |
+
+### Examples
+
+- Returns all resources that have a `env=production` label and that don't have a `type=database` label:
+
+  `env=production,type!=database`
+
+- Returns all resources that have a `env=testing` or `env=staging` label:
+
+  `env in (testing,staging)`
+
+- Returns all resources that don't have a `type` label:
+
+  `!type`
+
+## Pagination
+
+Responses which return multiple items support pagination. If they do support pagination, it can be controlled with following query string parameters:
+
+- A `page` parameter specifies the page to fetch. The number of the first page is 1.
+- A `per_page` parameter specifies the number of items returned per page. The default value is 25, the maximum value is 50 except otherwise specified in the documentation.
+
+Responses contain a `Link` header with pagination information.
+
+Additionally, if the response body is JSON and the root object is an object, that object has a `pagination` object inside the `meta` object with pagination information:
+
+**Example Pagination**
+
+```json
+{
+    \"servers\": [...],
+    \"meta\": {
+        \"pagination\": {
+            \"page\": 2,
+            \"per_page\": 25,
+            \"previous_page\": 1,
+            \"next_page\": 3,
+            \"last_page\": 4,
+            \"total_entries\": 100
+        }
+    }
+}
+```
+
+The keys `previous_page`, `next_page`, `last_page`, and `total_entries` may be `null` when on the first page, last page, or when the total number of entries is unknown.
+
+**Example Pagination Link header**
+
+```http
+Link: <https://api.hetzner.cloud/v1/actions?page=2&per_page=5>; rel=\"prev\",
+      <https://api.hetzner.cloud/v1/actions?page=4&per_page=5>; rel=\"next\",
+      <https://api.hetzner.cloud/v1/actions?page=6&per_page=5>; rel=\"last\"
+```
+
+Line breaks have been added for display purposes only and responses may only contain some of the above `rel` values.
+
+## Rate Limiting
+
+All requests, whether they are authenticated or not, are subject to rate limiting. If you have reached your limit, your requests will be handled with a `429 Too Many Requests` error. Burst requests are allowed. Responses contain several headers which provide information about your current rate limit status.
+
+- The `RateLimit-Limit` header contains the total number of requests you can perform per hour.
+- The `RateLimit-Remaining` header contains the number of requests remaining in the current rate limit time frame.
+- The `RateLimit-Reset` header contains a UNIX timestamp of the point in time when your rate limit will have recovered, and you will have the full number of requests available again.
+
+The default limit is 3600 requests per hour and per Project. The number of remaining requests increases gradually. For example, when your limit is 3600 requests per hour, the number of remaining requests will increase by 1 every second.
+
+## Server Metadata
+
+Your Server can discover metadata about itself by doing a HTTP request to specific URLs. The following data is available:
+
+| Data              | Format | Contents                                                     |
+| ----------------- | ------ | ------------------------------------------------------------ |
+| hostname          | text   | Name of the Server as set in the api                         |
+| instance-id       | number | ID of the server                                             |
+| public-ipv4       | text   | Primary public IPv4 address                                  |
+| private-networks  | yaml   | Details about the private networks the Server is attached to |
+| availability-zone | text   | Name of the availability zone that Server runs in            |
+| region            | text   | Network zone, e.g. eu-central                                |
+
+**Example: Summary**
+
+```shell
+$ curl http://169.254.169.254/hetzner/v1/metadata
+```
+
+```yaml
+availability-zone: hel1-dc2
+hostname: my-server
+instance-id: 42
+public-ipv4: 1.2.3.4
+region: eu-central
+```
+
+**Example: Hostname**
+
+```shell
+$ curl http://169.254.169.254/hetzner/v1/metadata/hostname
+my-server
+```
+
+**Example: Instance ID**
+
+```shell
+$ curl http://169.254.169.254/hetzner/v1/metadata/instance-id
+42
+```
+
+**Example: Public IPv4**
+
+```shell
+$ curl http://169.254.169.254/hetzner/v1/metadata/public-ipv4
+1.2.3.4
+```
+
+**Example: Private Networks**
+
+```shell
+$ curl http://169.254.169.254/hetzner/v1/metadata/private-networks
+```
+
+```yaml
+- ip: 10.0.0.2
+  alias_ips: [10.0.0.3, 10.0.0.4]
+  interface_num: 1
+  mac_address: 86:00:00:2a:7d:e0
+  network_id: 1234
+  network_name: nw-test1
+  network: 10.0.0.0/8
+  subnet: 10.0.0.0/24
+  gateway: 10.0.0.1
+- ip: 192.168.0.2
+  alias_ips: []
+  interface_num: 2
+  mac_address: 86:00:00:2a:7d:e1
+  network_id: 4321
+  network_name: nw-test2
+  network: 192.168.0.0/16
+  subnet: 192.168.0.0/24
+  gateway: 192.168.0.1
+```
+
+**Example: Availability Zone**
+
+```shell
+$ curl http://169.254.169.254/hetzner/v1/metadata/availability-zone
+hel1-dc2
+```
+
+**Example: Region**
+
+```shell
+$ curl http://169.254.169.254/hetzner/v1/metadata/region
+eu-central
+```
+
+## Sorting
+
+Some responses which return multiple items support sorting. If they do support sorting the documentation states which fields can be used for sorting. You specify sorting with the `sort` query string parameter. You can sort by multiple fields. You can set the sort direction by appending `:asc` or `:desc` to the field name. By default, ascending sorting is used.
+
+**Example: Sorting**
+
+```
+https://api.hetzner.cloud/v1/actions?sort=status
+https://api.hetzner.cloud/v1/actions?sort=status:asc
+https://api.hetzner.cloud/v1/actions?sort=status:desc
+https://api.hetzner.cloud/v1/actions?sort=status:asc&sort=command:desc
+```
+
+## Deprecation Notices
+
+You can find all announced deprecations in our [Changelog](/changelog).
+
+
 
 *Automatically generated by the [OpenAPI Generator](https://openapi-generator.tech)*
 
@@ -68,575 +507,451 @@ All URIs are relative to *https://api.hetzner.cloud/v1*
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
 *Actions* | **getAction** | **GET** /actions/${idPathParam} | Get an Action
-*Actions* | **getMultipleActions** | **GET** /actions | Get multiple Actions
+*Actions* | **getActions** | **GET** /actions | Get multiple Actions
+*CertificateActions* | **getCertificateAction** | **GET** /certificates/${idPathParam}/actions/${actionIdPathParam} | Get an Action for a Certificate
+*CertificateActions* | **getCertificatesAction** | **GET** /certificates/actions/${idPathParam} | Get an Action
+*CertificateActions* | **listCertificateActions** | **GET** /certificates/${idPathParam}/actions | List Actions for a Certificate
+*CertificateActions* | **listCertificatesActions** | **GET** /certificates/actions | List Actions
+*CertificateActions* | **retryCertificate** | **POST** /certificates/${idPathParam}/actions/retry | Retry Issuance or Renewal
 *Certificates* | **createCertificate** | **POST** /certificates | Create a Certificate
 *Certificates* | **deleteCertificate** | **DELETE** /certificates/${idPathParam} | Delete a Certificate
-*Certificates* | **getActionForCertificate** | **GET** /certificates/${idPathParam}/actions/${actionIdPathParam} | Get an Action for a Certificate
 *Certificates* | **getCertificate** | **GET** /certificates/${idPathParam} | Get a Certificate
-*Certificates* | **getCertificateAction** | **GET** /certificates/actions/${idPathParam} | Get an Action
-*Certificates* | **listActionsForCertificate** | **GET** /certificates/${idPathParam}/actions | List Actions for a Certificate
-*Certificates* | **listCertificateActions** | **GET** /certificates/actions | List Actions
 *Certificates* | **listCertificates** | **GET** /certificates | List Certificates
-*Certificates* | **replaceCertificate** | **PUT** /certificates/${idPathParam} | Update a Certificate
-*Certificates* | **retryIssuanceOrRenewal** | **POST** /certificates/${idPathParam}/actions/retry | Retry Issuance or Renewal
-*Datacenters* | **getDataCenter** | **GET** /datacenters/${idPathParam} | Get a Data Center
-*Datacenters* | **listDataCenters** | **GET** /datacenters | List Data Centers
-*Firewalls* | **applyToResources** | **POST** /firewalls/${idPathParam}/actions/apply_to_resources | Apply to Resources
+*Certificates* | **updateCertificate** | **PUT** /certificates/${idPathParam} | Update a Certificate
+*DataCenters* | **getDatacenter** | **GET** /datacenters/${idPathParam} | Get a Data Center
+*DataCenters* | **listDatacenters** | **GET** /datacenters | List Data Centers
+*FirewallActions* | **applyFirewallToResources** | **POST** /firewalls/${idPathParam}/actions/apply_to_resources | Apply to Resources
+*FirewallActions* | **getFirewallAction** | **GET** /firewalls/${idPathParam}/actions/${actionIdPathParam} | Get an Action for a Firewall
+*FirewallActions* | **getFirewallsAction** | **GET** /firewalls/actions/${idPathParam} | Get an Action
+*FirewallActions* | **listFirewallActions** | **GET** /firewalls/${idPathParam}/actions | List Actions for a Firewall
+*FirewallActions* | **listFirewallsActions** | **GET** /firewalls/actions | List Actions
+*FirewallActions* | **removeFirewallFromResources** | **POST** /firewalls/${idPathParam}/actions/remove_from_resources | Remove from Resources
+*FirewallActions* | **setFirewallRules** | **POST** /firewalls/${idPathParam}/actions/set_rules | Set Rules
 *Firewalls* | **createFirewall** | **POST** /firewalls | Create a Firewall
 *Firewalls* | **deleteFirewall** | **DELETE** /firewalls/${idPathParam} | Delete a Firewall
-*Firewalls* | **getActionForFirewall** | **GET** /firewalls/${idPathParam}/actions/${actionIdPathParam} | Get an Action for a Firewall
 *Firewalls* | **getFirewall** | **GET** /firewalls/${idPathParam} | Get a Firewall
-*Firewalls* | **getFirewallAction** | **GET** /firewalls/actions/${idPathParam} | Get an Action
-*Firewalls* | **listActionsForFirewall** | **GET** /firewalls/${idPathParam}/actions | List Actions for a Firewall
-*Firewalls* | **listFirewallActions** | **GET** /firewalls/actions | List Actions
 *Firewalls* | **listFirewalls** | **GET** /firewalls | List Firewalls
-*Firewalls* | **removeFromResources** | **POST** /firewalls/${idPathParam}/actions/remove_from_resources | Remove from Resources
-*Firewalls* | **replaceFirewall** | **PUT** /firewalls/${idPathParam} | Update a Firewall
-*Firewalls* | **setRules** | **POST** /firewalls/${idPathParam}/actions/set_rules | Set Rules
-*FloatingIps* | **assignFloatingIpToServer** | **POST** /floating_ips/${idPathParam}/actions/assign | Assign a Floating IP to a Server
-*FloatingIps* | **changeFloatingIpProtection** | **POST** /floating_ips/${idPathParam}/actions/change_protection | Change Floating IP Protection
-*FloatingIps* | **changeReverseDnsRecordsForFloatingIp** | **POST** /floating_ips/${idPathParam}/actions/change_dns_ptr | Change reverse DNS records for a Floating IP
-*FloatingIps* | **createFloatingIp** | **POST** /floating_ips | Create a Floating IP
-*FloatingIps* | **deleteFloatingIp** | **DELETE** /floating_ips/${idPathParam} | Delete a Floating IP
-*FloatingIps* | **getActionForFloatingIp** | **GET** /floating_ips/${idPathParam}/actions/${actionIdPathParam} | Get an Action for a Floating IP
-*FloatingIps* | **getFloatingIp** | **GET** /floating_ips/${idPathParam} | Get a Floating IP
-*FloatingIps* | **getFloatingIpAction** | **GET** /floating_ips/actions/${idPathParam} | Get an Action
-*FloatingIps* | **listActionsForFloatingIp** | **GET** /floating_ips/${idPathParam}/actions | List Actions for a Floating IP
-*FloatingIps* | **listFloatingIpActions** | **GET** /floating_ips/actions | List Actions
-*FloatingIps* | **listFloatingIps** | **GET** /floating_ips | List Floating IPs
-*FloatingIps* | **replaceFloatingIp** | **PUT** /floating_ips/${idPathParam} | Update a Floating IP
-*FloatingIps* | **unassignFloatingIp** | **POST** /floating_ips/${idPathParam}/actions/unassign | Unassign a Floating IP
-*Images* | **changeImageProtection** | **POST** /images/${idPathParam}/actions/change_protection | Change Image Protection
+*Firewalls* | **updateFirewall** | **PUT** /firewalls/${idPathParam} | Update a Firewall
+*FloatingIPActions* | **assignFloatingIp** | **POST** /floating_ips/${idPathParam}/actions/assign | Assign a Floating IP to a Server
+*FloatingIPActions* | **changeFloatingIpDnsPtr** | **POST** /floating_ips/${idPathParam}/actions/change_dns_ptr | Change reverse DNS records for a Floating IP
+*FloatingIPActions* | **changeFloatingIpProtection** | **POST** /floating_ips/${idPathParam}/actions/change_protection | Change Floating IP Protection
+*FloatingIPActions* | **getFloatingIpAction** | **GET** /floating_ips/${idPathParam}/actions/${actionIdPathParam} | Get an Action for a Floating IP
+*FloatingIPActions* | **getFloatingIpsAction** | **GET** /floating_ips/actions/${idPathParam} | Get an Action
+*FloatingIPActions* | **listFloatingIpActions** | **GET** /floating_ips/${idPathParam}/actions | List Actions for a Floating IP
+*FloatingIPActions* | **listFloatingIpsActions** | **GET** /floating_ips/actions | List Actions
+*FloatingIPActions* | **unassignFloatingIp** | **POST** /floating_ips/${idPathParam}/actions/unassign | Unassign a Floating IP
+*FloatingIPs* | **createFloatingIp** | **POST** /floating_ips | Create a Floating IP
+*FloatingIPs* | **deleteFloatingIp** | **DELETE** /floating_ips/${idPathParam} | Delete a Floating IP
+*FloatingIPs* | **getFloatingIp** | **GET** /floating_ips/${idPathParam} | Get a Floating IP
+*FloatingIPs* | **listFloatingIps** | **GET** /floating_ips | List Floating IPs
+*FloatingIPs* | **updateFloatingIp** | **PUT** /floating_ips/${idPathParam} | Update a Floating IP
+*ISOs* | **getIso** | **GET** /isos/${idPathParam} | Get an ISO
+*ISOs* | **listIsos** | **GET** /isos | List ISOs
+*ImageActions* | **changeImageProtection** | **POST** /images/${idPathParam}/actions/change_protection | Change Image Protection
+*ImageActions* | **getImageAction** | **GET** /images/${idPathParam}/actions/${actionIdPathParam} | Get an Action for an Image
+*ImageActions* | **getImagesAction** | **GET** /images/actions/${idPathParam} | Get an Action
+*ImageActions* | **listImageActions** | **GET** /images/${idPathParam}/actions | List Actions for an Image
+*ImageActions* | **listImagesActions** | **GET** /images/actions | List Actions
 *Images* | **deleteImage** | **DELETE** /images/${idPathParam} | Delete an Image
-*Images* | **getActionForImage** | **GET** /images/${idPathParam}/actions/${actionIdPathParam} | Get an Action for an Image
 *Images* | **getImage** | **GET** /images/${idPathParam} | Get an Image
-*Images* | **getImageAction** | **GET** /images/actions/${idPathParam} | Get an Action
-*Images* | **listActionsForImage** | **GET** /images/${idPathParam}/actions | List Actions for an Image
-*Images* | **listImageActions** | **GET** /images/actions | List Actions
 *Images* | **listImages** | **GET** /images | List Images
-*Images* | **replaceImage** | **PUT** /images/${idPathParam} | Update an Image
-*Isos* | **getIso** | **GET** /isos/${idPathParam} | Get an ISO
-*Isos* | **listIsos** | **GET** /isos | List ISOs
+*Images* | **updateImage** | **PUT** /images/${idPathParam} | Update an Image
+*LoadBalancerActions* | **addLoadBalancerService** | **POST** /load_balancers/${idPathParam}/actions/add_service | Add Service
+*LoadBalancerActions* | **addLoadBalancerTarget** | **POST** /load_balancers/${idPathParam}/actions/add_target | Add Target
+*LoadBalancerActions* | **attachLoadBalancerToNetwork** | **POST** /load_balancers/${idPathParam}/actions/attach_to_network | Attach a Load Balancer to a Network
+*LoadBalancerActions* | **changeLoadBalancerAlgorithm** | **POST** /load_balancers/${idPathParam}/actions/change_algorithm | Change Algorithm
+*LoadBalancerActions* | **changeLoadBalancerDnsPtr** | **POST** /load_balancers/${idPathParam}/actions/change_dns_ptr | Change reverse DNS entry for this Load Balancer
+*LoadBalancerActions* | **changeLoadBalancerProtection** | **POST** /load_balancers/${idPathParam}/actions/change_protection | Change Load Balancer Protection
+*LoadBalancerActions* | **changeLoadBalancerType** | **POST** /load_balancers/${idPathParam}/actions/change_type | Change the Type of a Load Balancer
+*LoadBalancerActions* | **deleteLoadBalancerService** | **POST** /load_balancers/${idPathParam}/actions/delete_service | Delete Service
+*LoadBalancerActions* | **detachLoadBalancerFromNetwork** | **POST** /load_balancers/${idPathParam}/actions/detach_from_network | Detach a Load Balancer from a Network
+*LoadBalancerActions* | **disableLoadBalancerPublicInterface** | **POST** /load_balancers/${idPathParam}/actions/disable_public_interface | Disable the public interface of a Load Balancer
+*LoadBalancerActions* | **enableLoadBalancerPublicInterface** | **POST** /load_balancers/${idPathParam}/actions/enable_public_interface | Enable the public interface of a Load Balancer
+*LoadBalancerActions* | **getLoadBalancerAction** | **GET** /load_balancers/${idPathParam}/actions/${actionIdPathParam} | Get an Action for a Load Balancer
+*LoadBalancerActions* | **getLoadBalancersAction** | **GET** /load_balancers/actions/${idPathParam} | Get an Action
+*LoadBalancerActions* | **listLoadBalancerActions** | **GET** /load_balancers/${idPathParam}/actions | List Actions for a Load Balancer
+*LoadBalancerActions* | **listLoadBalancersActions** | **GET** /load_balancers/actions | List Actions
+*LoadBalancerActions* | **removeLoadBalancerTarget** | **POST** /load_balancers/${idPathParam}/actions/remove_target | Remove Target
+*LoadBalancerActions* | **updateLoadBalancerService** | **POST** /load_balancers/${idPathParam}/actions/update_service | Update Service
 *LoadBalancerTypes* | **getLoadBalancerType** | **GET** /load_balancer_types/${idPathParam} | Get a Load Balancer Type
 *LoadBalancerTypes* | **listLoadBalancerTypes** | **GET** /load_balancer_types | List Load Balancer Types
-*LoadBalancers* | **addService** | **POST** /load_balancers/${idPathParam}/actions/add_service | Add Service
-*LoadBalancers* | **addTarget** | **POST** /load_balancers/${idPathParam}/actions/add_target | Add Target
-*LoadBalancers* | **attachLoadBalancerToNetwork** | **POST** /load_balancers/${idPathParam}/actions/attach_to_network | Attach a Load Balancer to a Network
-*LoadBalancers* | **changeAlgorithm** | **POST** /load_balancers/${idPathParam}/actions/change_algorithm | Change Algorithm
-*LoadBalancers* | **changeLoadBalancerProtection** | **POST** /load_balancers/${idPathParam}/actions/change_protection | Change Load Balancer Protection
-*LoadBalancers* | **changeReverseDnsEntryForThisLoadBalancer** | **POST** /load_balancers/${idPathParam}/actions/change_dns_ptr | Change reverse DNS entry for this Load Balancer
-*LoadBalancers* | **changeTypeOfLoadBalancer** | **POST** /load_balancers/${idPathParam}/actions/change_type | Change the Type of a Load Balancer
 *LoadBalancers* | **createLoadBalancer** | **POST** /load_balancers | Create a Load Balancer
 *LoadBalancers* | **deleteLoadBalancer** | **DELETE** /load_balancers/${idPathParam} | Delete a Load Balancer
-*LoadBalancers* | **deleteService** | **POST** /load_balancers/${idPathParam}/actions/delete_service | Delete Service
-*LoadBalancers* | **detachLoadBalancerFromNetwork** | **POST** /load_balancers/${idPathParam}/actions/detach_from_network | Detach a Load Balancer from a Network
-*LoadBalancers* | **disablePublicInterfaceOfLoadBalancer** | **POST** /load_balancers/${idPathParam}/actions/disable_public_interface | Disable the public interface of a Load Balancer
-*LoadBalancers* | **enablePublicInterfaceOfLoadBalancer** | **POST** /load_balancers/${idPathParam}/actions/enable_public_interface | Enable the public interface of a Load Balancer
-*LoadBalancers* | **getActionForLoadBalancer** | **GET** /load_balancers/${idPathParam}/actions/${actionIdPathParam} | Get an Action for a Load Balancer
 *LoadBalancers* | **getLoadBalancer** | **GET** /load_balancers/${idPathParam} | Get a Load Balancer
-*LoadBalancers* | **getLoadBalancerAction** | **GET** /load_balancers/actions/${idPathParam} | Get an Action
-*LoadBalancers* | **getMetricsForLoadbalancer** | **GET** /load_balancers/${idPathParam}/metrics | Get Metrics for a LoadBalancer
-*LoadBalancers* | **listActionsForLoadBalancer** | **GET** /load_balancers/${idPathParam}/actions | List Actions for a Load Balancer
-*LoadBalancers* | **listLoadBalancerActions** | **GET** /load_balancers/actions | List Actions
+*LoadBalancers* | **getLoadBalancerMetrics** | **GET** /load_balancers/${idPathParam}/metrics | Get Metrics for a LoadBalancer
 *LoadBalancers* | **listLoadBalancers** | **GET** /load_balancers | List Load Balancers
-*LoadBalancers* | **removeTarget** | **POST** /load_balancers/${idPathParam}/actions/remove_target | Remove Target
-*LoadBalancers* | **replaceLoadBalancer** | **PUT** /load_balancers/${idPathParam} | Update a Load Balancer
-*LoadBalancers* | **updateService** | **POST** /load_balancers/${idPathParam}/actions/update_service | Update Service
+*LoadBalancers* | **updateLoadBalancer** | **PUT** /load_balancers/${idPathParam} | Update a Load Balancer
 *Locations* | **getLocation** | **GET** /locations/${idPathParam} | Get a Location
 *Locations* | **listLocations** | **GET** /locations | List Locations
-*Networks* | **addRouteToNetwork** | **POST** /networks/${idPathParam}/actions/add_route | Add a route to a Network
-*Networks* | **addSubnetToNetwork** | **POST** /networks/${idPathParam}/actions/add_subnet | Add a subnet to a Network
-*Networks* | **changeIpRangeOfNetwork** | **POST** /networks/${idPathParam}/actions/change_ip_range | Change IP range of a Network
-*Networks* | **changeNetworkProtection** | **POST** /networks/${idPathParam}/actions/change_protection | Change Network Protection
+*NetworkActions* | **addNetworkRoute** | **POST** /networks/${idPathParam}/actions/add_route | Add a route to a Network
+*NetworkActions* | **addNetworkSubnet** | **POST** /networks/${idPathParam}/actions/add_subnet | Add a subnet to a Network
+*NetworkActions* | **changeNetworkIpRange** | **POST** /networks/${idPathParam}/actions/change_ip_range | Change IP range of a Network
+*NetworkActions* | **changeNetworkProtection** | **POST** /networks/${idPathParam}/actions/change_protection | Change Network Protection
+*NetworkActions* | **deleteNetworkRoute** | **POST** /networks/${idPathParam}/actions/delete_route | Delete a route from a Network
+*NetworkActions* | **deleteNetworkSubnet** | **POST** /networks/${idPathParam}/actions/delete_subnet | Delete a subnet from a Network
+*NetworkActions* | **getNetworkAction** | **GET** /networks/${idPathParam}/actions/${actionIdPathParam} | Get an Action for a Network
+*NetworkActions* | **getNetworksAction** | **GET** /networks/actions/${idPathParam} | Get an Action
+*NetworkActions* | **listNetworkActions** | **GET** /networks/${idPathParam}/actions | List Actions for a Network
+*NetworkActions* | **listNetworksActions** | **GET** /networks/actions | List Actions
 *Networks* | **createNetwork** | **POST** /networks | Create a Network
 *Networks* | **deleteNetwork** | **DELETE** /networks/${idPathParam} | Delete a Network
-*Networks* | **deleteRouteFromNetwork** | **POST** /networks/${idPathParam}/actions/delete_route | Delete a route from a Network
-*Networks* | **deleteSubnetFromNetwork** | **POST** /networks/${idPathParam}/actions/delete_subnet | Delete a subnet from a Network
-*Networks* | **getActionForNetwork** | **GET** /networks/${idPathParam}/actions/${actionIdPathParam} | Get an Action for a Network
 *Networks* | **getNetwork** | **GET** /networks/${idPathParam} | Get a Network
-*Networks* | **getNetworkAction** | **GET** /networks/actions/${idPathParam} | Get an Action
-*Networks* | **listActionsForNetwork** | **GET** /networks/${idPathParam}/actions | List Actions for a Network
-*Networks* | **listNetworkActions** | **GET** /networks/actions | List Actions
 *Networks* | **listNetworks** | **GET** /networks | List Networks
-*Networks* | **replaceNetwork** | **PUT** /networks/${idPathParam} | Update a Network
-*PlacementGroups* | **createPlacementgroup** | **POST** /placement_groups | Create a PlacementGroup
-*PlacementGroups* | **deletePlacementgroup** | **DELETE** /placement_groups/${idPathParam} | Delete a PlacementGroup
-*PlacementGroups* | **getPlacementgroup** | **GET** /placement_groups/${idPathParam} | Get a PlacementGroup
+*Networks* | **updateNetwork** | **PUT** /networks/${idPathParam} | Update a Network
+*PlacementGroups* | **createPlacementGroup** | **POST** /placement_groups | Create a PlacementGroup
+*PlacementGroups* | **deletePlacementGroup** | **DELETE** /placement_groups/${idPathParam} | Delete a PlacementGroup
+*PlacementGroups* | **getPlacementGroup** | **GET** /placement_groups/${idPathParam} | Get a PlacementGroup
 *PlacementGroups* | **listPlacementGroups** | **GET** /placement_groups | List Placement Groups
-*PlacementGroups* | **replacePlacementgroup** | **PUT** /placement_groups/${idPathParam} | Update a PlacementGroup
-*Pricing* | **listPrices** | **GET** /pricing | Get all prices
-*PrimaryIps* | **assignPrimaryIpToResource** | **POST** /primary_ips/${idPathParam}/actions/assign | Assign a Primary IP to a resource
-*PrimaryIps* | **changePrimaryIpProtection** | **POST** /primary_ips/${idPathParam}/actions/change_protection | Change Primary IP Protection
-*PrimaryIps* | **changeReverseDnsRecordsForPrimaryIp** | **POST** /primary_ips/${idPathParam}/actions/change_dns_ptr | Change reverse DNS records for a Primary IP
-*PrimaryIps* | **createPrimaryIp** | **POST** /primary_ips | Create a Primary IP
-*PrimaryIps* | **deletePrimaryIp** | **DELETE** /primary_ips/${idPathParam} | Delete a Primary IP
-*PrimaryIps* | **getPrimaryIp** | **GET** /primary_ips/${idPathParam} | Get a Primary IP
-*PrimaryIps* | **getPrimaryIpAction** | **GET** /primary_ips/actions/${idPathParam} | Get an Action
-*PrimaryIps* | **listPrimaryIpActions** | **GET** /primary_ips/actions | List Actions
-*PrimaryIps* | **listPrimaryIps** | **GET** /primary_ips | List Primary IPs
-*PrimaryIps* | **replacePrimaryIp** | **PUT** /primary_ips/${idPathParam} | Update a Primary IP
-*PrimaryIps* | **unassignPrimaryIpFromResource** | **POST** /primary_ips/${idPathParam}/actions/unassign | Unassign a Primary IP from a resource
+*PlacementGroups* | **updatePlacementGroup** | **PUT** /placement_groups/${idPathParam} | Update a PlacementGroup
+*Pricing* | **getPricing** | **GET** /pricing | Get all prices
+*PrimaryIPActions* | **assignPrimaryIp** | **POST** /primary_ips/${idPathParam}/actions/assign | Assign a Primary IP to a resource
+*PrimaryIPActions* | **changePrimaryIpDnsPtr** | **POST** /primary_ips/${idPathParam}/actions/change_dns_ptr | Change reverse DNS records for a Primary IP
+*PrimaryIPActions* | **changePrimaryIpProtection** | **POST** /primary_ips/${idPathParam}/actions/change_protection | Change Primary IP Protection
+*PrimaryIPActions* | **getPrimaryIpAction** | **GET** /primary_ips/${idPathParam}/actions/${actionIdPathParam} | Get an Action for a Primary IP
+*PrimaryIPActions* | **getPrimaryIpsAction** | **GET** /primary_ips/actions/${idPathParam} | Get an Action
+*PrimaryIPActions* | **listPrimaryIpActions** | **GET** /primary_ips/${idPathParam}/actions | List Actions for a Primary IP
+*PrimaryIPActions* | **listPrimaryIpsActions** | **GET** /primary_ips/actions | List Actions
+*PrimaryIPActions* | **unassignPrimaryIp** | **POST** /primary_ips/${idPathParam}/actions/unassign | Unassign a Primary IP from a resource
+*PrimaryIPs* | **createPrimaryIp** | **POST** /primary_ips | Create a Primary IP
+*PrimaryIPs* | **deletePrimaryIp** | **DELETE** /primary_ips/${idPathParam} | Delete a Primary IP
+*PrimaryIPs* | **getPrimaryIp** | **GET** /primary_ips/${idPathParam} | Get a Primary IP
+*PrimaryIPs* | **listPrimaryIps** | **GET** /primary_ips | List Primary IPs
+*PrimaryIPs* | **updatePrimaryIp** | **PUT** /primary_ips/${idPathParam} | Update a Primary IP
+*SSHKeys* | **createSshKey** | **POST** /ssh_keys | Create an SSH key
+*SSHKeys* | **deleteSshKey** | **DELETE** /ssh_keys/${idPathParam} | Delete an SSH key
+*SSHKeys* | **getSshKey** | **GET** /ssh_keys/${idPathParam} | Get a SSH key
+*SSHKeys* | **listSshKeys** | **GET** /ssh_keys | List SSH keys
+*SSHKeys* | **updateSshKey** | **PUT** /ssh_keys/${idPathParam} | Update an SSH key
+*ServerActions* | **addServerToPlacementGroup** | **POST** /servers/${idPathParam}/actions/add_to_placement_group | Add a Server to a Placement Group
+*ServerActions* | **attachServerIso** | **POST** /servers/${idPathParam}/actions/attach_iso | Attach an ISO to a Server
+*ServerActions* | **attachServerToNetwork** | **POST** /servers/${idPathParam}/actions/attach_to_network | Attach a Server to a Network
+*ServerActions* | **changeServerAliasIps** | **POST** /servers/${idPathParam}/actions/change_alias_ips | Change alias IPs of a Network
+*ServerActions* | **changeServerDnsPtr** | **POST** /servers/${idPathParam}/actions/change_dns_ptr | Change reverse DNS entry for this Server
+*ServerActions* | **changeServerProtection** | **POST** /servers/${idPathParam}/actions/change_protection | Change Server Protection
+*ServerActions* | **changeServerType** | **POST** /servers/${idPathParam}/actions/change_type | Change the Type of a Server
+*ServerActions* | **createServerImage** | **POST** /servers/${idPathParam}/actions/create_image | Create Image from a Server
+*ServerActions* | **detachServerFromNetwork** | **POST** /servers/${idPathParam}/actions/detach_from_network | Detach a Server from a Network
+*ServerActions* | **detachServerIso** | **POST** /servers/${idPathParam}/actions/detach_iso | Detach an ISO from a Server
+*ServerActions* | **disableServerBackup** | **POST** /servers/${idPathParam}/actions/disable_backup | Disable Backups for a Server
+*ServerActions* | **disableServerRescue** | **POST** /servers/${idPathParam}/actions/disable_rescue | Disable Rescue Mode for a Server
+*ServerActions* | **enableServerBackup** | **POST** /servers/${idPathParam}/actions/enable_backup | Enable and Configure Backups for a Server
+*ServerActions* | **enableServerRescue** | **POST** /servers/${idPathParam}/actions/enable_rescue | Enable Rescue Mode for a Server
+*ServerActions* | **getServerAction** | **GET** /servers/${idPathParam}/actions/${actionIdPathParam} | Get an Action for a Server
+*ServerActions* | **getServersAction** | **GET** /servers/actions/${idPathParam} | Get an Action
+*ServerActions* | **listServerActions** | **GET** /servers/${idPathParam}/actions | List Actions for a Server
+*ServerActions* | **listServersActions** | **GET** /servers/actions | List Actions
+*ServerActions* | **poweroffServer** | **POST** /servers/${idPathParam}/actions/poweroff | Power off a Server
+*ServerActions* | **poweronServer** | **POST** /servers/${idPathParam}/actions/poweron | Power on a Server
+*ServerActions* | **rebootServer** | **POST** /servers/${idPathParam}/actions/reboot | Soft-reboot a Server
+*ServerActions* | **rebuildServer** | **POST** /servers/${idPathParam}/actions/rebuild | Rebuild a Server from an Image
+*ServerActions* | **removeServerFromPlacementGroup** | **POST** /servers/${idPathParam}/actions/remove_from_placement_group | Remove from Placement Group
+*ServerActions* | **requestServerConsole** | **POST** /servers/${idPathParam}/actions/request_console | Request Console for a Server
+*ServerActions* | **resetServer** | **POST** /servers/${idPathParam}/actions/reset | Reset a Server
+*ServerActions* | **resetServerPassword** | **POST** /servers/${idPathParam}/actions/reset_password | Reset root Password of a Server
+*ServerActions* | **shutdownServer** | **POST** /servers/${idPathParam}/actions/shutdown | Shutdown a Server
 *ServerTypes* | **getServerType** | **GET** /server_types/${idPathParam} | Get a Server Type
 *ServerTypes* | **listServerTypes** | **GET** /server_types | List Server Types
-*Servers* | **addServerToPlacementGroup** | **POST** /servers/${idPathParam}/actions/add_to_placement_group | Add a Server to a Placement Group
-*Servers* | **attachIsoToServer** | **POST** /servers/${idPathParam}/actions/attach_iso | Attach an ISO to a Server
-*Servers* | **attachServerToNetwork** | **POST** /servers/${idPathParam}/actions/attach_to_network | Attach a Server to a Network
-*Servers* | **changeAliasIpsOfNetwork** | **POST** /servers/${idPathParam}/actions/change_alias_ips | Change alias IPs of a Network
-*Servers* | **changeReverseDnsEntryForThisServer** | **POST** /servers/${idPathParam}/actions/change_dns_ptr | Change reverse DNS entry for this Server
-*Servers* | **changeServerProtection** | **POST** /servers/${idPathParam}/actions/change_protection | Change Server Protection
-*Servers* | **changeTypeOfServer** | **POST** /servers/${idPathParam}/actions/change_type | Change the Type of a Server
-*Servers* | **createImageFromServer** | **POST** /servers/${idPathParam}/actions/create_image | Create Image from a Server
 *Servers* | **createServer** | **POST** /servers | Create a Server
 *Servers* | **deleteServer** | **DELETE** /servers/${idPathParam} | Delete a Server
-*Servers* | **detachIsoFromServer** | **POST** /servers/${idPathParam}/actions/detach_iso | Detach an ISO from a Server
-*Servers* | **detachServerFromNetwork** | **POST** /servers/${idPathParam}/actions/detach_from_network | Detach a Server from a Network
-*Servers* | **disableBackupsForServer** | **POST** /servers/${idPathParam}/actions/disable_backup | Disable Backups for a Server
-*Servers* | **disableRescueModeForServer** | **POST** /servers/${idPathParam}/actions/disable_rescue | Disable Rescue Mode for a Server
-*Servers* | **enableAndConfigureBackupsForServer** | **POST** /servers/${idPathParam}/actions/enable_backup | Enable and Configure Backups for a Server
-*Servers* | **enableRescueModeForServer** | **POST** /servers/${idPathParam}/actions/enable_rescue | Enable Rescue Mode for a Server
-*Servers* | **getActionForServer** | **GET** /servers/${idPathParam}/actions/${actionIdPathParam} | Get an Action for a Server
-*Servers* | **getMetricsForServer** | **GET** /servers/${idPathParam}/metrics | Get Metrics for a Server
 *Servers* | **getServer** | **GET** /servers/${idPathParam} | Get a Server
-*Servers* | **getServerAction** | **GET** /servers/actions/${idPathParam} | Get an Action
-*Servers* | **listActionsForServer** | **GET** /servers/${idPathParam}/actions | List Actions for a Server
-*Servers* | **listServerActions** | **GET** /servers/actions | List Actions
+*Servers* | **getServerMetrics** | **GET** /servers/${idPathParam}/metrics | Get Metrics for a Server
 *Servers* | **listServers** | **GET** /servers | List Servers
-*Servers* | **powerOffServer** | **POST** /servers/${idPathParam}/actions/poweroff | Power off a Server
-*Servers* | **powerOnServer** | **POST** /servers/${idPathParam}/actions/poweron | Power on a Server
-*Servers* | **rebuildServerFromImage** | **POST** /servers/${idPathParam}/actions/rebuild | Rebuild a Server from an Image
-*Servers* | **removeFromPlacementGroup** | **POST** /servers/${idPathParam}/actions/remove_from_placement_group | Remove from Placement Group
-*Servers* | **replaceServer** | **PUT** /servers/${idPathParam} | Update a Server
-*Servers* | **requestConsoleForServer** | **POST** /servers/${idPathParam}/actions/request_console | Request Console for a Server
-*Servers* | **resetRootPasswordOfServer** | **POST** /servers/${idPathParam}/actions/reset_password | Reset root Password of a Server
-*Servers* | **resetServer** | **POST** /servers/${idPathParam}/actions/reset | Reset a Server
-*Servers* | **shutdownServer** | **POST** /servers/${idPathParam}/actions/shutdown | Shutdown a Server
-*Servers* | **softRebootServer** | **POST** /servers/${idPathParam}/actions/reboot | Soft-reboot a Server
-*SshKeys* | **createSshKey** | **POST** /ssh_keys | Create an SSH key
-*SshKeys* | **deleteSshKey** | **DELETE** /ssh_keys/${idPathParam} | Delete an SSH key
-*SshKeys* | **getSshKey** | **GET** /ssh_keys/${idPathParam} | Get a SSH key
-*SshKeys* | **listSshKeys** | **GET** /ssh_keys | List SSH keys
-*SshKeys* | **replaceSshKey** | **PUT** /ssh_keys/${idPathParam} | Update an SSH key
-*StorageBoxTypes* | **getStorageBoxType** | **GET** /storage_box_types/${idPathParam} | Get a Storage Box Type
-*StorageBoxTypes* | **listStorageBoxTypes** | **GET** /storage_box_types | List Storage Box Types
-*StorageBoxes* | **changeHomeDirectory** | **POST** /storage_boxes/${idPathParam}/subaccounts/${subaccountIdPathParam}/actions/change_home_directory | Change Home Directory
-*StorageBoxes* | **changeProtection** | **POST** /storage_boxes/${idPathParam}/actions/change_protection | Change Protection
-*StorageBoxes* | **changeType** | **POST** /storage_boxes/${idPathParam}/actions/change_type | Change Type
-*StorageBoxes* | **createSnapshot** | **POST** /storage_boxes/${idPathParam}/snapshots | Create a Snapshot
-*StorageBoxes* | **createStorageBox** | **POST** /storage_boxes | Create a Storage Box
-*StorageBoxes* | **createSubaccount** | **POST** /storage_boxes/${idPathParam}/subaccounts | Create a Subaccount
-*StorageBoxes* | **deleteSnapshot** | **DELETE** /storage_boxes/${idPathParam}/snapshots/${snapshotIdPathParam} | Delete a Snapshot
-*StorageBoxes* | **deleteStorageBox** | **DELETE** /storage_boxes/${idPathParam} | Delete a Storage Box
-*StorageBoxes* | **deleteSubaccount** | **DELETE** /storage_boxes/${idPathParam}/subaccounts/${subaccountIdPathParam} | Delete a Subaccount
-*StorageBoxes* | **disableSnapshotPlan** | **POST** /storage_boxes/${idPathParam}/actions/disable_snapshot_plan | Disable Snapshot Plan
-*StorageBoxes* | **enableSnapshotPlan** | **POST** /storage_boxes/${idPathParam}/actions/enable_snapshot_plan | Enable Snapshot Plan
-*StorageBoxes* | **getActionForStorageBox** | **GET** /storage_boxes/${idPathParam}/actions/${actionIdPathParam} | Get an Action for a Storage Box
-*StorageBoxes* | **getSnapshot** | **GET** /storage_boxes/${idPathParam}/snapshots/${snapshotIdPathParam} | Get a Snapshot
-*StorageBoxes* | **getStorageBox** | **GET** /storage_boxes/${idPathParam} | Get a Storage Box
-*StorageBoxes* | **getStorageBoxAction** | **GET** /storage_boxes/actions/${idPathParam} | Get an Action
-*StorageBoxes* | **getSubaccount** | **GET** /storage_boxes/${idPathParam}/subaccounts/${subaccountIdPathParam} | Get a Subaccount
-*StorageBoxes* | **listActionsForStorageBox** | **GET** /storage_boxes/${idPathParam}/actions | List Actions for a Storage Box
-*StorageBoxes* | **listFoldersOfStorageBox** | **GET** /storage_boxes/${idPathParam}/folders | List folders of a Storage Box
-*StorageBoxes* | **listSnapshots** | **GET** /storage_boxes/${idPathParam}/snapshots | List Snapshots
-*StorageBoxes* | **listStorageBoxActions** | **GET** /storage_boxes/actions | List Actions
-*StorageBoxes* | **listStorageBoxes** | **GET** /storage_boxes | List Storage Boxes
-*StorageBoxes* | **listSubaccounts** | **GET** /storage_boxes/${idPathParam}/subaccounts | List Subaccounts
-*StorageBoxes* | **replaceSnapshot** | **PUT** /storage_boxes/${idPathParam}/snapshots/${snapshotIdPathParam} | Update a Snapshot
-*StorageBoxes* | **replaceStorageBox** | **PUT** /storage_boxes/${idPathParam} | Update a Storage Box
-*StorageBoxes* | **replaceSubaccount** | **PUT** /storage_boxes/${idPathParam}/subaccounts/${subaccountIdPathParam} | Update a Subaccount
-*StorageBoxes* | **resetStorageBoxPassword** | **POST** /storage_boxes/${idPathParam}/actions/reset_password | Reset Password
-*StorageBoxes* | **resetStorageBoxSubaccountPassword** | **POST** /storage_boxes/${idPathParam}/subaccounts/${subaccountIdPathParam}/actions/reset_subaccount_password | Reset Password
-*StorageBoxes* | **rollbackSnapshot** | **POST** /storage_boxes/${idPathParam}/actions/rollback_snapshot | Rollback Snapshot
-*StorageBoxes* | **updateStorageBoxAccessSettings** | **POST** /storage_boxes/${idPathParam}/actions/update_access_settings | Update Access Settings
-*StorageBoxes* | **updateStorageBoxSubaccountAccessSettings** | **POST** /storage_boxes/${idPathParam}/subaccounts/${subaccountIdPathParam}/actions/update_access_settings | Update Access Settings
-*Volumes* | **attachVolumeToServer** | **POST** /volumes/${idPathParam}/actions/attach | Attach Volume to a Server
-*Volumes* | **changeVolumeProtection** | **POST** /volumes/${idPathParam}/actions/change_protection | Change Volume Protection
+*Servers* | **updateServer** | **PUT** /servers/${idPathParam} | Update a Server
+*VolumeActions* | **attachVolume** | **POST** /volumes/${idPathParam}/actions/attach | Attach Volume to a Server
+*VolumeActions* | **changeVolumeProtection** | **POST** /volumes/${idPathParam}/actions/change_protection | Change Volume Protection
+*VolumeActions* | **detachVolume** | **POST** /volumes/${idPathParam}/actions/detach | Detach Volume
+*VolumeActions* | **getVolumeAction** | **GET** /volumes/${idPathParam}/actions/${actionIdPathParam} | Get an Action for a Volume
+*VolumeActions* | **getVolumesAction** | **GET** /volumes/actions/${idPathParam} | Get an Action
+*VolumeActions* | **listVolumeActions** | **GET** /volumes/${idPathParam}/actions | List Actions for a Volume
+*VolumeActions* | **listVolumesActions** | **GET** /volumes/actions | List Actions
+*VolumeActions* | **resizeVolume** | **POST** /volumes/${idPathParam}/actions/resize | Resize Volume
 *Volumes* | **createVolume** | **POST** /volumes | Create a Volume
 *Volumes* | **deleteVolume** | **DELETE** /volumes/${idPathParam} | Delete a Volume
-*Volumes* | **detachVolume** | **POST** /volumes/${idPathParam}/actions/detach | Detach Volume
-*Volumes* | **getActionForVolume** | **GET** /volumes/${idPathParam}/actions/${actionIdPathParam} | Get an Action for a Volume
 *Volumes* | **getVolume** | **GET** /volumes/${idPathParam} | Get a Volume
-*Volumes* | **getVolumeAction** | **GET** /volumes/actions/${idPathParam} | Get an Action
-*Volumes* | **listActionsForVolume** | **GET** /volumes/${idPathParam}/actions | List Actions for a Volume
-*Volumes* | **listVolumeActions** | **GET** /volumes/actions | List Actions
 *Volumes* | **listVolumes** | **GET** /volumes | List Volumes
-*Volumes* | **replaceVolume** | **PUT** /volumes/${idPathParam} | Update a Volume
-*Volumes* | **resizeVolume** | **POST** /volumes/${idPathParam}/actions/resize | Resize Volume
-*Zones* | **addRecordsToRrset** | **POST** /zones/${idOrNamePathParam}/rrsets/${rrNamePathParam}/${rrTypePathParam}/actions/add_records | Add Records to an RRSet
-*Zones* | **changeRrsetsProtection** | **POST** /zones/${idOrNamePathParam}/rrsets/${rrNamePathParam}/${rrTypePathParam}/actions/change_protection | Change an RRSet&#39;s Protection
-*Zones* | **changeRrsetsTtl** | **POST** /zones/${idOrNamePathParam}/rrsets/${rrNamePathParam}/${rrTypePathParam}/actions/change_ttl | Change an RRSet&#39;s TTL
-*Zones* | **changeZonesDefaultTtl** | **POST** /zones/${idOrNamePathParam}/actions/change_ttl | Change a Zone&#39;s Default TTL
-*Zones* | **changeZonesPrimaryNameservers** | **POST** /zones/${idOrNamePathParam}/actions/change_primary_nameservers | Change a Zone&#39;s Primary Nameservers
-*Zones* | **changeZonesProtection** | **POST** /zones/${idOrNamePathParam}/actions/change_protection | Change a Zone&#39;s Protection
-*Zones* | **createRrset** | **POST** /zones/${idOrNamePathParam}/rrsets | Create an RRSet
+*Volumes* | **updateVolume** | **PUT** /volumes/${idPathParam} | Update a Volume
+*ZoneActions* | **changeZonePrimaryNameservers** | **POST** /zones/${idOrNamePathParam}/actions/change_primary_nameservers | Change a Zone&#39;s Primary Nameservers
+*ZoneActions* | **changeZoneProtection** | **POST** /zones/${idOrNamePathParam}/actions/change_protection | Change a Zone&#39;s Protection
+*ZoneActions* | **changeZoneTtl** | **POST** /zones/${idOrNamePathParam}/actions/change_ttl | Change a Zone&#39;s Default TTL
+*ZoneActions* | **getZoneAction** | **GET** /zones/${idOrNamePathParam}/actions/${actionIdPathParam} | Get an Action for a Zone
+*ZoneActions* | **getZonesAction** | **GET** /zones/actions/${idPathParam} | Get an Action
+*ZoneActions* | **importZoneZonefile** | **POST** /zones/${idOrNamePathParam}/actions/import_zonefile | Import a Zone file
+*ZoneActions* | **listZoneActions** | **GET** /zones/${idOrNamePathParam}/actions | List Actions for a Zone
+*ZoneActions* | **listZonesActions** | **GET** /zones/actions | List Actions
+*ZoneRRSetActions* | **addZoneRrsetRecords** | **POST** /zones/${idOrNamePathParam}/rrsets/${rrNamePathParam}/${rrTypePathParam}/actions/add_records | Add Records to an RRSet
+*ZoneRRSetActions* | **changeZoneRrsetProtection** | **POST** /zones/${idOrNamePathParam}/rrsets/${rrNamePathParam}/${rrTypePathParam}/actions/change_protection | Change an RRSet&#39;s Protection
+*ZoneRRSetActions* | **changeZoneRrsetTtl** | **POST** /zones/${idOrNamePathParam}/rrsets/${rrNamePathParam}/${rrTypePathParam}/actions/change_ttl | Change an RRSet&#39;s TTL
+*ZoneRRSetActions* | **removeZoneRrsetRecords** | **POST** /zones/${idOrNamePathParam}/rrsets/${rrNamePathParam}/${rrTypePathParam}/actions/remove_records | Remove Records from an RRSet
+*ZoneRRSetActions* | **setZoneRrsetRecords** | **POST** /zones/${idOrNamePathParam}/rrsets/${rrNamePathParam}/${rrTypePathParam}/actions/set_records | Set Records of an RRSet
+*ZoneRRSetActions* | **updateZoneRrsetRecords** | **POST** /zones/${idOrNamePathParam}/rrsets/${rrNamePathParam}/${rrTypePathParam}/actions/update_records | Update Records of an RRSet
+*ZoneRRSets* | **createZoneRrset** | **POST** /zones/${idOrNamePathParam}/rrsets | Create an RRSet
+*ZoneRRSets* | **deleteZoneRrset** | **DELETE** /zones/${idOrNamePathParam}/rrsets/${rrNamePathParam}/${rrTypePathParam} | Delete an RRSet
+*ZoneRRSets* | **getZoneRrset** | **GET** /zones/${idOrNamePathParam}/rrsets/${rrNamePathParam}/${rrTypePathParam} | Get an RRSet
+*ZoneRRSets* | **listZoneRrsets** | **GET** /zones/${idOrNamePathParam}/rrsets | List RRSets
+*ZoneRRSets* | **updateZoneRrset** | **PUT** /zones/${idOrNamePathParam}/rrsets/${rrNamePathParam}/${rrTypePathParam} | Update an RRSet
 *Zones* | **createZone** | **POST** /zones | Create a Zone
-*Zones* | **deleteRrset** | **DELETE** /zones/${idOrNamePathParam}/rrsets/${rrNamePathParam}/${rrTypePathParam} | Delete an RRSet
 *Zones* | **deleteZone** | **DELETE** /zones/${idOrNamePathParam} | Delete a Zone
-*Zones* | **exportZoneFile** | **GET** /zones/${idOrNamePathParam}/zonefile | Export a Zone file
-*Zones* | **getActionForZone** | **GET** /zones/${idOrNamePathParam}/actions/${actionIdPathParam} | Get an Action for a Zone
-*Zones* | **getRrset** | **GET** /zones/${idOrNamePathParam}/rrsets/${rrNamePathParam}/${rrTypePathParam} | Get an RRSet
 *Zones* | **getZone** | **GET** /zones/${idOrNamePathParam} | Get a Zone
-*Zones* | **getZoneAction** | **GET** /zones/actions/${idPathParam} | Get an Action
-*Zones* | **importZoneFile** | **POST** /zones/${idOrNamePathParam}/actions/import_zonefile | Import a Zone file
-*Zones* | **listActionsForZone** | **GET** /zones/${idOrNamePathParam}/actions | List Actions for a Zone
-*Zones* | **listRrsets** | **GET** /zones/${idOrNamePathParam}/rrsets | List RRSets
-*Zones* | **listZoneActions** | **GET** /zones/actions | List Actions
+*Zones* | **getZoneZonefile** | **GET** /zones/${idOrNamePathParam}/zonefile | Export a Zone file
 *Zones* | **listZones** | **GET** /zones | List Zones
-*Zones* | **removeRecordsFromRrset** | **POST** /zones/${idOrNamePathParam}/rrsets/${rrNamePathParam}/${rrTypePathParam}/actions/remove_records | Remove Records from an RRSet
-*Zones* | **replaceRrset** | **PUT** /zones/${idOrNamePathParam}/rrsets/${rrNamePathParam}/${rrTypePathParam} | Update an RRSet
-*Zones* | **replaceZone** | **PUT** /zones/${idOrNamePathParam} | Update a Zone
-*Zones* | **setRecordsOfRrset** | **POST** /zones/${idOrNamePathParam}/rrsets/${rrNamePathParam}/${rrTypePathParam}/actions/set_records | Set Records of an RRSet
-*Zones* | **updateRecordsOfRrset** | **POST** /zones/${idOrNamePathParam}/rrsets/${rrNamePathParam}/${rrTypePathParam}/actions/update_records | Update Records of an RRSet
+*Zones* | **updateZone** | **PUT** /zones/${idOrNamePathParam} | Update a Zone
 
 
 ## Documentation for Models
 
  - [Action](Action.md)
- - [AddRecordsToRrsetRequest](AddRecordsToRrsetRequest.md)
- - [AddRecordsToRrsetResponse](AddRecordsToRrsetResponse.md)
- - [AddRouteToNetworkResponse](AddRouteToNetworkResponse.md)
- - [AddServerToPlacementGroupRequest](AddServerToPlacementGroupRequest.md)
- - [AddServerToPlacementGroupResponse](AddServerToPlacementGroupResponse.md)
- - [AddServiceResponse](AddServiceResponse.md)
- - [AddSubnetToNetworkResponse](AddSubnetToNetworkResponse.md)
- - [AddTargetResponse](AddTargetResponse.md)
+ - [ActionError](ActionError.md)
+ - [ActionListResponse](ActionListResponse.md)
+ - [ActionListResponseWithMeta](ActionListResponseWithMeta.md)
+ - [ActionNullable](ActionNullable.md)
+ - [ActionResourcesInner](ActionResourcesInner.md)
+ - [ActionResponse](ActionResponse.md)
+ - [ActionResponse1](ActionResponse1.md)
+ - [AddRouteRequest](AddRouteRequest.md)
+ - [AddSubnetRequest](AddSubnetRequest.md)
+ - [AddToPlacementGroupRequest](AddToPlacementGroupRequest.md)
+ - [AddZoneRrsetRecordsRequest](AddZoneRrsetRecordsRequest.md)
  - [ApplyToResourcesRequest](ApplyToResourcesRequest.md)
- - [ApplyToResourcesResponse](ApplyToResourcesResponse.md)
- - [Architecture](Architecture.md)
- - [AssignFloatingIpToServerRequest](AssignFloatingIpToServerRequest.md)
- - [AssignFloatingIpToServerResponse](AssignFloatingIpToServerResponse.md)
- - [AssignPrimaryIpToResourceRequest](AssignPrimaryIpToResourceRequest.md)
- - [AssignPrimaryIpToResourceResponse](AssignPrimaryIpToResourceResponse.md)
- - [AttachIsoToServerRequest](AttachIsoToServerRequest.md)
- - [AttachIsoToServerResponse](AttachIsoToServerResponse.md)
  - [AttachLoadBalancerToNetworkRequest](AttachLoadBalancerToNetworkRequest.md)
- - [AttachLoadBalancerToNetworkResponse](AttachLoadBalancerToNetworkResponse.md)
- - [AttachServerToNetworkRequest](AttachServerToNetworkRequest.md)
- - [AttachServerToNetworkResponse](AttachServerToNetworkResponse.md)
- - [AttachVolumeToServerRequest](AttachVolumeToServerRequest.md)
- - [AttachVolumeToServerResponse](AttachVolumeToServerResponse.md)
+ - [AttachServerIsoRequest](AttachServerIsoRequest.md)
+ - [AttachToNetworkRequest](AttachToNetworkRequest.md)
+ - [AttachVolumeRequest](AttachVolumeRequest.md)
  - [Certificate](Certificate.md)
+ - [CertificateResponse](CertificateResponse.md)
  - [CertificateStatus](CertificateStatus.md)
  - [CertificateStatusError](CertificateStatusError.md)
- - [ChangeAlgorithmResponse](ChangeAlgorithmResponse.md)
- - [ChangeAliasIpsOfNetworkRequest](ChangeAliasIpsOfNetworkRequest.md)
- - [ChangeAliasIpsOfNetworkResponse](ChangeAliasIpsOfNetworkResponse.md)
- - [ChangeFloatingIpProtectionResponse](ChangeFloatingIpProtectionResponse.md)
- - [ChangeHomeDirectoryRequest](ChangeHomeDirectoryRequest.md)
- - [ChangeHomeDirectoryResponse](ChangeHomeDirectoryResponse.md)
+ - [CertificateUsedByInner](CertificateUsedByInner.md)
+ - [CertificatesResponse](CertificatesResponse.md)
+ - [ChangeIPRangeRequest](ChangeIPRangeRequest.md)
  - [ChangeImageProtectionRequest](ChangeImageProtectionRequest.md)
- - [ChangeImageProtectionResponse](ChangeImageProtectionResponse.md)
- - [ChangeIpRangeOfNetworkRequest](ChangeIpRangeOfNetworkRequest.md)
- - [ChangeIpRangeOfNetworkResponse](ChangeIpRangeOfNetworkResponse.md)
+ - [ChangeLoadBalancerAlgorithmRequest](ChangeLoadBalancerAlgorithmRequest.md)
  - [ChangeLoadBalancerProtectionRequest](ChangeLoadBalancerProtectionRequest.md)
- - [ChangeLoadBalancerProtectionResponse](ChangeLoadBalancerProtectionResponse.md)
- - [ChangeNetworkProtectionRequest](ChangeNetworkProtectionRequest.md)
- - [ChangeNetworkProtectionResponse](ChangeNetworkProtectionResponse.md)
- - [ChangePrimaryIpProtectionResponse](ChangePrimaryIpProtectionResponse.md)
+ - [ChangeLoadbalancerDnsPtrRequest](ChangeLoadbalancerDnsPtrRequest.md)
  - [ChangeProtectionRequest](ChangeProtectionRequest.md)
- - [ChangeProtectionResponse](ChangeProtectionResponse.md)
- - [ChangeReverseDnsEntryForThisLoadBalancerRequest](ChangeReverseDnsEntryForThisLoadBalancerRequest.md)
- - [ChangeReverseDnsEntryForThisLoadBalancerResponse](ChangeReverseDnsEntryForThisLoadBalancerResponse.md)
- - [ChangeReverseDnsEntryForThisServerRequest](ChangeReverseDnsEntryForThisServerRequest.md)
- - [ChangeReverseDnsEntryForThisServerResponse](ChangeReverseDnsEntryForThisServerResponse.md)
- - [ChangeReverseDnsRecordsForFloatingIpResponse](ChangeReverseDnsRecordsForFloatingIpResponse.md)
- - [ChangeReverseDnsRecordsForPrimaryIpResponse](ChangeReverseDnsRecordsForPrimaryIpResponse.md)
- - [ChangeRrsetsProtectionRequest](ChangeRrsetsProtectionRequest.md)
- - [ChangeRrsetsProtectionResponse](ChangeRrsetsProtectionResponse.md)
- - [ChangeRrsetsTtlRequest](ChangeRrsetsTtlRequest.md)
- - [ChangeRrsetsTtlResponse](ChangeRrsetsTtlResponse.md)
+ - [ChangeServerAliasIpsRequest](ChangeServerAliasIpsRequest.md)
+ - [ChangeServerDnsPtrRequest](ChangeServerDnsPtrRequest.md)
  - [ChangeServerProtectionRequest](ChangeServerProtectionRequest.md)
- - [ChangeServerProtectionResponse](ChangeServerProtectionResponse.md)
- - [ChangeTypeOfLoadBalancerRequest](ChangeTypeOfLoadBalancerRequest.md)
- - [ChangeTypeOfLoadBalancerResponse](ChangeTypeOfLoadBalancerResponse.md)
- - [ChangeTypeOfServerRequest](ChangeTypeOfServerRequest.md)
- - [ChangeTypeOfServerResponse](ChangeTypeOfServerResponse.md)
+ - [ChangeServerTypeRequest](ChangeServerTypeRequest.md)
  - [ChangeTypeRequest](ChangeTypeRequest.md)
- - [ChangeTypeResponse](ChangeTypeResponse.md)
  - [ChangeVolumeProtectionRequest](ChangeVolumeProtectionRequest.md)
- - [ChangeVolumeProtectionResponse](ChangeVolumeProtectionResponse.md)
- - [ChangeZonesDefaultTtlRequest](ChangeZonesDefaultTtlRequest.md)
- - [ChangeZonesDefaultTtlResponse](ChangeZonesDefaultTtlResponse.md)
- - [ChangeZonesPrimaryNameserversRequest](ChangeZonesPrimaryNameserversRequest.md)
- - [ChangeZonesPrimaryNameserversResponse](ChangeZonesPrimaryNameserversResponse.md)
- - [ChangeZonesProtectionRequest](ChangeZonesProtectionRequest.md)
- - [ChangeZonesProtectionResponse](ChangeZonesProtectionResponse.md)
+ - [ChangeZonePrimaryNameserversRequest](ChangeZonePrimaryNameserversRequest.md)
+ - [ChangeZoneProtectionRequest](ChangeZoneProtectionRequest.md)
+ - [ChangeZoneRrsetTtlRequest](ChangeZoneRrsetTtlRequest.md)
+ - [ChangeZoneTtlRequest](ChangeZoneTtlRequest.md)
  - [CreateCertificateRequest](CreateCertificateRequest.md)
  - [CreateCertificateResponse](CreateCertificateResponse.md)
  - [CreateFirewallRequest](CreateFirewallRequest.md)
  - [CreateFirewallResponse](CreateFirewallResponse.md)
- - [CreateFloatingIpRequest](CreateFloatingIpRequest.md)
- - [CreateFloatingIpResponse](CreateFloatingIpResponse.md)
- - [CreateImageFromServerRequest](CreateImageFromServerRequest.md)
- - [CreateImageFromServerResponse](CreateImageFromServerResponse.md)
+ - [CreateFloatingIp201Response](CreateFloatingIp201Response.md)
+ - [CreateImageRequest](CreateImageRequest.md)
+ - [CreateLoadBalancer201Response](CreateLoadBalancer201Response.md)
  - [CreateLoadBalancerRequest](CreateLoadBalancerRequest.md)
- - [CreateLoadBalancerResponse](CreateLoadBalancerResponse.md)
- - [CreateNetworkRequest](CreateNetworkRequest.md)
- - [CreateNetworkResponse](CreateNetworkResponse.md)
- - [CreatePlacementgroupRequest](CreatePlacementgroupRequest.md)
- - [CreatePlacementgroupResponse](CreatePlacementgroupResponse.md)
- - [CreatePrimaryIpRequest](CreatePrimaryIpRequest.md)
- - [CreatePrimaryIpResponse](CreatePrimaryIpResponse.md)
- - [CreateRrsetResponse](CreateRrsetResponse.md)
+ - [CreateNetwork201Response](CreateNetwork201Response.md)
+ - [CreatePlacementGroupRequest](CreatePlacementGroupRequest.md)
+ - [CreatePlacementGroupResponse](CreatePlacementGroupResponse.md)
+ - [CreatePrimaryIPResponse](CreatePrimaryIPResponse.md)
+ - [CreateServerImage201Response](CreateServerImage201Response.md)
  - [CreateServerRequest](CreateServerRequest.md)
- - [CreateServerRequestFirewalls](CreateServerRequestFirewalls.md)
+ - [CreateServerRequestFirewallsInner](CreateServerRequestFirewallsInner.md)
  - [CreateServerRequestPublicNet](CreateServerRequestPublicNet.md)
  - [CreateServerResponse](CreateServerResponse.md)
- - [CreateSnapshotRequest](CreateSnapshotRequest.md)
- - [CreateSnapshotResponse](CreateSnapshotResponse.md)
- - [CreateSnapshotResponseSnapshot](CreateSnapshotResponseSnapshot.md)
+ - [CreateSshKey201Response](CreateSshKey201Response.md)
  - [CreateSshKeyRequest](CreateSshKeyRequest.md)
- - [CreateSshKeyResponse](CreateSshKeyResponse.md)
- - [CreateStorageBoxRequest](CreateStorageBoxRequest.md)
- - [CreateStorageBoxRequestAccessSettings](CreateStorageBoxRequestAccessSettings.md)
- - [CreateStorageBoxResponse](CreateStorageBoxResponse.md)
- - [CreateSubaccountRequest](CreateSubaccountRequest.md)
- - [CreateSubaccountRequestAccessSettings](CreateSubaccountRequestAccessSettings.md)
- - [CreateSubaccountResponse](CreateSubaccountResponse.md)
- - [CreateSubaccountResponseSubaccount](CreateSubaccountResponseSubaccount.md)
+ - [CreateVolume201Response](CreateVolume201Response.md)
  - [CreateVolumeRequest](CreateVolumeRequest.md)
- - [CreateVolumeResponse](CreateVolumeResponse.md)
+ - [CreateZone201Response](CreateZone201Response.md)
  - [CreateZoneRequest](CreateZoneRequest.md)
- - [CreateZoneResponse](CreateZoneResponse.md)
- - [CreatedFrom](CreatedFrom.md)
- - [DataCenter](DataCenter.md)
- - [DataCenterServerTypes](DataCenterServerTypes.md)
- - [DeleteRouteFromNetworkResponse](DeleteRouteFromNetworkResponse.md)
- - [DeleteRrsetResponse](DeleteRrsetResponse.md)
- - [DeleteServerResponse](DeleteServerResponse.md)
- - [DeleteServiceRequest](DeleteServiceRequest.md)
- - [DeleteServiceResponse](DeleteServiceResponse.md)
- - [DeleteSnapshotResponse](DeleteSnapshotResponse.md)
- - [DeleteStorageBoxResponse](DeleteStorageBoxResponse.md)
- - [DeleteSubaccountResponse](DeleteSubaccountResponse.md)
- - [DeleteSubnetFromNetworkRequest](DeleteSubnetFromNetworkRequest.md)
- - [DeleteSubnetFromNetworkResponse](DeleteSubnetFromNetworkResponse.md)
- - [DeleteZoneResponse](DeleteZoneResponse.md)
+ - [CreateZoneRequestRrsetsInner](CreateZoneRequestRrsetsInner.md)
+ - [CreateZoneRrset201Response](CreateZoneRrset201Response.md)
+ - [DeleteLoadBalancerServiceRequest](DeleteLoadBalancerServiceRequest.md)
+ - [DeleteRouteRequest](DeleteRouteRequest.md)
+ - [DeleteServer200Response](DeleteServer200Response.md)
+ - [DeleteSubnetRequest](DeleteSubnetRequest.md)
  - [DeprecationInfo](DeprecationInfo.md)
- - [DetachIsoFromServerResponse](DetachIsoFromServerResponse.md)
+ - [DeprecationInfo1](DeprecationInfo1.md)
+ - [DetachFromNetworkRequest](DetachFromNetworkRequest.md)
  - [DetachLoadBalancerFromNetworkRequest](DetachLoadBalancerFromNetworkRequest.md)
- - [DetachLoadBalancerFromNetworkResponse](DetachLoadBalancerFromNetworkResponse.md)
- - [DetachServerFromNetworkRequest](DetachServerFromNetworkRequest.md)
- - [DetachServerFromNetworkResponse](DetachServerFromNetworkResponse.md)
- - [DetachVolumeResponse](DetachVolumeResponse.md)
- - [DisableBackupsForServerResponse](DisableBackupsForServerResponse.md)
- - [DisablePublicInterfaceOfLoadBalancerResponse](DisablePublicInterfaceOfLoadBalancerResponse.md)
- - [DisableRescueModeForServerResponse](DisableRescueModeForServerResponse.md)
- - [DisableSnapshotPlanResponse](DisableSnapshotPlanResponse.md)
- - [DnsPtr](DnsPtr.md)
- - [EnableAndConfigureBackupsForServerResponse](EnableAndConfigureBackupsForServerResponse.md)
- - [EnablePublicInterfaceOfLoadBalancerResponse](EnablePublicInterfaceOfLoadBalancerResponse.md)
- - [EnableRescueModeForServerRequest](EnableRescueModeForServerRequest.md)
- - [EnableRescueModeForServerResponse](EnableRescueModeForServerResponse.md)
- - [EnableSnapshotPlanRequest](EnableSnapshotPlanRequest.md)
- - [EnableSnapshotPlanResponse](EnableSnapshotPlanResponse.md)
- - [Error](Error.md)
- - [ExportZoneFileResponse](ExportZoneFileResponse.md)
- - [Firewall](Firewall.md)
+ - [EnableServerRescue201Response](EnableServerRescue201Response.md)
+ - [EnableServerRescueRequest](EnableServerRescueRequest.md)
  - [FirewallResource](FirewallResource.md)
- - [FirewallResourceId](FirewallResourceId.md)
- - [FirewallResourceIdAppliedToResources](FirewallResourceIdAppliedToResources.md)
- - [FloatingIp](FloatingIp.md)
- - [GetActionResponse](GetActionResponse.md)
- - [GetCertificateResponse](GetCertificateResponse.md)
- - [GetDataCenterResponse](GetDataCenterResponse.md)
- - [GetFirewallResponse](GetFirewallResponse.md)
- - [GetFloatingIpResponse](GetFloatingIpResponse.md)
- - [GetImageResponse](GetImageResponse.md)
- - [GetIsoResponse](GetIsoResponse.md)
- - [GetLoadBalancerResponse](GetLoadBalancerResponse.md)
- - [GetLoadBalancerTypeResponse](GetLoadBalancerTypeResponse.md)
- - [GetLocationResponse](GetLocationResponse.md)
- - [GetMetricsForLoadbalancerResponse](GetMetricsForLoadbalancerResponse.md)
- - [GetMetricsForServerResponse](GetMetricsForServerResponse.md)
- - [GetMultipleActionsResponse](GetMultipleActionsResponse.md)
- - [GetNetworkResponse](GetNetworkResponse.md)
- - [GetPlacementgroupResponse](GetPlacementgroupResponse.md)
- - [GetPrimaryIpResponse](GetPrimaryIpResponse.md)
- - [GetRrsetResponse](GetRrsetResponse.md)
- - [GetServerResponse](GetServerResponse.md)
- - [GetServerTypeResponse](GetServerTypeResponse.md)
- - [GetSnapshotResponse](GetSnapshotResponse.md)
- - [GetSshKeyResponse](GetSshKeyResponse.md)
- - [GetStorageBoxResponse](GetStorageBoxResponse.md)
- - [GetStorageBoxTypeResponse](GetStorageBoxTypeResponse.md)
- - [GetSubaccountResponse](GetSubaccountResponse.md)
- - [GetVolumeResponse](GetVolumeResponse.md)
- - [GetZoneResponse](GetZoneResponse.md)
- - [Http](Http.md)
- - [Image](Image.md)
- - [ImportZoneFileRequest](ImportZoneFileRequest.md)
- - [ImportZoneFileResponse](ImportZoneFileResponse.md)
- - [IpType](IpType.md)
- - [Ipv4](Ipv4.md)
- - [Ipv6](Ipv6.md)
- - [Iso](Iso.md)
- - [LabelSelector](LabelSelector.md)
- - [ListActionsResponse](ListActionsResponse.md)
- - [ListCertificatesResponse](ListCertificatesResponse.md)
- - [ListDataCentersResponse](ListDataCentersResponse.md)
- - [ListFirewallsResponse](ListFirewallsResponse.md)
- - [ListFloatingIpsResponse](ListFloatingIpsResponse.md)
- - [ListFoldersOfStorageBoxResponse](ListFoldersOfStorageBoxResponse.md)
- - [ListImagesResponse](ListImagesResponse.md)
- - [ListIsosResponse](ListIsosResponse.md)
- - [ListLoadBalancerTypesResponse](ListLoadBalancerTypesResponse.md)
- - [ListLoadBalancersResponse](ListLoadBalancersResponse.md)
- - [ListLocationsResponse](ListLocationsResponse.md)
- - [ListNetworksResponse](ListNetworksResponse.md)
- - [ListPlacementGroupsResponse](ListPlacementGroupsResponse.md)
- - [ListPricesResponse](ListPricesResponse.md)
- - [ListPricesResponsePricing](ListPricesResponsePricing.md)
- - [ListPricesResponsePricingFloatingIp](ListPricesResponsePricingFloatingIp.md)
- - [ListPricesResponsePricingFloatingIps](ListPricesResponsePricingFloatingIps.md)
- - [ListPricesResponsePricingImage](ListPricesResponsePricingImage.md)
- - [ListPricesResponsePricingLoadBalancerTypes](ListPricesResponsePricingLoadBalancerTypes.md)
- - [ListPricesResponsePricingPrimaryIps](ListPricesResponsePricingPrimaryIps.md)
- - [ListPricesResponsePricingServerBackup](ListPricesResponsePricingServerBackup.md)
- - [ListPricesResponsePricingServerTypes](ListPricesResponsePricingServerTypes.md)
- - [ListPricesResponsePricingVolume](ListPricesResponsePricingVolume.md)
- - [ListPrimaryIpsResponse](ListPrimaryIpsResponse.md)
- - [ListRrsetsResponse](ListRrsetsResponse.md)
- - [ListServerTypesResponse](ListServerTypesResponse.md)
- - [ListServersResponse](ListServersResponse.md)
- - [ListSnapshotsResponse](ListSnapshotsResponse.md)
- - [ListSshKeysResponse](ListSshKeysResponse.md)
- - [ListStorageBoxTypesResponse](ListStorageBoxTypesResponse.md)
- - [ListStorageBoxesResponse](ListStorageBoxesResponse.md)
- - [ListSubaccountsResponse](ListSubaccountsResponse.md)
- - [ListVolumesResponse](ListVolumesResponse.md)
- - [ListZonesResponse](ListZonesResponse.md)
- - [LoadBalancer](LoadBalancer.md)
- - [LoadBalancerAddTarget](LoadBalancerAddTarget.md)
+ - [FirewallResourceServer](FirewallResourceServer.md)
+ - [FirewallResponse](FirewallResponse.md)
+ - [FirewallResponse1](FirewallResponse1.md)
+ - [FirewallResponseAppliedToInner](FirewallResponseAppliedToInner.md)
+ - [FirewallResponseAppliedToInnerAppliedToResourcesInner](FirewallResponseAppliedToInnerAppliedToResourcesInner.md)
+ - [FirewallResponseAppliedToInnerLabelSelector](FirewallResponseAppliedToInnerLabelSelector.md)
+ - [FirewallResponseAppliedToInnerServer](FirewallResponseAppliedToInnerServer.md)
+ - [FirewallsResponse](FirewallsResponse.md)
+ - [FloatingIPActionsAssignRequest](FloatingIPActionsAssignRequest.md)
+ - [FloatingIPCreateRequest](FloatingIPCreateRequest.md)
+ - [FloatingIPCreateRequestHomeLocation](FloatingIPCreateRequestHomeLocation.md)
+ - [FloatingIPUpdateRequest](FloatingIPUpdateRequest.md)
+ - [GetActions4xxResponse](GetActions4xxResponse.md)
+ - [GetActions4xxResponseError](GetActions4xxResponseError.md)
+ - [GetActions5xxResponse](GetActions5xxResponse.md)
+ - [GetDatacenter200Response](GetDatacenter200Response.md)
+ - [GetFloatingIp200Response](GetFloatingIp200Response.md)
+ - [GetImage200Response](GetImage200Response.md)
+ - [GetIso200Response](GetIso200Response.md)
+ - [GetLoadBalancer200Response](GetLoadBalancer200Response.md)
+ - [GetLoadBalancerMetrics200Response](GetLoadBalancerMetrics200Response.md)
+ - [GetLoadBalancerMetrics200ResponseMetrics](GetLoadBalancerMetrics200ResponseMetrics.md)
+ - [GetLoadBalancerMetrics200ResponseMetricsTimeSeriesValue](GetLoadBalancerMetrics200ResponseMetricsTimeSeriesValue.md)
+ - [GetLoadBalancerMetrics200ResponseMetricsTimeSeriesValueValuesInnerInner](GetLoadBalancerMetrics200ResponseMetricsTimeSeriesValueValuesInnerInner.md)
+ - [GetLoadBalancerType200Response](GetLoadBalancerType200Response.md)
+ - [GetLocation200Response](GetLocation200Response.md)
+ - [GetPricing200Response](GetPricing200Response.md)
+ - [GetPricing200ResponsePricing](GetPricing200ResponsePricing.md)
+ - [GetPricing200ResponsePricingFloatingIp](GetPricing200ResponsePricingFloatingIp.md)
+ - [GetPricing200ResponsePricingFloatingIpPriceMonthly](GetPricing200ResponsePricingFloatingIpPriceMonthly.md)
+ - [GetPricing200ResponsePricingFloatingIpsInner](GetPricing200ResponsePricingFloatingIpsInner.md)
+ - [GetPricing200ResponsePricingFloatingIpsInnerPricesInner](GetPricing200ResponsePricingFloatingIpsInnerPricesInner.md)
+ - [GetPricing200ResponsePricingImage](GetPricing200ResponsePricingImage.md)
+ - [GetPricing200ResponsePricingImagePricePerGbMonth](GetPricing200ResponsePricingImagePricePerGbMonth.md)
+ - [GetPricing200ResponsePricingLoadBalancerTypesInner](GetPricing200ResponsePricingLoadBalancerTypesInner.md)
+ - [GetPricing200ResponsePricingPrimaryIpsInner](GetPricing200ResponsePricingPrimaryIpsInner.md)
+ - [GetPricing200ResponsePricingPrimaryIpsInnerPricesInner](GetPricing200ResponsePricingPrimaryIpsInnerPricesInner.md)
+ - [GetPricing200ResponsePricingServerBackup](GetPricing200ResponsePricingServerBackup.md)
+ - [GetPricing200ResponsePricingServerTypesInner](GetPricing200ResponsePricingServerTypesInner.md)
+ - [GetPricing200ResponsePricingVolume](GetPricing200ResponsePricingVolume.md)
+ - [GetPricing200ResponsePricingVolumePricePerGbMonth](GetPricing200ResponsePricingVolumePricePerGbMonth.md)
+ - [GetServer200Response](GetServer200Response.md)
+ - [GetServerType200Response](GetServerType200Response.md)
+ - [GetVolume200Response](GetVolume200Response.md)
+ - [GetZone200Response](GetZone200Response.md)
+ - [GetZoneRrset200Response](GetZoneRrset200Response.md)
+ - [GetZoneZonefile200Response](GetZoneZonefile200Response.md)
+ - [ImportZoneZonefileRequest](ImportZoneZonefileRequest.md)
+ - [ListDatacenters200Response](ListDatacenters200Response.md)
+ - [ListDatacenters200ResponseDatacentersInner](ListDatacenters200ResponseDatacentersInner.md)
+ - [ListDatacenters200ResponseDatacentersInnerLocation](ListDatacenters200ResponseDatacentersInnerLocation.md)
+ - [ListDatacenters200ResponseDatacentersInnerServerTypes](ListDatacenters200ResponseDatacentersInnerServerTypes.md)
+ - [ListFloatingIpActions200Response](ListFloatingIpActions200Response.md)
+ - [ListFloatingIps200Response](ListFloatingIps200Response.md)
+ - [ListFloatingIps200ResponseFloatingIpsInner](ListFloatingIps200ResponseFloatingIpsInner.md)
+ - [ListFloatingIps200ResponseFloatingIpsInnerDnsPtrInner](ListFloatingIps200ResponseFloatingIpsInnerDnsPtrInner.md)
+ - [ListFloatingIps200ResponseFloatingIpsInnerHomeLocation](ListFloatingIps200ResponseFloatingIpsInnerHomeLocation.md)
+ - [ListFloatingIps200ResponseFloatingIpsInnerProtection](ListFloatingIps200ResponseFloatingIpsInnerProtection.md)
+ - [ListImages200Response](ListImages200Response.md)
+ - [ListImages200ResponseImagesInner](ListImages200ResponseImagesInner.md)
+ - [ListImages200ResponseImagesInnerCreatedFrom](ListImages200ResponseImagesInnerCreatedFrom.md)
+ - [ListIsos200Response](ListIsos200Response.md)
+ - [ListIsos200ResponseIsosInner](ListIsos200ResponseIsosInner.md)
+ - [ListLoadBalancerTypes200Response](ListLoadBalancerTypes200Response.md)
+ - [ListLoadBalancerTypes200ResponseLoadBalancerTypesInner](ListLoadBalancerTypes200ResponseLoadBalancerTypesInner.md)
+ - [ListLoadBalancerTypes200ResponseLoadBalancerTypesInnerPricesInner](ListLoadBalancerTypes200ResponseLoadBalancerTypesInnerPricesInner.md)
+ - [ListLoadBalancerTypes200ResponseLoadBalancerTypesInnerPricesInnerPriceHourly](ListLoadBalancerTypes200ResponseLoadBalancerTypesInnerPricesInnerPriceHourly.md)
+ - [ListLoadBalancerTypes200ResponseLoadBalancerTypesInnerPricesInnerPriceMonthly](ListLoadBalancerTypes200ResponseLoadBalancerTypesInnerPricesInnerPriceMonthly.md)
+ - [ListLoadBalancerTypes200ResponseLoadBalancerTypesInnerPricesInnerPricePerTbTraffic](ListLoadBalancerTypes200ResponseLoadBalancerTypesInnerPricesInnerPricePerTbTraffic.md)
+ - [ListLoadBalancers200Response](ListLoadBalancers200Response.md)
+ - [ListLoadBalancers200ResponseLoadBalancersInner](ListLoadBalancers200ResponseLoadBalancersInner.md)
+ - [ListLoadBalancers200ResponseLoadBalancersInnerAlgorithm](ListLoadBalancers200ResponseLoadBalancersInnerAlgorithm.md)
+ - [ListLoadBalancers200ResponseLoadBalancersInnerPrivateNetInner](ListLoadBalancers200ResponseLoadBalancersInnerPrivateNetInner.md)
+ - [ListLoadBalancers200ResponseLoadBalancersInnerPublicNet](ListLoadBalancers200ResponseLoadBalancersInnerPublicNet.md)
+ - [ListLoadBalancers200ResponseLoadBalancersInnerPublicNetIpv4](ListLoadBalancers200ResponseLoadBalancersInnerPublicNetIpv4.md)
+ - [ListLoadBalancers200ResponseLoadBalancersInnerPublicNetIpv6](ListLoadBalancers200ResponseLoadBalancersInnerPublicNetIpv6.md)
+ - [ListLocations200Response](ListLocations200Response.md)
+ - [ListMeta](ListMeta.md)
+ - [ListMetaPagination](ListMetaPagination.md)
+ - [ListNetworks200Response](ListNetworks200Response.md)
+ - [ListNetworks200ResponseNetworksInner](ListNetworks200ResponseNetworksInner.md)
+ - [ListNetworks200ResponseNetworksInnerRoutesInner](ListNetworks200ResponseNetworksInnerRoutesInner.md)
+ - [ListNetworks200ResponseNetworksInnerSubnetsInner](ListNetworks200ResponseNetworksInnerSubnetsInner.md)
+ - [ListServerTypes200Response](ListServerTypes200Response.md)
+ - [ListServerTypes200ResponseServerTypesInner](ListServerTypes200ResponseServerTypesInner.md)
+ - [ListServerTypes200ResponseServerTypesInnerLocationsInner](ListServerTypes200ResponseServerTypesInnerLocationsInner.md)
+ - [ListServers200Response](ListServers200Response.md)
+ - [ListServers200ResponseServersInner](ListServers200ResponseServersInner.md)
+ - [ListServers200ResponseServersInnerDatacenter](ListServers200ResponseServersInnerDatacenter.md)
+ - [ListServers200ResponseServersInnerImage](ListServers200ResponseServersInnerImage.md)
+ - [ListServers200ResponseServersInnerIso](ListServers200ResponseServersInnerIso.md)
+ - [ListServers200ResponseServersInnerLocation](ListServers200ResponseServersInnerLocation.md)
+ - [ListServers200ResponseServersInnerPrivateNetInner](ListServers200ResponseServersInnerPrivateNetInner.md)
+ - [ListServers200ResponseServersInnerProtection](ListServers200ResponseServersInnerProtection.md)
+ - [ListServers200ResponseServersInnerPublicNet](ListServers200ResponseServersInnerPublicNet.md)
+ - [ListServers200ResponseServersInnerPublicNetIpv4](ListServers200ResponseServersInnerPublicNetIpv4.md)
+ - [ListServers200ResponseServersInnerPublicNetIpv6](ListServers200ResponseServersInnerPublicNetIpv6.md)
+ - [ListServers200ResponseServersInnerPublicNetIpv6DnsPtrInner](ListServers200ResponseServersInnerPublicNetIpv6DnsPtrInner.md)
+ - [ListSshKeys200Response](ListSshKeys200Response.md)
+ - [ListSshKeys200ResponseSshKeysInner](ListSshKeys200ResponseSshKeysInner.md)
+ - [ListVolumes200Response](ListVolumes200Response.md)
+ - [ListVolumes200ResponseVolumesInner](ListVolumes200ResponseVolumesInner.md)
+ - [ListVolumes200ResponseVolumesInnerLocation](ListVolumes200ResponseVolumesInnerLocation.md)
+ - [ListZoneRrsets200Response](ListZoneRrsets200Response.md)
+ - [ListZones200Response](ListZones200Response.md)
  - [LoadBalancerAlgorithm](LoadBalancerAlgorithm.md)
- - [LoadBalancerPrivateNet](LoadBalancerPrivateNet.md)
- - [LoadBalancerPublicNet](LoadBalancerPublicNet.md)
- - [LoadBalancerPublicNetIpv4](LoadBalancerPublicNetIpv4.md)
- - [LoadBalancerPublicNetIpv6](LoadBalancerPublicNetIpv6.md)
- - [LoadBalancerSelectedTarget](LoadBalancerSelectedTarget.md)
  - [LoadBalancerService](LoadBalancerService.md)
+ - [LoadBalancerServiceHTTP](LoadBalancerServiceHTTP.md)
+ - [LoadBalancerServiceHTTP1](LoadBalancerServiceHTTP1.md)
  - [LoadBalancerServiceHealthCheck](LoadBalancerServiceHealthCheck.md)
  - [LoadBalancerServiceHealthCheckHttp](LoadBalancerServiceHealthCheckHttp.md)
  - [LoadBalancerTarget](LoadBalancerTarget.md)
- - [LoadBalancerTargetHealthStatus](LoadBalancerTargetHealthStatus.md)
- - [LoadBalancerTargetIp](LoadBalancerTargetIp.md)
- - [LoadBalancerType](LoadBalancerType.md)
- - [Location](Location.md)
- - [Meta](Meta.md)
- - [Metrics](Metrics.md)
- - [MetricsTimeSeriesValue](MetricsTimeSeriesValue.md)
- - [Nameserver](Nameserver.md)
- - [Network](Network.md)
- - [Pagination](Pagination.md)
+ - [LoadBalancerTarget1](LoadBalancerTarget1.md)
+ - [LoadBalancerTargetHealthStatusInner](LoadBalancerTargetHealthStatusInner.md)
+ - [LoadBalancerTargetIP](LoadBalancerTargetIP.md)
+ - [LoadBalancerTargetIP1](LoadBalancerTargetIP1.md)
+ - [LoadBalancerTargetLabelSelector](LoadBalancerTargetLabelSelector.md)
+ - [LoadBalancerTargetLabelSelector1](LoadBalancerTargetLabelSelector1.md)
+ - [LoadBalancerTargetServer](LoadBalancerTargetServer.md)
+ - [LoadBalancerTargetServer1](LoadBalancerTargetServer1.md)
+ - [LoadBalancerTargetTarget](LoadBalancerTargetTarget.md)
+ - [NetworkCreateRequest](NetworkCreateRequest.md)
+ - [NetworkCreateRequestSubnetsInner](NetworkCreateRequestSubnetsInner.md)
+ - [NetworkUpdateRequest](NetworkUpdateRequest.md)
  - [PlacementGroup](PlacementGroup.md)
  - [PlacementGroupNullable](PlacementGroupNullable.md)
- - [PowerOffServerResponse](PowerOffServerResponse.md)
- - [PowerOnServerResponse](PowerOnServerResponse.md)
- - [Price](Price.md)
- - [PricePerTime](PricePerTime.md)
- - [PricePerTimeMonthly](PricePerTimeMonthly.md)
- - [PricePerTimeWithoutTraffic](PricePerTimeWithoutTraffic.md)
+ - [PlacementGroupResponse](PlacementGroupResponse.md)
+ - [PlacementGroupsResponse](PlacementGroupsResponse.md)
  - [PrimaryIP](PrimaryIP.md)
- - [Protection](Protection.md)
- - [RebuildServerFromImageRequest](RebuildServerFromImageRequest.md)
- - [RebuildServerFromImageResponse](RebuildServerFromImageResponse.md)
- - [RemoveFromPlacementGroupResponse](RemoveFromPlacementGroupResponse.md)
+ - [PrimaryIPActionsAssignRequest](PrimaryIPActionsAssignRequest.md)
+ - [PrimaryIPCreateRequest](PrimaryIPCreateRequest.md)
+ - [PrimaryIPCreateRequestDatacenter](PrimaryIPCreateRequestDatacenter.md)
+ - [PrimaryIPCreateRequestLocation](PrimaryIPCreateRequestLocation.md)
+ - [PrimaryIPDatacenter](PrimaryIPDatacenter.md)
+ - [PrimaryIPLocation](PrimaryIPLocation.md)
+ - [PrimaryIPResponse](PrimaryIPResponse.md)
+ - [PrimaryIPUpdateRequest](PrimaryIPUpdateRequest.md)
+ - [PrimaryIPsResponse](PrimaryIPsResponse.md)
+ - [PrimaryZone](PrimaryZone.md)
+ - [PrimaryZoneAllOfAuthoritativeNameservers](PrimaryZoneAllOfAuthoritativeNameservers.md)
+ - [PrimaryZoneAllOfPrimaryNameserversInner](PrimaryZoneAllOfPrimaryNameserversInner.md)
+ - [RRSet](RRSet.md)
+ - [RRSetProtection](RRSetProtection.md)
+ - [RebuildServer201Response](RebuildServer201Response.md)
+ - [RebuildServerRequest](RebuildServerRequest.md)
+ - [Record](Record.md)
+ - [Record1](Record1.md)
  - [RemoveFromResourcesRequest](RemoveFromResourcesRequest.md)
- - [RemoveFromResourcesResponse](RemoveFromResourcesResponse.md)
- - [RemoveRecordsFromRrsetRequest](RemoveRecordsFromRrsetRequest.md)
- - [RemoveRecordsFromRrsetResponse](RemoveRecordsFromRrsetResponse.md)
  - [RemoveTargetRequest](RemoveTargetRequest.md)
- - [RemoveTargetResponse](RemoveTargetResponse.md)
- - [ReplaceCertificateRequest](ReplaceCertificateRequest.md)
- - [ReplaceCertificateResponse](ReplaceCertificateResponse.md)
- - [ReplaceFirewallRequest](ReplaceFirewallRequest.md)
- - [ReplaceFirewallResponse](ReplaceFirewallResponse.md)
- - [ReplaceFloatingIpRequest](ReplaceFloatingIpRequest.md)
- - [ReplaceFloatingIpResponse](ReplaceFloatingIpResponse.md)
- - [ReplaceImageRequest](ReplaceImageRequest.md)
- - [ReplaceImageResponse](ReplaceImageResponse.md)
- - [ReplaceLoadBalancerRequest](ReplaceLoadBalancerRequest.md)
- - [ReplaceLoadBalancerResponse](ReplaceLoadBalancerResponse.md)
- - [ReplaceNetworkRequest](ReplaceNetworkRequest.md)
- - [ReplaceNetworkResponse](ReplaceNetworkResponse.md)
- - [ReplacePlacementgroupRequest](ReplacePlacementgroupRequest.md)
- - [ReplacePlacementgroupResponse](ReplacePlacementgroupResponse.md)
- - [ReplacePrimaryIpRequest](ReplacePrimaryIpRequest.md)
- - [ReplacePrimaryIpResponse](ReplacePrimaryIpResponse.md)
- - [ReplaceRrsetRequest](ReplaceRrsetRequest.md)
- - [ReplaceRrsetResponse](ReplaceRrsetResponse.md)
- - [ReplaceServerRequest](ReplaceServerRequest.md)
- - [ReplaceServerResponse](ReplaceServerResponse.md)
- - [ReplaceSnapshotRequest](ReplaceSnapshotRequest.md)
- - [ReplaceSnapshotResponse](ReplaceSnapshotResponse.md)
- - [ReplaceSshKeyRequest](ReplaceSshKeyRequest.md)
- - [ReplaceSshKeyResponse](ReplaceSshKeyResponse.md)
- - [ReplaceStorageBoxRequest](ReplaceStorageBoxRequest.md)
- - [ReplaceStorageBoxResponse](ReplaceStorageBoxResponse.md)
- - [ReplaceSubaccountRequest](ReplaceSubaccountRequest.md)
- - [ReplaceSubaccountResponse](ReplaceSubaccountResponse.md)
- - [ReplaceVolumeRequest](ReplaceVolumeRequest.md)
- - [ReplaceVolumeResponse](ReplaceVolumeResponse.md)
- - [ReplaceZoneRequest](ReplaceZoneRequest.md)
- - [ReplaceZoneResponse](ReplaceZoneResponse.md)
- - [RequestConsoleForServerResponse](RequestConsoleForServerResponse.md)
- - [ResetPasswordRequest](ResetPasswordRequest.md)
- - [ResetPasswordResponse](ResetPasswordResponse.md)
- - [ResetRootPasswordOfServerResponse](ResetRootPasswordOfServerResponse.md)
- - [ResetServerResponse](ResetServerResponse.md)
+ - [RemoveTargetRequestLabelSelector](RemoveTargetRequestLabelSelector.md)
+ - [RemoveTargetRequestServer](RemoveTargetRequestServer.md)
+ - [RemoveZoneRrsetRecordsRequest](RemoveZoneRrsetRecordsRequest.md)
+ - [RequestServerConsole201Response](RequestServerConsole201Response.md)
+ - [ResetServerPassword201Response](ResetServerPassword201Response.md)
  - [ResizeVolumeRequest](ResizeVolumeRequest.md)
- - [ResizeVolumeResponse](ResizeVolumeResponse.md)
- - [Resource](Resource.md)
- - [ResourceId](ResourceId.md)
- - [ResourceRecord](ResourceRecord.md)
- - [ResourceRecordSet](ResourceRecordSet.md)
- - [ResourceRecordSetProtection](ResourceRecordSetProtection.md)
- - [ResourceRecordSetToCreate](ResourceRecordSetToCreate.md)
- - [ResourceRecordSetType](ResourceRecordSetType.md)
- - [RetryIssuanceOrRenewalResponse](RetryIssuanceOrRenewalResponse.md)
- - [RollbackSnapshotRequest](RollbackSnapshotRequest.md)
- - [RollbackSnapshotResponse](RollbackSnapshotResponse.md)
- - [Route](Route.md)
  - [Rule](Rule.md)
  - [RuleResponse](RuleResponse.md)
- - [Server](Server.md)
- - [ServerPrivateNet](ServerPrivateNet.md)
- - [ServerProtection](ServerProtection.md)
- - [ServerPublicNet](ServerPublicNet.md)
+ - [SecondaryZone](SecondaryZone.md)
  - [ServerPublicNetFirewall](ServerPublicNetFirewall.md)
- - [ServerType](ServerType.md)
- - [ServerTypeLocation](ServerTypeLocation.md)
- - [SetRecordsOfRrsetRequest](SetRecordsOfRrsetRequest.md)
- - [SetRecordsOfRrsetResponse](SetRecordsOfRrsetResponse.md)
  - [SetRulesRequest](SetRulesRequest.md)
- - [SetRulesResponse](SetRulesResponse.md)
- - [ShutdownServerResponse](ShutdownServerResponse.md)
- - [Snapshot](Snapshot.md)
- - [SnapshotPlan](SnapshotPlan.md)
- - [SnapshotStats](SnapshotStats.md)
- - [SoftRebootServerResponse](SoftRebootServerResponse.md)
- - [SshKey](SshKey.md)
- - [StorageBox](StorageBox.md)
- - [StorageBoxAccessSetting](StorageBoxAccessSetting.md)
- - [StorageBoxStats](StorageBoxStats.md)
- - [StorageBoxType](StorageBoxType.md)
- - [StorageBoxTypePricesInner](StorageBoxTypePricesInner.md)
- - [Subaccount](Subaccount.md)
- - [SubaccountAccessSetting](SubaccountAccessSetting.md)
- - [Subnet](Subnet.md)
- - [SubnetWithGateway](SubnetWithGateway.md)
- - [UnassignFloatingIpResponse](UnassignFloatingIpResponse.md)
- - [UnassignPrimaryIpFromResourceResponse](UnassignPrimaryIpFromResourceResponse.md)
- - [UpdateAccessSettingsRequest](UpdateAccessSettingsRequest.md)
- - [UpdateAccessSettingsResponse](UpdateAccessSettingsResponse.md)
+ - [SetZoneRrsetRecordsRequest](SetZoneRrsetRecordsRequest.md)
+ - [UpdateCertificateRequest](UpdateCertificateRequest.md)
+ - [UpdateFirewallRequest](UpdateFirewallRequest.md)
+ - [UpdateImageRequest](UpdateImageRequest.md)
+ - [UpdateLoadBalancerRequest](UpdateLoadBalancerRequest.md)
  - [UpdateLoadBalancerService](UpdateLoadBalancerService.md)
  - [UpdateLoadBalancerServiceHealthCheck](UpdateLoadBalancerServiceHealthCheck.md)
  - [UpdateLoadBalancerServiceHealthCheckHttp](UpdateLoadBalancerServiceHealthCheckHttp.md)
- - [UpdateRecordsOfRrsetRequest](UpdateRecordsOfRrsetRequest.md)
- - [UpdateRecordsOfRrsetResponse](UpdateRecordsOfRrsetResponse.md)
- - [UpdateServiceResponse](UpdateServiceResponse.md)
- - [Volume](Volume.md)
+ - [UpdatePlacementGroupRequest](UpdatePlacementGroupRequest.md)
+ - [UpdateServerRequest](UpdateServerRequest.md)
+ - [UpdateSshKeyRequest](UpdateSshKeyRequest.md)
+ - [UpdateVolumeRequest](UpdateVolumeRequest.md)
+ - [UpdateZoneRrsetRecordsRequest](UpdateZoneRrsetRecordsRequest.md)
+ - [UpdateZoneRrsetRequest](UpdateZoneRrsetRequest.md)
  - [Zone](Zone.md)
- - [ZoneAuthoritativeNameservers](ZoneAuthoritativeNameservers.md)
+ - [ZonePrimary](ZonePrimary.md)
+ - [ZoneSecondary](ZoneSecondary.md)
+ - [ZoneUpdateRequest](ZoneUpdateRequest.md)
 
 
 <a id="documentation-for-authorization"></a>
