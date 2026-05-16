@@ -1,189 +1,14 @@
-/** Hetzner Cloud API # Overview This is the official documentation for the
-  * Hetzner Cloud API. ## Introduction The Hetzner Cloud API operates over HTTPS
-  * and uses JSON as its data format. The API is a RESTful API and utilizes HTTP
-  * methods and HTTP status codes to specify requests and responses. As an
-  * alternative to working directly with our API you may also consider to use: -
-  * Our CLI program [hcloud](https://github.com/hetznercloud/cli) - Our [library
-  * for Go](https://github.com/hetznercloud/hcloud-go) - Our [library for
-  * Python](https://github.com/hetznercloud/hcloud-python) You can find even
-  * more libraries, tools and integrations on our [Awesome List on
-  * GitHub](https://github.com/hetznercloud/awesome-hcloud). ### Open source
-  * credits If you are developing an open-source project that supports or
-  * intends to add support for Hetzner APIs, you may be eligible for a free
-  * one-time credit of up to € 50 / $ 50 on your account. Please contact us via
-  * the support page on your [Hetzner
-  * Console](https://console.hetzner.cloud/support) and let us know the
-  * following: - The name of the project you are working on - A short
-  * description of the project - Link to the project website or repo where the
-  * project is hosted - Affiliation with / role in the project (e.g. project
-  * maintainer) - Link to some other open-source work you have already done (if
-  * you have done so) **Note:** We only consider rewards for projects that
-  * provide Hetzner-specific functionality or integrations. For example, our
-  * Object Storage exposes a standard S3 API without any Hetzner-specific
-  * extensions. Projects that focus solely on generic S3 capabilities (e.g.,
-  * general S3 clients or SDKs) are not Hetzner-specific and are therefore not
-  * eligible for Hetzner Rewards. ## Getting Started To get started using the
-  * API you first need an API token. Sign in into the [Hetzner
-  * Console](https://console.hetzner.com/) choose a Project, go to `Security` →
-  * `API Tokens`, and generate a new token. Make sure to copy the token because
-  * it won’t be shown to you again. A token is bound to a Project, to interact
-  * with the API of another Project you have to create a new token inside the
-  * Project. Let’s say your new token is
-  * `LRK9DAWQ1ZAEFSrCNEEzLCUwhYX1U3g7wMg4dTlkkDC96fyDuyJ39nVbVjCKSDfj`. You’re
-  * now ready to do your first request against the API. To get a list of all
-  * Servers in your Project, issue the example request on the right side using
-  * [curl](https://curl.se/). Make sure to replace the token in the example
-  * command with the token you have just created. Since your Project probably
-  * does not contain any Servers yet, the example response will look like the
-  * response on the right side. We will almost always provide a resource root
-  * like `servers` inside the example response. A response can also contain a
-  * `meta` object with information like [Pagination](#description/pagination).
-  * **Example Request** ```shell curl -H \"Authorization: Bearer LRK9DAWQ1ZAEFSrCNEEzLCUwhYX1U3g7wMg4dTlkkDC96fyDuyJ39nVbVjCKSDfj\" \\   https://api.hetzner.cloud/v1/servers ```
-  * **Example Response** ```json {   \"servers\": [],   \"meta\": {     \"pagination\": {       \"page\": 1,       \"per_page\": 25,       \"previous_page\": null,       \"next_page\": null,       \"last_page\": 1,       \"total_entries\": 0     }   } } ```
-  * ## Authentication All requests to the Hetzner Cloud API must be
-  * authenticated via a API token. Include your secret API token in every
-  * request you send to the API with the `Authorization` HTTP header. To create
-  * a new API token for your Project, switch into the [Hetzner
-  * Console](https://console.hetzner.com/) choose a Project, go to `Security` →
-  * `API Tokens`, and generate a new token. **Example Authorization header** ```http Authorization: Bearer LRK9DAWQ1ZAEFSrCNEEzLCUwhYX1U3g7wMg4dTlkkDC96fyDuyJ39nVbVjCKSDfj ```
-  * ## Query Parameters The API makes use of query parameters to sort and filter
-  * responses. The parameter names and values must be URI encoded according to
-  * [RFC2396](https://datatracker.ietf.org/doc/html/rfc2396). Query parameters
-  * of type `array` can be used multiple times: **Example query parameters for
-  * pagination** ``` https://api.hetzner.cloud/v1/certificates?page=1&page_size=12 ```
-  * **Example use of multiple values for a parameter** ``` https://api.hetzner.cloud/v1/certificates?type=uploaded&type=managed ```
-  * **Example use of an encoded parameter** ``` https://api.hetzner.cloud/v1/certificates?label_selector=key%3Dvalue ```
-  * ## Errors Errors are indicated by HTTP status codes. Further, the response
-  * of the request which generated the error contains an error code, an error
-  * message, and, optionally, error details. The schema of the error details
-  * object depends on the error code. The error response contains the following
-  * keys: | Keys | Meaning | | --------- |
-  * --------------------------------------------------------------------- | |
-  * `code` | Short string indicating the type of error (machine-parsable) | |
-  * `message` | Textual description on what has gone wrong | | `details` | An
-  * object providing for details on the error (schema depends on code) |
-  * **Example response** ```json {   \"error\": {     \"code\": \"invalid_input\",     \"message\": \"invalid input in field 'broken_field': is too long\",     \"details\": {       \"fields\": [         {           \"name\": \"broken_field\",           \"messages\": [\"is too long\"]         }       ]     }   } } ```
-  * ### Error Codes | Status | Code | Description | | --- | --- | --- | | `400` |
-  * `json_error` | Invalid JSON input in your request. | | `401` |
-  * `unauthorized` | Request was made with an invalid or unknown token. | |
-  * `401` | `token_readonly` | The token is only allowed to perform GET
-  * requests. | | `403` | `forbidden` | Insufficient permissions for this
-  * request. | | `403` | `maintenance` | Cannot perform operation due to
-  * maintenance. | | `403` | `resource_limit_exceeded` | Error when exceeding
-  * the maximum quantity of a resource for an account. | | `404` | `not_found` |
-  * Entity not found. | | `405` | `method_not_allowed` | The request method is
-  * not allowed | | `409` | `uniqueness_error` | One or more of the objects
-  * fields must be unique. | | `409` | `conflict` | The resource has changed
-  * during the request, please retry. | | `410` | `deprecated_api_endpoint` |
-  * The API endpoint functionality was removed. | | `412` |
-  * `resource_unavailable` | The requested resource is currently unavailable
-  * (e.g. not available for order). | | `422` | `invalid_input` | Error while
-  * parsing or processing the input. | | `422` | `service_error` | Error within
-  * a service. | | `422` | `unsupported_error` | The corresponding resource does
-  * not support the Action. | | `423` | `locked` | The item you are trying to
-  * access is locked (there is already an Action running). | | `423` |
-  * `protected` | The Action you are trying to start is protected for this
-  * resource. | | `429` | `rate_limit_exceeded` | Error when sending too many
-  * requests. | | `500` | `server_error` | Error within the API backend. | |
-  * `503` | `unavailable` | A service or product is currently not available. | |
-  * `504` | `timeout` | The request could not be answered in time, please retry. |
-  * **invalid_input** ```json {   \"error\": {     \"code\": \"invalid_input\",     \"message\": \"invalid input in field 'broken_field': is too long\",     \"details\": {       \"fields\": [         {           \"name\": \"broken_field\",           \"messages\": [\"is too long\"]         }       ]     }   } } ```
-  * **uniqueness_error** ```json {   \"error\": {     \"code\": \"uniqueness_error\",     \"message\": \"SSH key with the same fingerprint already exists\",     \"details\": {       \"fields\": [         {           \"name\": \"public_key\"         }       ]     }   } } ```
-  * **resource_limit_exceeded** ```json {   \"error\": {     \"code\": \"resource_limit_exceeded\",     \"message\": \"project limit exceeded\",     \"details\": {       \"limits\": [         {           \"name\": \"project_limit\"         }       ]     }   } } ```
-  * **deprecated_api_endpoint** ```json {   \"error\": {     \"code\": \"deprecated_api_endpoint\",     \"message\": \"API functionality was removed\",     \"details\": {       \"announcement\": \"https://docs.hetzner.cloud/changelog#2023-07-20-foo-endpoint-is-deprecated\"     }   } } ```
-  * ## Actions Actions represent asynchronous tasks within the API, targeting
-  * one or more resources. Triggering changes in the API may return a `running`
-  * action. An action should be waited upon, until it reaches either the
-  * `success` or `error` state. Avoid polling the action's state too frequently
-  * to reduce the risk of exhausting your API requests and hitting the [rate
-  * limit](#description/rate-limiting). If an action fails, it will contain
-  * details about the underlying error. Once the asynchronous tasks have
-  * completed and the targeted resources are in a consistent state, the action
-  * is marked as succeeded. In some cases, you may trigger multiple changes at
-  * once, and only wait for the returned actions at a later stage. ## Labels
-  * Labels are `key/value` pairs that can be attached to all resources. Valid
-  * label keys have two segments: an optional prefix and name, separated by a
-  * slash (`/`). The name segment is required and must be a string of 63
-  * characters or less, beginning and ending with an alphanumeric character
-  * (`[a-z0-9A-Z]`) with dashes (`-`), underscores (`_`), dots (`.`), and
-  * alphanumerics between. The prefix is optional. If specified, the prefix must
-  * be a DNS subdomain: a series of DNS labels separated by dots (`.`), not
-  * longer than 253 characters in total, followed by a slash (`/`). Valid label
-  * values must be a string of 63 characters or less and must be empty or begin
-  * and end with an alphanumeric character (`[a-z0-9A-Z]`) with dashes (`-`),
-  * underscores (`_`), dots (`.`), and alphanumerics between. The
-  * `hetzner.cloud/` prefix is reserved and cannot be used. **Example Labels** ```json {   \"labels\": {     \"environment\": \"development\",     \"service\": \"backend\",     \"example.com/my\": \"label\",     \"just-a-key\": \"\"   } } ```
-  * ## Label Selector For resources with labels, you can filter resources by
-  * their labels using the label selector query language. | Expression | Meaning | |
-  * -------------------- | ---------------------------------------------------- | |
-  * `k==v` / `k=v` | Value of key `k` does equal value `v` | | `k!=v` | Value of
-  * key `k` does not equal value `v` | | `k` | Key `k` is present | | `!k` | Key
-  * `k` is not present | | `k in (v1,v2,v3)` | Value of key `k` is `v1`, `v2`,
-  * or `v3` | | `k notin (v1,v2,v3)` | Value of key `k` is neither `v1`, nor
-  * `v2`, nor `v3` | | `k1==v,!k2` | Value of key `k1` is `v` and key `k2` is
-  * not present | ### Examples - Returns all resources that have a
-  * `env=production` label and that don't have a `type=database` label:
-  * `env=production,type!=database` - Returns all resources that have a
-  * `env=testing` or `env=staging` label: `env in (testing,staging)` - Returns
-  * all resources that don't have a `type` label: `!type` ## Pagination
-  * Responses which return multiple items support pagination. If they do support
-  * pagination, it can be controlled with following query string parameters: - A
-  * `page` parameter specifies the page to fetch. The number of the first page
-  * is 1. - A `per_page` parameter specifies the number of items returned per
-  * page. The default value is 25, the maximum value is 50 except otherwise
-  * specified in the documentation. Responses contain a `Link` header with
-  * pagination information. Additionally, if the response body is JSON and the
-  * root object is an object, that object has a `pagination` object inside the
-  * `meta` object with pagination information: **Example Pagination** ```json {     \"servers\": [...],     \"meta\": {         \"pagination\": {             \"page\": 2,             \"per_page\": 25,             \"previous_page\": 1,             \"next_page\": 3,             \"last_page\": 4,             \"total_entries\": 100         }     } } ```
-  * The keys `previous_page`, `next_page`, `last_page`, and `total_entries` may
-  * be `null` when on the first page, last page, or when the total number of
-  * entries is unknown. **Example Pagination Link header** ```http Link: <https://api.hetzner.cloud/v1/actions?page=2&per_page=5>; rel=\"prev\",       <https://api.hetzner.cloud/v1/actions?page=4&per_page=5>; rel=\"next\",       <https://api.hetzner.cloud/v1/actions?page=6&per_page=5>; rel=\"last\" ```
-  * Line breaks have been added for display purposes only and responses may only
-  * contain some of the above `rel` values. ## Rate Limiting All requests,
-  * whether they are authenticated or not, are subject to rate limiting. If you
-  * have reached your limit, your requests will be handled with a
-  * `429 Too Many Requests` error. Burst requests are allowed. Responses contain
-  * several headers which provide information about your current rate limit
-  * status. - The `RateLimit-Limit` header contains the total number of requests
-  * you can perform per hour. - The `RateLimit-Remaining` header contains the
-  * number of requests remaining in the current rate limit time frame. - The
-  * `RateLimit-Reset` header contains a UNIX timestamp of the point in time when
-  * your rate limit will have recovered, and you will have the full number of
-  * requests available again. The default limit is 3600 requests per hour and
-  * per Project. The number of remaining requests increases gradually. For
-  * example, when your limit is 3600 requests per hour, the number of remaining
-  * requests will increase by 1 every second. ## Server Metadata Your Server can
-  * discover metadata about itself by doing a HTTP request to specific URLs. The
-  * following data is available: | Data | Format | Contents | |
-  * ----------------- | ------ |
-  * ------------------------------------------------------------ | | hostname |
-  * text | Name of the Server as set in the api | | instance-id | number | ID of
-  * the server | | public-ipv4 | text | Primary public IPv4 address | |
-  * private-networks | yaml | Details about the private networks the Server is
-  * attached to | | availability-zone | text | Name of the availability zone
-  * that Server runs in | | region | text | Network zone, e.g. eu-central |
-  * **Example: Summary** ```shell $ curl http://169.254.169.254/hetzner/v1/metadata ``` ```yaml availability-zone: hel1-dc2 hostname: my-server instance-id: 42 public-ipv4: 1.2.3.4 region: eu-central ```
-  * **Example: Hostname** ```shell $ curl http://169.254.169.254/hetzner/v1/metadata/hostname my-server ```
-  * **Example: Instance ID** ```shell $ curl http://169.254.169.254/hetzner/v1/metadata/instance-id 42 ```
-  * **Example: Public IPv4** ```shell $ curl http://169.254.169.254/hetzner/v1/metadata/public-ipv4 1.2.3.4 ```
-  * **Example: Private Networks** ```shell $ curl http://169.254.169.254/hetzner/v1/metadata/private-networks ``` ```yaml - ip: 10.0.0.2   alias_ips: [10.0.0.3, 10.0.0.4]   interface_num: 1   mac_address: 86:00:00:2a:7d:e0   network_id: 1234   network_name: nw-test1   network: 10.0.0.0/8   subnet: 10.0.0.0/24   gateway: 10.0.0.1 - ip: 192.168.0.2   alias_ips: []   interface_num: 2   mac_address: 86:00:00:2a:7d:e1   network_id: 4321   network_name: nw-test2   network: 192.168.0.0/16   subnet: 192.168.0.0/24   gateway: 192.168.0.1 ```
-  * **Example: Availability Zone** ```shell $ curl http://169.254.169.254/hetzner/v1/metadata/availability-zone hel1-dc2 ```
-  * **Example: Region** ```shell $ curl http://169.254.169.254/hetzner/v1/metadata/region eu-central ```
-  * ## Sorting Some responses which return multiple items support sorting. If
-  * they do support sorting the documentation states which fields can be used
-  * for sorting. You specify sorting with the `sort` query string parameter. You
-  * can sort by multiple fields. You can set the sort direction by appending
-  * `:asc` or `:desc` to the field name. By default, ascending sorting is used.
-  * **Example: Sorting** ``` https://api.hetzner.cloud/v1/actions?sort=status https://api.hetzner.cloud/v1/actions?sort=status:asc https://api.hetzner.cloud/v1/actions?sort=status:desc https://api.hetzner.cloud/v1/actions?sort=status:asc&sort=command:desc ```
-  * ## Deprecation Notices You can find all announced deprecations in our
-  * [Changelog](/changelog).
-  *
-  * The version of the OpenAPI document: 1.0.0
-  *
-  * NOTE: This class is auto generated by OpenAPI Generator
-  * (https://openapi-generator.tech). https://openapi-generator.tech Do not edit
-  * the class manually.
-  */
+/**
+ * Hetzner Cloud API
+ * # Overview  This is the official documentation for the Hetzner Cloud API.  ## Introduction  The Hetzner Cloud API operates over HTTPS and uses JSON as its data format. The API is a RESTful API and utilizes HTTP methods and HTTP status codes to specify requests and responses.  As an alternative to working directly with our API you may also consider to use:  - Our CLI program [hcloud](https://github.com/hetznercloud/cli) - Our [library for Go](https://github.com/hetznercloud/hcloud-go) - Our [library for Python](https://github.com/hetznercloud/hcloud-python)  You can find even more libraries, tools and integrations on our [Awesome List on GitHub](https://github.com/hetznercloud/awesome-hcloud).  ### Open source credits  If you are developing an open-source project that supports or intends to add support for Hetzner APIs, you may be eligible for a free one-time credit of up to € 50 / $ 50 on your account. Please contact us via the support page on your [Hetzner Console](https://console.hetzner.cloud/support) and let us know the following:  - The name of the project you are working on - A short description of the project - Link to the project website or repo where the project is hosted - Affiliation with / role in the project (e.g. project maintainer) - Link to some other open-source work you have already done (if you have done so)  **Note:** We only consider rewards for projects that provide Hetzner-specific functionality or integrations. For example, our Object Storage exposes a standard S3 API without any Hetzner-specific extensions. Projects that focus solely on generic S3 capabilities (e.g., general S3 clients or SDKs) are not Hetzner-specific and are therefore not eligible for Hetzner Rewards.  ## Getting Started  To get started using the API you first need an API token. Sign in into the [Hetzner Console](https://console.hetzner.com/) choose a Project, go to `Security` → `API Tokens`, and generate a new token. Make sure to copy the token because it won’t be shown to you again. A token is bound to a Project, to interact with the API of another Project you have to create a new token inside the Project. Let’s say your new token is `LRK9DAWQ1ZAEFSrCNEEzLCUwhYX1U3g7wMg4dTlkkDC96fyDuyJ39nVbVjCKSDfj`.  You’re now ready to do your first request against the API. To get a list of all Servers in your Project, issue the example request on the right side using [curl](https://curl.se/).  Make sure to replace the token in the example command with the token you have just created. Since your Project probably does not contain any Servers yet, the example response will look like the response on the right side. We will almost always provide a resource root like `servers` inside the example response. A response can also contain a `meta` object with information like [Pagination](#description/pagination).  **Example Request**  ```shell curl -H \"Authorization: Bearer LRK9DAWQ1ZAEFSrCNEEzLCUwhYX1U3g7wMg4dTlkkDC96fyDuyJ39nVbVjCKSDfj\" \\   https://api.hetzner.cloud/v1/servers ```  **Example Response**  ```json {   \"servers\": [],   \"meta\": {     \"pagination\": {       \"page\": 1,       \"per_page\": 25,       \"previous_page\": null,       \"next_page\": null,       \"last_page\": 1,       \"total_entries\": 0     }   } } ```  ## Authentication  All requests to the Hetzner Cloud API must be authenticated via a API token. Include your secret API token in every request you send to the API with the `Authorization` HTTP header.  To create a new API token for your Project, switch into the [Hetzner Console](https://console.hetzner.com/) choose a Project, go to `Security` → `API Tokens`, and generate a new token.  **Example Authorization header**  ```http Authorization: Bearer LRK9DAWQ1ZAEFSrCNEEzLCUwhYX1U3g7wMg4dTlkkDC96fyDuyJ39nVbVjCKSDfj ```  ## Query Parameters  The API makes use of query parameters to sort and filter responses. The parameter names and values must be URI encoded according to [RFC2396](https://datatracker.ietf.org/doc/html/rfc2396). Query parameters of type `array` can be used multiple times:  **Example query parameters for pagination**  ``` https://api.hetzner.cloud/v1/certificates?page=1&page_size=12 ```  **Example use of multiple values for a parameter**  ``` https://api.hetzner.cloud/v1/certificates?type=uploaded&type=managed ```  **Example use of an encoded parameter**  ``` https://api.hetzner.cloud/v1/certificates?label_selector=key%3Dvalue ```  ## Errors  Errors are indicated by HTTP status codes. Further, the response of the request which generated the error contains an error code, an error message, and, optionally, error details. The schema of the error details object depends on the error code.  The error response contains the following keys:  | Keys      | Meaning                                                               | | --------- | --------------------------------------------------------------------- | | `code`    | Short string indicating the type of error (machine-parsable)          | | `message` | Textual description on what has gone wrong                            | | `details` | An object providing for details on the error (schema depends on code) |  **Example response**  ```json {   \"error\": {     \"code\": \"invalid_input\",     \"message\": \"invalid input in field 'broken_field': is too long\",     \"details\": {       \"fields\": [         {           \"name\": \"broken_field\",           \"messages\": [\"is too long\"]         }       ]     }   } } ```  ### Error Codes  | Status | Code | Description | | --- | --- | --- | | `400` | `json_error` | Invalid JSON input in your request. | | `401` | `unauthorized` | Request was made with an invalid or unknown token. | | `401` | `token_readonly` | The token is only allowed to perform GET requests. | | `403` | `forbidden` | Insufficient permissions for this request. | | `403` | `maintenance` | Cannot perform operation due to maintenance. | | `403` | `resource_limit_exceeded` | Error when exceeding the maximum quantity of a resource for an account. | | `404` | `not_found` | Entity not found. | | `405` | `method_not_allowed` | The request method is not allowed | | `409` | `uniqueness_error` | One or more of the objects fields must be unique. | | `409` | `conflict` | The resource has changed during the request, please retry. | | `410` | `deprecated_api_endpoint` | The API endpoint functionality was removed. | | `412` | `resource_unavailable` | The requested resource is currently unavailable (e.g. not available for order). | | `422` | `invalid_input` | Error while parsing or processing the input. | | `422` | `service_error` | Error within a service. | | `422` | `unsupported_error` | The corresponding resource does not support the Action. | | `423` | `locked` | The item you are trying to access is locked (there is already an Action running). | | `423` | `protected` | The Action you are trying to start is protected for this resource. | | `429` | `rate_limit_exceeded` | Error when sending too many requests. | | `500` | `server_error` | Error within the API backend. | | `503` | `unavailable` | A service or product is currently not available. | | `504` | `timeout` | The request could not be answered in time, please retry. |  **invalid_input**  ```json {   \"error\": {     \"code\": \"invalid_input\",     \"message\": \"invalid input in field 'broken_field': is too long\",     \"details\": {       \"fields\": [         {           \"name\": \"broken_field\",           \"messages\": [\"is too long\"]         }       ]     }   } } ```  **uniqueness_error**  ```json {   \"error\": {     \"code\": \"uniqueness_error\",     \"message\": \"SSH key with the same fingerprint already exists\",     \"details\": {       \"fields\": [         {           \"name\": \"public_key\"         }       ]     }   } } ```  **resource_limit_exceeded**  ```json {   \"error\": {     \"code\": \"resource_limit_exceeded\",     \"message\": \"project limit exceeded\",     \"details\": {       \"limits\": [         {           \"name\": \"project_limit\"         }       ]     }   } } ```  **deprecated_api_endpoint**  ```json {   \"error\": {     \"code\": \"deprecated_api_endpoint\",     \"message\": \"API functionality was removed\",     \"details\": {       \"announcement\": \"https://docs.hetzner.cloud/changelog#2023-07-20-foo-endpoint-is-deprecated\"     }   } } ```  ## Actions  Actions represent asynchronous tasks within the API, targeting one or more resources. Triggering changes in the API may return a `running` action.  An action should be waited upon, until it reaches either the `success` or `error` state. Avoid polling the action's state too frequently to reduce the risk of exhausting your API requests and hitting the [rate limit](#description/rate-limiting).  If an action fails, it will contain details about the underlying error.  Once the asynchronous tasks have completed and the targeted resources are in a consistent state, the action is marked as succeeded.  In some cases, you may trigger multiple changes at once, and only wait for the returned actions at a later stage.  ## Labels  Labels are `key/value` pairs that can be attached to all resources.  Valid label keys have two segments: an optional prefix and name, separated by a slash (`/`). The name segment is required and must be a string of 63 characters or less, beginning and ending with an alphanumeric character (`[a-z0-9A-Z]`) with dashes (`-`), underscores (`_`), dots (`.`), and alphanumerics between. The prefix is optional. If specified, the prefix must be a DNS subdomain: a series of DNS labels separated by dots (`.`), not longer than 253 characters in total, followed by a slash (`/`).  Valid label values must be a string of 63 characters or less and must be empty or begin and end with an alphanumeric character (`[a-z0-9A-Z]`) with dashes (`-`), underscores (`_`), dots (`.`), and alphanumerics between.  The `hetzner.cloud/` prefix is reserved and cannot be used.  **Example Labels**  ```json {   \"labels\": {     \"environment\": \"development\",     \"service\": \"backend\",     \"example.com/my\": \"label\",     \"just-a-key\": \"\"   } } ```  ## Label Selector  For resources with labels, you can filter resources by their labels using the label selector query language.  | Expression           | Meaning                                              | | -------------------- | ---------------------------------------------------- | | `k==v` / `k=v`       | Value of key `k` does equal value `v`                | | `k!=v`               | Value of key `k` does not equal value `v`            | | `k`                  | Key `k` is present                                   | | `!k`                 | Key `k` is not present                               | | `k in (v1,v2,v3)`    | Value of key `k` is `v1`, `v2`, or `v3`              | | `k notin (v1,v2,v3)` | Value of key `k` is neither `v1`, nor `v2`, nor `v3` | | `k1==v,!k2`          | Value of key `k1` is `v` and key `k2` is not present |  ### Examples  - Returns all resources that have a `env=production` label and that don't have a `type=database` label:    `env=production,type!=database`  - Returns all resources that have a `env=testing` or `env=staging` label:    `env in (testing,staging)`  - Returns all resources that don't have a `type` label:    `!type`  ## Pagination  Responses which return multiple items support pagination. If they do support pagination, it can be controlled with following query string parameters:  - A `page` parameter specifies the page to fetch. The number of the first page is 1. - A `per_page` parameter specifies the number of items returned per page. The default value is 25, the maximum value is 50 except otherwise specified in the documentation.  Responses contain a `Link` header with pagination information.  Additionally, if the response body is JSON and the root object is an object, that object has a `pagination` object inside the `meta` object with pagination information:  **Example Pagination**  ```json {     \"servers\": [...],     \"meta\": {         \"pagination\": {             \"page\": 2,             \"per_page\": 25,             \"previous_page\": 1,             \"next_page\": 3,             \"last_page\": 4,             \"total_entries\": 100         }     } } ```  The keys `previous_page`, `next_page`, `last_page`, and `total_entries` may be `null` when on the first page, last page, or when the total number of entries is unknown.  **Example Pagination Link header**  ```http Link: <https://api.hetzner.cloud/v1/actions?page=2&per_page=5>; rel=\"prev\",       <https://api.hetzner.cloud/v1/actions?page=4&per_page=5>; rel=\"next\",       <https://api.hetzner.cloud/v1/actions?page=6&per_page=5>; rel=\"last\" ```  Line breaks have been added for display purposes only and responses may only contain some of the above `rel` values.  ## Rate Limiting  All requests, whether they are authenticated or not, are subject to rate limiting. If you have reached your limit, your requests will be handled with a `429 Too Many Requests` error. Burst requests are allowed. Responses contain several headers which provide information about your current rate limit status.  - The `RateLimit-Limit` header contains the total number of requests you can perform per hour. - The `RateLimit-Remaining` header contains the number of requests remaining in the current rate limit time frame. - The `RateLimit-Reset` header contains a UNIX timestamp of the point in time when your rate limit will have recovered, and you will have the full number of requests available again.  The default limit is 3600 requests per hour and per Project. The number of remaining requests increases gradually. For example, when your limit is 3600 requests per hour, the number of remaining requests will increase by 1 every second.  ## Server Metadata  Your Server can discover metadata about itself by doing a HTTP request to specific URLs. The following data is available:  | Data              | Format | Contents                                                     | | ----------------- | ------ | ------------------------------------------------------------ | | hostname          | text   | Name of the Server as set in the api                         | | instance-id       | number | ID of the server                                             | | public-ipv4       | text   | Primary public IPv4 address                                  | | private-networks  | yaml   | Details about the private networks the Server is attached to | | availability-zone | text   | Name of the availability zone that Server runs in            | | region            | text   | Network zone, e.g. eu-central                                |  **Example: Summary**  ```shell $ curl http://169.254.169.254/hetzner/v1/metadata ```  ```yaml availability-zone: hel1-dc2 hostname: my-server instance-id: 42 public-ipv4: 1.2.3.4 region: eu-central ```  **Example: Hostname**  ```shell $ curl http://169.254.169.254/hetzner/v1/metadata/hostname my-server ```  **Example: Instance ID**  ```shell $ curl http://169.254.169.254/hetzner/v1/metadata/instance-id 42 ```  **Example: Public IPv4**  ```shell $ curl http://169.254.169.254/hetzner/v1/metadata/public-ipv4 1.2.3.4 ```  **Example: Private Networks**  ```shell $ curl http://169.254.169.254/hetzner/v1/metadata/private-networks ```  ```yaml - ip: 10.0.0.2   alias_ips: [10.0.0.3, 10.0.0.4]   interface_num: 1   mac_address: 86:00:00:2a:7d:e0   network_id: 1234   network_name: nw-test1   network: 10.0.0.0/8   subnet: 10.0.0.0/24   gateway: 10.0.0.1 - ip: 192.168.0.2   alias_ips: []   interface_num: 2   mac_address: 86:00:00:2a:7d:e1   network_id: 4321   network_name: nw-test2   network: 192.168.0.0/16   subnet: 192.168.0.0/24   gateway: 192.168.0.1 ```  **Example: Availability Zone**  ```shell $ curl http://169.254.169.254/hetzner/v1/metadata/availability-zone hel1-dc2 ```  **Example: Region**  ```shell $ curl http://169.254.169.254/hetzner/v1/metadata/region eu-central ```  ## Sorting  Some responses which return multiple items support sorting. If they do support sorting the documentation states which fields can be used for sorting. You specify sorting with the `sort` query string parameter. You can sort by multiple fields. You can set the sort direction by appending `:asc` or `:desc` to the field name. By default, ascending sorting is used.  **Example: Sorting**  ``` https://api.hetzner.cloud/v1/actions?sort=status https://api.hetzner.cloud/v1/actions?sort=status:asc https://api.hetzner.cloud/v1/actions?sort=status:desc https://api.hetzner.cloud/v1/actions?sort=status:asc&sort=command:desc ```  ## Deprecation Notices  You can find all announced deprecations in our [Changelog](/changelog). 
+ *
+ * The version of the OpenAPI document: 1.0.0
+ * 
+ *
+ * NOTE: This class is auto generated by OpenAPI Generator (https://openapi-generator.tech).
+ * https://openapi-generator.tech
+ * Do not edit the class manually.
+ */
 package hcloud.api
 
 import hcloud.models.CreateLoadBalancer201Response
@@ -208,79 +33,43 @@ import sttp.client4.*
 import sttp.model.Method
 
 object LoadBalancers:
-  def apply(
-      baseUrl: String = "https://api.hetzner.cloud/v1"
-  ): LoadBalancers[hcloud.Authorization.NoAuthorization.type] =
-    LoadBalancers(baseUrl, hcloud.Authorization.NoAuthorization)
-  def withBasicAuth(
-      baseUrl: String,
-      username: String,
-      password: String
-  ): LoadBalancers[hcloud.Authorization.BasicAuth] =
+  def apply(baseUrl: String = "https://api.hetzner.cloud/v1"): LoadBalancers[hcloud.Authorization.NoAuthorization.type] = LoadBalancers(baseUrl, hcloud.Authorization.NoAuthorization)
+  def withBasicAuth(baseUrl: String, username: String, password: String): LoadBalancers[hcloud.Authorization.BasicAuth] =
     LoadBalancers(baseUrl, hcloud.Authorization.BasicAuth(username, password))
 
-  def withApiKeyAuth(
-      baseUrl: String,
-      apiKey: String
-  ): LoadBalancers[hcloud.Authorization.ApiKey] =
+  def withApiKeyAuth(baseUrl: String, apiKey: String): LoadBalancers[hcloud.Authorization.ApiKey] =
     LoadBalancers(baseUrl, hcloud.Authorization.ApiKey(apiKey))
 
-  def withBearerTokenAuth(
-      baseUrl: String,
-      token: String
-  ): LoadBalancers[hcloud.Authorization.BearerToken] =
+  def withBearerTokenAuth(baseUrl: String, token: String): LoadBalancers[hcloud.Authorization.BearerToken] =
     LoadBalancers(baseUrl, hcloud.Authorization.BearerToken(token))
 
-case class LoadBalancers[Auth <: hcloud.Authorization] private (
-    baseUrl: String,
-    authConfig: hcloud.Authorization
-):
-  def withBasicAuth(
-      username: String,
-      password: String
-  ): LoadBalancers[hcloud.Authorization.BasicAuth] =
+case class LoadBalancers[Auth <: hcloud.Authorization] private (baseUrl: String, authConfig: hcloud.Authorization):
+  def withBasicAuth(username: String, password: String): LoadBalancers[hcloud.Authorization.BasicAuth] =
     copy(authConfig = hcloud.Authorization.BasicAuth(username, password))
 
-  def withApiKeyAuth(
-      apiKey: String
-  ): LoadBalancers[hcloud.Authorization.ApiKey] =
+  def withApiKeyAuth(apiKey: String): LoadBalancers[hcloud.Authorization.ApiKey] =
     copy(authConfig = hcloud.Authorization.ApiKey(apiKey))
 
   def withNoAuth: LoadBalancers[hcloud.Authorization.NoAuthorization.type] =
     copy(authConfig = hcloud.Authorization.NoAuthorization)
 
-  def withBearerTokenAuth(
-      token: String
-  ): LoadBalancers[hcloud.Authorization.BearerToken] =
+  def withBearerTokenAuth(token: String): LoadBalancers[hcloud.Authorization.BearerToken] =
     copy(authConfig = hcloud.Authorization.BearerToken(token))
 
-  /** Creates a Load Balancer. #### Operation specific errors | Status | Code |
-    * Description | | --- | --- | --- | | `412` | `source_port_already_used` |
-    * The source port you are trying to add is already in use | | `422` |
-    * `ip_not_owned` | The IP is not owned by the owner of the project of the
-    * Load Balancer | | `422` | `load_balancer_not_attached_to_network` | The
-    * Load Balancer is not attached to a network | | `422` |
-    * `resolve_cloud_private_targets_error` | The server you are trying to add
-    * as a target is not attached to the same network as the Load Balancer | |
-    * `422` | `resolve_cloud_public_targets_error` | The server that you are
-    * trying to add as a public target does not have a public IPv4 address | |
-    * `422` | `target_already_defined` | The Load Balancer target you are trying
-    * to define is already defined |
-    *
-    * Expected answers: code 201 : CreateLoadBalancer201Response (Request
-    * succeeded.) code 4xx : GetActions4xxResponse (Request failed with a user
-    * error.) code 5xx : GetActions5xxResponse (Request failed with a server
-    * error.)
-    *
-    * Available security schemes: APIToken (http)
-    *
-    * @param createLoadBalancerRequest
-    */
-  def createLoadBalancer(createLoadBalancerRequest: CreateLoadBalancerRequest)(
-      using Auth <:< hcloud.Authorization.BearerToken
-  ): sttp.client4.Request[
-    Either[ResponseException[String], CreateLoadBalancer201Response]
-  ] =
+  /**
+   * Creates a Load Balancer.  #### Operation specific errors  | Status | Code | Description | | --- | --- | --- | | `412` | `source_port_already_used` | The source port you are trying to add is already in use | | `422` | `ip_not_owned` | The IP is not owned by the owner of the project of the Load Balancer | | `422` | `load_balancer_not_attached_to_network` | The Load Balancer is not attached to a network | | `422` | `resolve_cloud_private_targets_error` | The server you are trying to add as a target is not attached to the same network as the Load Balancer | | `422` | `resolve_cloud_public_targets_error` | The server that you are trying to add as a public target does not have a public IPv4 address | | `422` | `target_already_defined` | The Load Balancer target you are trying to define is already defined | 
+   * 
+   * Expected answers:
+   *   code 201 : CreateLoadBalancer201Response (Request succeeded.)
+   *   code 4xx : GetActions4xxResponse (Request failed with a user error.)
+   *   code 5xx : GetActions5xxResponse (Request failed with a server error.)
+   * 
+   * Available security schemes:
+   *   APIToken (http)
+   * 
+   * @param createLoadBalancerRequest 
+   */
+  def createLoadBalancer(createLoadBalancerRequest: CreateLoadBalancerRequest)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], CreateLoadBalancer201Response]] =
     val requestURL =
       uri"$baseUrl/load_balancers"
 
@@ -291,22 +80,21 @@ case class LoadBalancers[Auth <: hcloud.Authorization] private (
       .body(asJson(createLoadBalancerRequest))
       .response(asJson[CreateLoadBalancer201Response])
 
-  /** Deletes a Load Balancer.
-    *
-    * Expected answers: code 204 : (Request succeeded.) code 4xx :
-    * GetActions4xxResponse (Request failed with a user error.) code 5xx :
-    * GetActions5xxResponse (Request failed with a server error.)
-    *
-    * Available security schemes: APIToken (http)
-    *
-    * @param id
-    *   ID of the Load Balancer.
-    */
-  def deleteLoadBalancer(id: Long)(using
-      Auth <:< hcloud.Authorization.BearerToken
-  ): sttp.client4.Request[Either[ResponseException[String], Unit]] =
-    val idPathParam =
-      PathSerializable.serialize("id", id, PathStyleFormat.SIMPLE, false)
+  /**
+   * Deletes a Load Balancer. 
+   * 
+   * Expected answers:
+   *   code 204 :  (Request succeeded.)
+   *   code 4xx : GetActions4xxResponse (Request failed with a user error.)
+   *   code 5xx : GetActions5xxResponse (Request failed with a server error.)
+   * 
+   * Available security schemes:
+   *   APIToken (http)
+   * 
+   * @param id ID of the Load Balancer.
+   */
+  def deleteLoadBalancer(id: Long)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], Unit]] =
+    val idPathParam = PathSerializable.serialize("id", id, PathStyleFormat.SIMPLE, false)
     val requestURL =
       uri"$baseUrl/load_balancers/${idPathParam}"
 
@@ -314,31 +102,23 @@ case class LoadBalancers[Auth <: hcloud.Authorization] private (
       .method(Method.DELETE, requestURL)
       .contentType("application/json")
       .auth(authConfig)
-      .response(
-        asString.mapWithMetadata(
-          ResponseAs.deserializeRightWithError(_ => Right(()))
-        )
-      )
+      .response(asString.mapWithMetadata(ResponseAs.deserializeRightWithError(_ => Right(()))))
 
-  /** Gets a specific Load Balancer object.
-    *
-    * Expected answers: code 200 : GetLoadBalancer200Response (Request
-    * succeeded.) code 4xx : GetActions4xxResponse (Request failed with a user
-    * error.) code 5xx : GetActions5xxResponse (Request failed with a server
-    * error.)
-    *
-    * Available security schemes: APIToken (http)
-    *
-    * @param id
-    *   ID of the Load Balancer.
-    */
-  def getLoadBalancer(id: Long)(using
-      Auth <:< hcloud.Authorization.BearerToken
-  ): sttp.client4.Request[
-    Either[ResponseException[String], GetLoadBalancer200Response]
-  ] =
-    val idPathParam =
-      PathSerializable.serialize("id", id, PathStyleFormat.SIMPLE, false)
+  /**
+   * Gets a specific Load Balancer object. 
+   * 
+   * Expected answers:
+   *   code 200 : GetLoadBalancer200Response (Request succeeded.)
+   *   code 4xx : GetActions4xxResponse (Request failed with a user error.)
+   *   code 5xx : GetActions5xxResponse (Request failed with a server error.)
+   * 
+   * Available security schemes:
+   *   APIToken (http)
+   * 
+   * @param id ID of the Load Balancer.
+   */
+  def getLoadBalancer(id: Long)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], GetLoadBalancer200Response]] =
+    val idPathParam = PathSerializable.serialize("id", id, PathStyleFormat.SIMPLE, false)
     val requestURL =
       uri"$baseUrl/load_balancers/${idPathParam}"
 
@@ -348,73 +128,31 @@ case class LoadBalancers[Auth <: hcloud.Authorization] private (
       .auth(authConfig)
       .response(asJson[GetLoadBalancer200Response])
 
-  /** You must specify the type of metric to get: `open_connections`,
-    * `connections_per_second`, `requests_per_second` or `bandwidth`. You can
-    * also specify more than one type by comma separation, e.g.
-    * `requests_per_second,bandwidth`. Depending on the type you will get
-    * different time series data: |Type | Timeseries | Unit | Description | |---- |------------|------|-------------| |
-    * open_connections | open_connections | number | Open connections | |
-    * connections_per_second | connections_per_second | connections/s |
-    * Connections per second | | requests_per_second | requests_per_second |
-    * requests/s | Requests per second | | bandwidth | bandwidth.in | bytes/s |
-    * Ingress bandwidth | || bandwidth.out | bytes/s | Egress bandwidth |
-    * Metrics are available for the last 30 days only. If you do not provide the
-    * step argument we will automatically adjust it so that 200 samples are
-    * returned. We limit the number of samples to a maximum of 500 and will
-    * adjust the step parameter accordingly.
-    *
-    * Expected answers: code 200 : GetLoadBalancerMetrics200Response (Request
-    * succeeded.) code 4xx : GetActions4xxResponse (Request failed with a user
-    * error.) code 5xx : GetActions5xxResponse (Request failed with a server
-    * error.)
-    *
-    * Available security schemes: APIToken (http)
-    *
-    * @param id
-    *   ID of the Load Balancer.
-    * @param `type`
-    *   Type of metrics to get.
-    * @param start
-    *   Start of period to get Metrics for (must be in
-    *   [RFC3339](https://datatracker.ietf.org/doc/html/rfc3339#section-5.6)
-    *   format).
-    * @param end
-    *   End of period to get Metrics for (must be in
-    *   [RFC3339](https://datatracker.ietf.org/doc/html/rfc3339#section-5.6)
-    *   format).
-    * @param step
-    *   Resolution of results in seconds.
-    */
-  def getLoadBalancerMetrics(
-      id: Long,
-      `type`: Seq[String],
-      start: String,
-      end: String,
-      step: Option[String] = scala.None
-  )(using
-      Auth <:< hcloud.Authorization.BearerToken
-  ): sttp.client4.Request[
-    Either[ResponseException[String], GetLoadBalancerMetrics200Response]
-  ] =
-    val idPathParam =
-      PathSerializable.serialize("id", id, PathStyleFormat.SIMPLE, false)
+  /**
+   * You must specify the type of metric to get: `open_connections`, `connections_per_second`, `requests_per_second` or `bandwidth`. You can also specify more than one type by comma separation, e.g. `requests_per_second,bandwidth`.  Depending on the type you will get different time series data:  |Type | Timeseries | Unit | Description | |---- |------------|------|-------------| | open_connections | open_connections | number | Open connections | | connections_per_second | connections_per_second | connections/s | Connections per second | | requests_per_second | requests_per_second | requests/s | Requests per second | | bandwidth | bandwidth.in | bytes/s | Ingress bandwidth | || bandwidth.out | bytes/s | Egress bandwidth |  Metrics are available for the last 30 days only.  If you do not provide the step argument we will automatically adjust it so that 200 samples are returned.  We limit the number of samples to a maximum of 500 and will adjust the step parameter accordingly. 
+   * 
+   * Expected answers:
+   *   code 200 : GetLoadBalancerMetrics200Response (Request succeeded.)
+   *   code 4xx : GetActions4xxResponse (Request failed with a user error.)
+   *   code 5xx : GetActions5xxResponse (Request failed with a server error.)
+   * 
+   * Available security schemes:
+   *   APIToken (http)
+   * 
+   * @param id ID of the Load Balancer.
+   * @param `type` Type of metrics to get.
+   * @param start Start of period to get Metrics for (must be in [RFC3339](https://datatracker.ietf.org/doc/html/rfc3339#section-5.6) format).
+   * @param end End of period to get Metrics for (must be in [RFC3339](https://datatracker.ietf.org/doc/html/rfc3339#section-5.6) format).
+   * @param step Resolution of results in seconds.
+   */
+  def getLoadBalancerMetrics(id: Long, `type`: Seq[String], start: String, end: String, step: Option[String] = scala.None)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], GetLoadBalancerMetrics200Response]] =
+    val idPathParam = PathSerializable.serialize("id", id, PathStyleFormat.SIMPLE, false)
     val requestURL =
       uri"$baseUrl/load_balancers/${idPathParam}/metrics"
-        .addParams(
-          FormSerializable
-            .serialize("type", `type`, FormStyleFormat.FORM, true): _*
-        )
-        .addParams(
-          FormSerializable
-            .serialize("start", start, FormStyleFormat.FORM, true): _*
-        )
-        .addParams(
-          FormSerializable.serialize("end", end, FormStyleFormat.FORM, true): _*
-        )
-        .addParams(
-          FormSerializable
-            .serialize("step", step, FormStyleFormat.FORM, true): _*
-        )
+        .addParams(FormSerializable.serialize("type", `type`, FormStyleFormat.FORM, true): _*)
+        .addParams(FormSerializable.serialize("start", start, FormStyleFormat.FORM, true): _*)
+        .addParams(FormSerializable.serialize("end", end, FormStyleFormat.FORM, true): _*)
+        .addParams(FormSerializable.serialize("step", step, FormStyleFormat.FORM, true): _*)
 
     basicRequest
       .method(Method.GET, requestURL)
@@ -422,69 +160,31 @@ case class LoadBalancers[Auth <: hcloud.Authorization] private (
       .auth(authConfig)
       .response(asJson[GetLoadBalancerMetrics200Response])
 
-  /** Gets all existing Load Balancers that you have available.
-    *
-    * Expected answers: code 200 : ListLoadBalancers200Response (Request
-    * succeeded.) code 4xx : GetActions4xxResponse (Request failed with a user
-    * error.) code 5xx : GetActions5xxResponse (Request failed with a server
-    * error.)
-    *
-    * Available security schemes: APIToken (http)
-    *
-    * @param sort
-    *   Sort resources by field and direction. May be used multiple times. For
-    *   more information, see \"[Sorting](#description/sorting)\".
-    * @param name
-    *   Filter resources by their name. The response will only contain the
-    *   resources matching exactly the specified name.
-    * @param labelSelector
-    *   Filter resources by labels. The response will only contain resources
-    *   matching the label selector. For more information, see \"[Label
-    *   Selector](#description/label-selector)\".
-    * @param page
-    *   Page number to return. For more information, see
-    *   \"[Pagination](#description/pagination)\".
-    * @param perPage
-    *   Maximum number of entries returned per page. For more information, see
-    *   \"[Pagination](#description/pagination)\".
-    */
-  def listLoadBalancers(
-      sort: Seq[String],
-      name: Option[String] = scala.None,
-      labelSelector: Option[String] = scala.None,
-      page: Option[Long] = scala.None,
-      perPage: Option[Long] = scala.None
-  )(using
-      Auth <:< hcloud.Authorization.BearerToken
-  ): sttp.client4.Request[
-    Either[ResponseException[String], ListLoadBalancers200Response]
-  ] =
+  /**
+   * Gets all existing Load Balancers that you have available. 
+   * 
+   * Expected answers:
+   *   code 200 : ListLoadBalancers200Response (Request succeeded.)
+   *   code 4xx : GetActions4xxResponse (Request failed with a user error.)
+   *   code 5xx : GetActions5xxResponse (Request failed with a server error.)
+   * 
+   * Available security schemes:
+   *   APIToken (http)
+   * 
+   * @param sort Sort resources by field and direction. May be used multiple times.  For more information, see \"[Sorting](#description/sorting)\". 
+   * @param name Filter resources by their name.  The response will only contain the resources matching exactly the specified name. 
+   * @param labelSelector Filter resources by labels.  The response will only contain resources matching the label selector. For more information, see \"[Label Selector](#description/label-selector)\". 
+   * @param page Page number to return. For more information, see \"[Pagination](#description/pagination)\".
+   * @param perPage Maximum number of entries returned per page. For more information, see \"[Pagination](#description/pagination)\".
+   */
+  def listLoadBalancers(sort: Seq[String], name: Option[String] = scala.None, labelSelector: Option[String] = scala.None, page: Option[Long] = scala.None, perPage: Option[Long] = scala.None)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ListLoadBalancers200Response]] =
     val requestURL =
       uri"$baseUrl/load_balancers"
-        .addParams(
-          FormSerializable
-            .serialize("sort", sort, FormStyleFormat.FORM, true): _*
-        )
-        .addParams(
-          FormSerializable
-            .serialize("name", name, FormStyleFormat.FORM, true): _*
-        )
-        .addParams(
-          FormSerializable.serialize(
-            "label_selector",
-            labelSelector,
-            FormStyleFormat.FORM,
-            true
-          ): _*
-        )
-        .addParams(
-          FormSerializable
-            .serialize("page", page, FormStyleFormat.FORM, true): _*
-        )
-        .addParams(
-          FormSerializable
-            .serialize("per_page", perPage, FormStyleFormat.FORM, true): _*
-        )
+        .addParams(FormSerializable.serialize("sort", sort, FormStyleFormat.FORM, true): _*)
+        .addParams(FormSerializable.serialize("name", name, FormStyleFormat.FORM, true): _*)
+        .addParams(FormSerializable.serialize("label_selector", labelSelector, FormStyleFormat.FORM, true): _*)
+        .addParams(FormSerializable.serialize("page", page, FormStyleFormat.FORM, true): _*)
+        .addParams(FormSerializable.serialize("per_page", perPage, FormStyleFormat.FORM, true): _*)
 
     basicRequest
       .method(Method.GET, requestURL)
@@ -492,31 +192,22 @@ case class LoadBalancers[Auth <: hcloud.Authorization] private (
       .auth(authConfig)
       .response(asJson[ListLoadBalancers200Response])
 
-  /** Updates a Load Balancer. You can update a Load Balancer’s name and a Load
-    * Balancer’s labels. Note: if the Load Balancer object changes during the
-    * request, the response will be a “conflict” error.
-    *
-    * Expected answers: code 200 : GetLoadBalancer200Response (Request
-    * succeeded.) code 4xx : GetActions4xxResponse (Request failed with a user
-    * error.) code 5xx : GetActions5xxResponse (Request failed with a server
-    * error.)
-    *
-    * Available security schemes: APIToken (http)
-    *
-    * @param id
-    *   ID of the Load Balancer.
-    * @param updateLoadBalancerRequest
-    */
-  def updateLoadBalancer(
-      id: Long,
-      updateLoadBalancerRequest: UpdateLoadBalancerRequest
-  )(using
-      Auth <:< hcloud.Authorization.BearerToken
-  ): sttp.client4.Request[
-    Either[ResponseException[String], GetLoadBalancer200Response]
-  ] =
-    val idPathParam =
-      PathSerializable.serialize("id", id, PathStyleFormat.SIMPLE, false)
+  /**
+   * Updates a Load Balancer. You can update a Load Balancer’s name and a Load Balancer’s labels.  Note: if the Load Balancer object changes during the request, the response will be a “conflict” error. 
+   * 
+   * Expected answers:
+   *   code 200 : GetLoadBalancer200Response (Request succeeded.)
+   *   code 4xx : GetActions4xxResponse (Request failed with a user error.)
+   *   code 5xx : GetActions5xxResponse (Request failed with a server error.)
+   * 
+   * Available security schemes:
+   *   APIToken (http)
+   * 
+   * @param id ID of the Load Balancer.
+   * @param updateLoadBalancerRequest 
+   */
+  def updateLoadBalancer(id: Long, updateLoadBalancerRequest: UpdateLoadBalancerRequest)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], GetLoadBalancer200Response]] =
+    val idPathParam = PathSerializable.serialize("id", id, PathStyleFormat.SIMPLE, false)
     val requestURL =
       uri"$baseUrl/load_balancers/${idPathParam}"
 

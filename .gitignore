@@ -44,3 +44,4 @@ terraform.tfvars.json
 terraform.tfvars.sops.json
 #
 age.key.txt
+.mcp.json
