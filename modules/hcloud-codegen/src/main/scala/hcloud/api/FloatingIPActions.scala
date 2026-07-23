@@ -13,7 +13,6 @@ package hcloud.api
 
 import hcloud.models.ActionListResponseWithMeta
 import hcloud.models.ActionResponse
-import hcloud.models.ActionResponse1
 import hcloud.models.FloatingIPActionsAssignRequest
 import hcloud.models.GetActions4xxResponse
 import hcloud.models.GetActions5xxResponse
@@ -61,7 +60,7 @@ case class FloatingIPActions[Auth <: hcloud.Authorization] private (baseUrl: Str
    * Assigns a [Floating IP](#tag/floating-ips) to a [Server](#tag/servers).  #### Operation specific errors  | Status | Code | Description | | --- | --- | --- | | `422` | `floating_ip_assigned` | The [Floating IP](#tag/floating-ips) is already assigned | 
    * 
    * Expected answers:
-   *   code 201 : ActionResponse1 (Request succeeded.)
+   *   code 201 : ActionResponse (Request succeeded.)
    *   code 4xx : GetActions4xxResponse (Request failed with a user error.)
    *   code 5xx : GetActions5xxResponse (Request failed with a server error.)
    * 
@@ -71,7 +70,7 @@ case class FloatingIPActions[Auth <: hcloud.Authorization] private (baseUrl: Str
    * @param id ID of the Floating IP.
    * @param floatingIPActionsAssignRequest 
    */
-  def assignFloatingIp(id: Long, floatingIPActionsAssignRequest: FloatingIPActionsAssignRequest)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse1]] =
+  def assignFloatingIp(id: Long, floatingIPActionsAssignRequest: FloatingIPActionsAssignRequest)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse]] =
     val idPathParam = PathSerializable.serialize("id", id, PathStyleFormat.SIMPLE, false)
     val requestURL =
       uri"$baseUrl/floating_ips/${idPathParam}/actions/assign"
@@ -81,13 +80,13 @@ case class FloatingIPActions[Auth <: hcloud.Authorization] private (baseUrl: Str
       .contentType("application/json")
       .auth(authConfig)
       .body(asJson(floatingIPActionsAssignRequest))
-      .response(asJson[ActionResponse1])
+      .response(asJson[ActionResponse])
 
   /**
    * Change the reverse DNS records for this [Floating IP](#tag/floating-ips).  Allows to modify the PTR records set for the IP address. 
    * 
    * Expected answers:
-   *   code 201 : ActionResponse1 (Request succeeded.)
+   *   code 201 : ActionResponse (Request succeeded.)
    *   code 4xx : GetActions4xxResponse (Request failed with a user error.)
    *   code 5xx : GetActions5xxResponse (Request failed with a server error.)
    * 
@@ -97,7 +96,7 @@ case class FloatingIPActions[Auth <: hcloud.Authorization] private (baseUrl: Str
    * @param id ID of the Floating IP.
    * @param listFloatingIps200ResponseFloatingIpsInnerDnsPtrInner The `ip` attributes specifies for which IP address the record is set. For IPv4 addresses this must be the exact address of the [Floating IP](#tag/floating-ips). For IPv6 addresses this must be a single address within the `/64` subnet of the [Floating IP](#tag/floating-ips).  The `dns_ptr` attribute specifies the hostname used for the IP address. Must be a fully qualified domain name (FQDN) without trailing dot.  For IPv6 [Floating IPs](#tag/floating-ips) up to 100 entries can be created. 
    */
-  def changeFloatingIpDnsPtr(id: Long, listFloatingIps200ResponseFloatingIpsInnerDnsPtrInner: ListFloatingIps200ResponseFloatingIpsInnerDnsPtrInner)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse1]] =
+  def changeFloatingIpDnsPtr(id: Long, listFloatingIps200ResponseFloatingIpsInnerDnsPtrInner: ListFloatingIps200ResponseFloatingIpsInnerDnsPtrInner)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse]] =
     val idPathParam = PathSerializable.serialize("id", id, PathStyleFormat.SIMPLE, false)
     val requestURL =
       uri"$baseUrl/floating_ips/${idPathParam}/actions/change_dns_ptr"
@@ -107,13 +106,13 @@ case class FloatingIPActions[Auth <: hcloud.Authorization] private (baseUrl: Str
       .contentType("application/json")
       .auth(authConfig)
       .body(asJson(listFloatingIps200ResponseFloatingIpsInnerDnsPtrInner))
-      .response(asJson[ActionResponse1])
+      .response(asJson[ActionResponse])
 
   /**
    * Changes the protection settings configured for the [Floating IP](#tag/floating-ips). 
    * 
    * Expected answers:
-   *   code 201 : ActionResponse1 (Request succeeded.)
+   *   code 201 : ActionResponse (Request succeeded.)
    *   code 4xx : GetActions4xxResponse (Request failed with a user error.)
    *   code 5xx : GetActions5xxResponse (Request failed with a server error.)
    * 
@@ -123,7 +122,7 @@ case class FloatingIPActions[Auth <: hcloud.Authorization] private (baseUrl: Str
    * @param id ID of the Floating IP.
    * @param listFloatingIps200ResponseFloatingIpsInnerProtection 
    */
-  def changeFloatingIpProtection(id: Long, listFloatingIps200ResponseFloatingIpsInnerProtection: ListFloatingIps200ResponseFloatingIpsInnerProtection)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse1]] =
+  def changeFloatingIpProtection(id: Long, listFloatingIps200ResponseFloatingIpsInnerProtection: ListFloatingIps200ResponseFloatingIpsInnerProtection)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse]] =
     val idPathParam = PathSerializable.serialize("id", id, PathStyleFormat.SIMPLE, false)
     val requestURL =
       uri"$baseUrl/floating_ips/${idPathParam}/actions/change_protection"
@@ -133,7 +132,7 @@ case class FloatingIPActions[Auth <: hcloud.Authorization] private (baseUrl: Str
       .contentType("application/json")
       .auth(authConfig)
       .body(asJson(listFloatingIps200ResponseFloatingIpsInnerProtection))
-      .response(asJson[ActionResponse1])
+      .response(asJson[ActionResponse])
 
   /**
    * Returns a specific [Action](#tag/actions) for a [Floating IP](#tag/floating-ips). 
@@ -253,7 +252,7 @@ case class FloatingIPActions[Auth <: hcloud.Authorization] private (baseUrl: Str
    * Unassigns a [Floating IP](#tag/floating-ips).  Results in the IP being unreachable. Can be assigned to another resource again. 
    * 
    * Expected answers:
-   *   code 201 : ActionResponse1 (Request succeeded.)
+   *   code 201 : ActionResponse (Request succeeded.)
    *   code 4xx : GetActions4xxResponse (Request failed with a user error.)
    *   code 5xx : GetActions5xxResponse (Request failed with a server error.)
    * 
@@ -262,7 +261,7 @@ case class FloatingIPActions[Auth <: hcloud.Authorization] private (baseUrl: Str
    * 
    * @param id ID of the Floating IP.
    */
-  def unassignFloatingIp(id: Long)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse1]] =
+  def unassignFloatingIp(id: Long)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse]] =
     val idPathParam = PathSerializable.serialize("id", id, PathStyleFormat.SIMPLE, false)
     val requestURL =
       uri"$baseUrl/floating_ips/${idPathParam}/actions/unassign"
@@ -271,6 +270,6 @@ case class FloatingIPActions[Auth <: hcloud.Authorization] private (baseUrl: Str
       .method(Method.POST, requestURL)
       .contentType("application/json")
       .auth(authConfig)
-      .response(asJson[ActionResponse1])
+      .response(asJson[ActionResponse])
 
 end FloatingIPActions

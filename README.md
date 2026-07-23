@@ -1533,3 +1533,280 @@ The network bits change from:
 /14 is 2 bits longer than /12 (14 − 12 = 2), so you must take two bits from the host portion and make them network bits.
 
 Those 2 newly-networked bits can take 4 combinations (00, 01, 10, 11), so the /12 is split into 4 /14 subnets:
+
+`/apis/events.k8s.io/v1/namespaces/{namespace}/events` has:
+- a path param namespace (string)
+- query params `fieldSelector`, `labelSelector`, `continue`, `resourceVersion` (string), `limit`, `timeoutSeconds` (integer), `watch`, `allowWatchBookmarks` (boolean)
+```scala
+def listEventsV1NamespacedEvent(
+    namespace: String,
+    fieldSelector: Option[String] = None,
+    labelSelector: Option[String] = None,
+    limit: Option[Int] = None,
+    timeoutSeconds: Option[Int] = None,
+    watch: Option[Boolean] = None
+): sttp.client4.Request[...] =
+  val namespacePathParam =
+    PathSerializable.serialize("namespace", namespace, PathStyleFormat.SIMPLE, false)
+  val requestURL =
+    uri"$baseUrl/apis/events.k8s.io/v1/namespaces/${namespacePathParam}/events"
+      .addParams(FormSerializable.serialize("fieldSelector", fieldSelector, FormStyleFormat.FORM, true): _*)
+      .addParams(FormSerializable.serialize("labelSelector", labelSelector, FormStyleFormat.FORM, true): _*)
+      .addParams(FormSerializable.serialize("limit",          limit,        FormStyleFormat.FORM, true): _*)
+      .addParams(FormSerializable.serialize("timeoutSeconds", timeoutSeconds, FormStyleFormat.FORM, true): _*)
+      .addParams(FormSerializable.serialize("watch",          watch,        FormStyleFormat.FORM, true): _*)
+
+  basicRequest
+    .method(Method.GET, requestURL)
+    .contentType("application/json")
+    .auth(authConfig)
+    .response(asJson[EventList])
+```
+
+package sbank.db
+
+import sbank.domain.*
+
+import _root_.skunk.*
+import _root_.skunk.codec.all.*
+import _root_.skunk.implicits.*
+
+import io.github.iltotore.iron.*
+import io.github.iltotore.iron.constraint.all.*
+import io.github.iltotore.iron.skunk.*
+
+import java.time.ZoneOffset
+
+object Codecs {
+
+  // ---- ids ----
+  val userId: Codec[UserId]                       = uuid.imap(UserId.assume)(_.value)
+  val cardId: Codec[CardId]                       = uuid.imap(CardId.assume)(_.value)
+  val transactionId: Codec[TransactionId]         = uuid.imap(TransactionId.assume)(_.value)
+  val disputeId: Codec[DisputeId]                 = uuid.imap(DisputeId.assume)(_.value)
+  val loanId: Codec[LoanId]                       = uuid.imap(LoanId.assume)(_.value)
+  val linkedAccountId: Codec[LinkedAccountId]     = uuid.imap(LinkedAccountId.assume)(_.value)
+  val autoPayId: Codec[AutoPayId]                 = uuid.imap(AutoPayId.assume)(_.value)
+  val pointsLedgerId: Codec[PointsLedgerId]       = uuid.imap(PointsLedgerId.assume)(_.value)
+  val educationVideoId: Codec[EducationVideoId]   = uuid.imap(EducationVideoId.assume)(_.value)
+  val watchProgressId: Codec[WatchProgressId]     = uuid.imap(WatchProgressId.assume)(_.value)
+  val taxDocumentId: Codec[TaxDocumentId]         = uuid.imap(TaxDocumentId.assume)(_.value)
+  val notificationId: Codec[NotificationId]       = uuid.imap(NotificationId.assume)(_.value)
+  val supportTicketId: Codec[SupportTicketId]     = uuid.imap(SupportTicketId.assume)(_.value)
+
+  // ---- scalars ----
+  val email: Codec[Email]               = varchar(254).refined[EmailConstraint].imap(Email.assume)(_.value)
+  val phone: Codec[PhoneE164]           = varchar(16).refined[Match["""^\+[1-9][0-9]{7,14}$"""]].imap(PhoneE164.assume)(_.value)
+  val passwordHash: Codec[PasswordHash] = varchar(120).imap(PasswordHash.assume)(_.value)
+  val fullName: Codec[FullName]         = varchar(200).refined[Not[Blank] & MaxLength[200]].imap(FullName.assume)(_.value)
+
+  val ssnHash: Codec[SsnHash]   = bpchar(64).refined[FixedLength[64] & Match["^[0-9a-f]{64}$"]].imap(SsnHash.assume)(_.value)
+  val ssnLast4: Codec[SsnLast4] = bpchar(4).refined[FixedLength[4] & Match["^[0-9]{4}$"]].imap(SsnLast4.assume)(_.value)
+
+  val cardToken: Codec[CardToken]   = varchar(128).refined[Not[Blank] & MaxLength[128]].imap(CardToken.assume)(_.value)
+  val galileoPrn: Codec[GalileoPrn] = varchar(16).refined[Match["^[0-9]{9,16}$"]].imap(GalileoPrn.assume)(_.value)
+  val last4: Codec[Last4]           = bpchar(4).refined[FixedLength[4] & Match["^[0-9]{4}$"]].imap(Last4.assume)(_.value)
+  val cardExpiry: Codec[CardExpiry] = varchar(5).refined[Match["""^(0[1-9]|1[0-2])/[0-9]{2}$"""]].imap(CardExpiry.assume)(_.value)
+  val cardBrand: Codec[CardBrand]   = varchar(32).refined[Not[Blank] & MaxLength[32]].imap(CardBrand.assume)(_.value)
+
+  val amountMinor: Codec[AmountMinor]     = int8.imap(AmountMinor.assume)(_.value)
+  val positiveAmount: Codec[PositiveAmount] = int8.refined[Positive].imap(PositiveAmount.assume)(_.value)
+  val currency: Codec[CurrencyCode]       = bpchar(3).refined[Match["^[A-Z]{3}$"]].imap(CurrencyCode.assume)(_.value)
+  val creditScore: Codec[CreditScore]     = int4.refined[GreaterEqual[300] & LessEqual[850]].imap(CreditScore.assume)(_.value)
+  val aprBps: Codec[AprBps]               = int4.refined[GreaterEqual[0] & LessEqual[100_000]].imap(AprBps.assume)(_.value)
+  val creditLimit: Codec[CreditLimit]     = int8.refined[Positive].imap(CreditLimit.assume)(_.value)
+  val points: Codec[Points]               = int8.refined[GreaterEqual[0]].imap(Points.assume)(_.value)
+
+  val youtubeId: Codec[YoutubeVideoId] =
+    bpchar(11).refined[FixedLength[11] & Match["^[A-Za-z0-9_-]{11}$"]].imap(YoutubeVideoId.assume)(_.value)
+
+  val title: Codec[Title] = varchar(200).refined[Not[Blank] & MaxLength[200]].imap(Title.assume)(_.value)
+  val body: Codec[Body]   = text.refined[Not[Blank] & MaxLength[8000]].imap(Body.assume)(_.value)
+
+  val routingNumber: Codec[RoutingNumber] = bpchar(9).refined[FixedLength[9] & Match["^[0-9]{9}$"]].imap(RoutingNumber.assume)(_.value)
+  val accountNumber: Codec[AccountNumber] = varchar(34).refined[MinLength[6] & MaxLength[34] & Match["^[A-Z0-9]+$"]].imap(AccountNumber.assume)(_.value)
+  val blobRef: Codec[BlobRef]             = varchar(512).refined[Not[Blank] & MaxLength[512] & Match["^[A-Za-z0-9._/-]+$"]].imap(BlobRef.assume)(_.value)
+
+  // ---- enums ----
+
+  val kycStatus: Codec[KycStatus] = varchar(16).eimap[KycStatus] {
+    case "not_started" => Right(KycStatus.NotStarted)
+    case "pending"     => Right(KycStatus.Pending)
+    case "approved"    => Right(KycStatus.Approved)
+    case "rejected"    => Right(KycStatus.Rejected)
+    case o             => Left(s"unknown kyc status: $o")
+  } {
+    case KycStatus.NotStarted => "not_started"
+    case KycStatus.Pending    => "pending"
+    case KycStatus.Approved   => "approved"
+    case KycStatus.Rejected   => "rejected"
+  }
+
+  val cardStatus: Codec[CardStatus] = varchar(12).eimap[CardStatus] {
+    case "applied"    => Right(CardStatus.Applied)
+    case "issued"     => Right(CardStatus.Issued)
+    case "active"     => Right(CardStatus.Active)
+    case "frozen"     => Right(CardStatus.Frozen)
+    case "cancelled"  => Right(CardStatus.Cancelled)
+    case o            => Left(s"unknown card status: $o")
+  } { _.toString.toLowerCase }
+
+  val transactionKind: Codec[TransactionKind] = varchar(20).eimap[TransactionKind] {
+    case "purchase"          => Right(TransactionKind.Purchase)
+    case "refund"            => Right(TransactionKind.Refund)
+    case "fee"               => Right(TransactionKind.Fee)
+    case "interest"          => Right(TransactionKind.Interest)
+    case "payment"           => Right(TransactionKind.Payment)
+    case "cashback_accrual"  => Right(TransactionKind.CashbackAccrual)
+    case "adjustment"        => Right(TransactionKind.Adjustment)
+    case o                   => Left(s"unknown tx kind: $o")
+  } {
+    case TransactionKind.Purchase         => "purchase"
+    case TransactionKind.Refund           => "refund"
+    case TransactionKind.Fee              => "fee"
+    case TransactionKind.Interest         => "interest"
+    case TransactionKind.Payment          => "payment"
+    case TransactionKind.CashbackAccrual  => "cashback_accrual"
+    case TransactionKind.Adjustment       => "adjustment"
+  }
+
+  val transactionStatus: Codec[TransactionStatus] = varchar(12).eimap[TransactionStatus] {
+    case "pending"   => Right(TransactionStatus.Pending)
+    case "posted"    => Right(TransactionStatus.Posted)
+    case "disputed"  => Right(TransactionStatus.Disputed)
+    case "reversed"  => Right(TransactionStatus.Reversed)
+    case "declined"  => Right(TransactionStatus.Declined)
+    case o           => Left(s"unknown tx status: $o")
+  } { _.toString.toLowerCase }
+
+  val disputeStatus: Codec[DisputeStatus] = varchar(24).eimap[DisputeStatus] {
+    case "open"               => Right(DisputeStatus.Open)
+    case "resolved_customer"  => Right(DisputeStatus.ResolvedCustomer)
+    case "resolved_merchant"  => Right(DisputeStatus.ResolvedMerchant)
+    case "withdrawn"          => Right(DisputeStatus.Withdrawn)
+    case o                    => Left(s"unknown dispute status: $o")
+  } {
+    case DisputeStatus.Open              => "open"
+    case DisputeStatus.ResolvedCustomer  => "resolved_customer"
+    case DisputeStatus.ResolvedMerchant  => "resolved_merchant"
+    case DisputeStatus.Withdrawn         => "withdrawn"
+  }
+
+  val loanKind: Codec[LoanKind] = varchar(16).eimap[LoanKind] {
+    case "student"  => Right(LoanKind.Student)
+    case "personal" => Right(LoanKind.Personal)
+    case o          => Left(s"unknown loan kind: $o")
+  } { _.toString.toLowerCase }
+
+  val loanStatus: Codec[LoanStatus] = varchar(16).eimap[LoanStatus] {
+    case "applied"   => Right(LoanStatus.Applied)
+    case "approved"  => Right(LoanStatus.Approved)
+    case "disbursed" => Right(LoanStatus.Disbursed)
+    case "repaying"  => Right(LoanStatus.Repaying)
+    case "paid_off"  => Right(LoanStatus.PaidOff)
+    case "defaulted" => Right(LoanStatus.Defaulted)
+    case "rejected"  => Right(LoanStatus.Rejected)
+    case o           => Left(s"unknown loan status: $o")
+  } {
+    case LoanStatus.Applied   => "applied"
+    case LoanStatus.Approved  => "approved"
+    case LoanStatus.Disbursed => "disbursed"
+    case LoanStatus.Repaying  => "repaying"
+    case LoanStatus.PaidOff   => "paid_off"
+    case LoanStatus.Defaulted => "defaulted"
+    case LoanStatus.Rejected  => "rejected"
+  }
+
+  val pointsKind: Codec[PointsEventKind] = varchar(16).eimap[PointsEventKind] {
+    case "earn"        => Right(PointsEventKind.Earn)
+    case "redeem"      => Right(PointsEventKind.Redeem)
+    case "adjustment"  => Right(PointsEventKind.Adjustment)
+    case o             => Left(s"unknown points kind: $o")
+  } { _.toString.toLowerCase }
+
+  val notificationKind: Codec[NotificationKind] = varchar(24).eimap[NotificationKind] {
+    case "transaction"    => Right(NotificationKind.Transaction)
+    case "marketing"      => Right(NotificationKind.Marketing)
+    case "education_new"  => Right(NotificationKind.EducationNew)
+    case "score_update"   => Right(NotificationKind.ScoreUpdate)
+    case "support"        => Right(NotificationKind.Support)
+    case o                => Left(s"unknown notification kind: $o")
+  } {
+    case NotificationKind.Transaction   => "transaction"
+    case NotificationKind.Marketing     => "marketing"
+    case NotificationKind.EducationNew  => "education_new"
+    case NotificationKind.ScoreUpdate   => "score_update"
+    case NotificationKind.Support       => "support"
+  }
+
+  val notificationChannel: Codec[NotificationChannel] = varchar(8).eimap[NotificationChannel] {
+    case "push"  => Right(NotificationChannel.Push)
+    case "email" => Right(NotificationChannel.Email)
+    case "sms"   => Right(NotificationChannel.Sms)
+    case o       => Left(s"unknown channel: $o")
+  } { _.toString.toLowerCase }
+
+  val autoPayCadence: Codec[AutoPayCadence] = varchar(16).eimap[AutoPayCadence] {
+    case "weekly"     => Right(AutoPayCadence.Weekly)
+    case "bi_weekly"  => Right(AutoPayCadence.BiWeekly)
+    case "monthly"    => Right(AutoPayCadence.Monthly)
+    case o            => Left(s"unknown cadence: $o")
+  } {
+    case AutoPayCadence.Weekly   => "weekly"
+    case AutoPayCadence.BiWeekly => "bi_weekly"
+    case AutoPayCadence.Monthly  => "monthly"
+  }
+
+  private val instant: Codec[java.time.Instant] =
+    timestamptz.imap(_.toInstant)(_.atOffset(ZoneOffset.UTC))
+
+  // ---- aggregates ----
+
+  val user: Codec[User] =
+    (userId *: email *: phone *: passwordHash *: fullName *: ssnHash.opt *: ssnLast4.opt *: date.opt *:
+      kycStatus *: creditScore.opt *: instant.opt *: instant).to[User]
+
+  val card: Codec[Card] =
+    (cardId *: userId *: galileoPrn *: cardToken *: cardBrand *: last4 *: cardExpiry *: cardStatus *:
+      creditLimit *: int8 *: aprBps *: instant.opt *: instant).to[Card]
+
+  val transaction: Codec[CardTransaction] =
+    (transactionId *: cardId *: transactionKind *: amountMinor *: currency *: title.opt *:
+      instant *: transactionStatus *: varchar(128).opt).to[CardTransaction]
+
+  val dispute: Codec[Dispute] =
+    (disputeId *: transactionId *: userId *: body *: disputeStatus *: instant *: instant.opt).to[Dispute]
+
+  val loan: Codec[Loan] =
+    (loanId *: userId *: loanKind *: positiveAmount *: aprBps *: int4 *: loanStatus *: int8 *:
+      instant *: instant.opt).to[Loan]
+
+  val linkedAccount: Codec[LinkedBankAccount] =
+    (linkedAccountId *: userId *: routingNumber *: last4 *: fullName *: varchar(128).opt *: instant).to[LinkedBankAccount]
+
+  val autoPay: Codec[AutoPay] =
+    (autoPayId *: userId *: cardId *: linkedAccountId *: autoPayCadence *: positiveAmount *: date *: bool).to[AutoPay]
+
+  val pointsLedger: Codec[PointsLedger] =
+    (pointsLedgerId *: userId *: pointsKind *: points *: int8 *: transactionId.opt *: educationVideoId.opt *:
+      title.opt *: instant).to[PointsLedger]
+
+  val educationVideo: Codec[EducationVideo] =
+    (educationVideoId *: youtubeId *: title *: body *: int4 *: points *: instant).to[EducationVideo]
+
+  val watchProgress: Codec[WatchProgress] =
+    (watchProgressId *: userId *: educationVideoId *: int4 *: bool *: instant.opt).to[WatchProgress]
+
+  val taxDocument: Codec[TaxDocument] =
+    (taxDocumentId *: userId *: int4 *: varchar(32) *: blobRef *: date *: instant).to[TaxDocument]
+
+  val notificationPref: Codec[NotificationPref] =
+    (userId *: notificationKind *: notificationChannel *: bool).to[NotificationPref]
+
+  val notificationEvent: Codec[NotificationEvent] =
+    (notificationId *: userId *: notificationKind *: title *: body *: notificationChannel *:
+      instant.opt *: instant.opt *: instant).to[NotificationEvent]
+
+  val supportTicket: Codec[SupportTicket] =
+    (supportTicketId *: userId *: varchar(16) *: title *: body *: instant *: instant.opt).to[SupportTicket]
+}

@@ -11,7 +11,7 @@
  */
 package hcloud.api
 
-import hcloud.models.ActionResponse1
+import hcloud.models.ActionResponse
 import hcloud.models.AddZoneRrsetRecordsRequest
 import hcloud.models.ChangeZoneRrsetTtlRequest
 import hcloud.models.GetActions4xxResponse
@@ -61,7 +61,7 @@ case class ZoneRRSetActions[Auth <: hcloud.Authorization] private (baseUrl: Stri
    * Adds resource records (RRs) to an [RRSet](#tag/zone-rrsets) in the [Zone](#tag/zones).  For convenience, the [RRSet](#tag/zone-rrsets) will be automatically created if it doesn't exist. Otherwise, the new records are appended to the existing [RRSet](#tag/zone-rrsets).  Only applicable for [Zones](#tag/zones) in primary mode.  #### Operation specific errors  | Status | Code | Description | | --- | --- | --- | | `422` | `incorrect_zone_mode` | This operation is not supported for this Zone's `mode`. | 
    * 
    * Expected answers:
-   *   code 201 : ActionResponse1 (Request succeeded.)
+   *   code 201 : ActionResponse (Request succeeded.)
    *   code 4xx : GetActions4xxResponse (Request failed with a user error.)
    *   code 5xx : GetActions5xxResponse (Request failed with a server error.)
    * 
@@ -73,7 +73,7 @@ case class ZoneRRSetActions[Auth <: hcloud.Authorization] private (baseUrl: Stri
    * @param rrType 
    * @param addZoneRrsetRecordsRequest 
    */
-  def addZoneRrsetRecords(idOrName: String, rrName: String, rrType: String, addZoneRrsetRecordsRequest: AddZoneRrsetRecordsRequest)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse1]] =
+  def addZoneRrsetRecords(idOrName: String, rrName: String, rrType: String, addZoneRrsetRecordsRequest: AddZoneRrsetRecordsRequest)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse]] =
     val idOrNamePathParam = PathSerializable.serialize("id_or_name", idOrName, PathStyleFormat.SIMPLE, false)
     val rrNamePathParam = PathSerializable.serialize("rr_name", rrName, PathStyleFormat.SIMPLE, false)
     val rrTypePathParam = PathSerializable.serialize("rr_type", rrType, PathStyleFormat.SIMPLE, false)
@@ -85,13 +85,13 @@ case class ZoneRRSetActions[Auth <: hcloud.Authorization] private (baseUrl: Stri
       .contentType("application/json")
       .auth(authConfig)
       .body(asJson(addZoneRrsetRecordsRequest))
-      .response(asJson[ActionResponse1])
+      .response(asJson[ActionResponse])
 
   /**
    * Changes the protection of an [RRSet](#tag/zone-rrsets) in the [Zone](#tag/zones).  Only applicable for [Zones](#tag/zones) in primary mode.  #### Operation specific errors  | Status | Code | Description | | --- | --- | --- | | `422` | `incorrect_zone_mode` | This operation is not supported for this Zone's `mode`. | 
    * 
    * Expected answers:
-   *   code 201 : ActionResponse1 (Request succeeded.)
+   *   code 201 : ActionResponse (Request succeeded.)
    *   code 4xx : GetActions4xxResponse (Request failed with a user error.)
    *   code 5xx : GetActions5xxResponse (Request failed with a server error.)
    * 
@@ -103,7 +103,7 @@ case class ZoneRRSetActions[Auth <: hcloud.Authorization] private (baseUrl: Stri
    * @param rrType 
    * @param rRSetProtection 
    */
-  def changeZoneRrsetProtection(idOrName: String, rrName: String, rrType: String, rRSetProtection: RRSetProtection)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse1]] =
+  def changeZoneRrsetProtection(idOrName: String, rrName: String, rrType: String, rRSetProtection: RRSetProtection)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse]] =
     val idOrNamePathParam = PathSerializable.serialize("id_or_name", idOrName, PathStyleFormat.SIMPLE, false)
     val rrNamePathParam = PathSerializable.serialize("rr_name", rrName, PathStyleFormat.SIMPLE, false)
     val rrTypePathParam = PathSerializable.serialize("rr_type", rrType, PathStyleFormat.SIMPLE, false)
@@ -115,13 +115,13 @@ case class ZoneRRSetActions[Auth <: hcloud.Authorization] private (baseUrl: Stri
       .contentType("application/json")
       .auth(authConfig)
       .body(asJson(rRSetProtection))
-      .response(asJson[ActionResponse1])
+      .response(asJson[ActionResponse])
 
   /**
    * Changes the Time To Live (TTL) of an [RRSet](#tag/zone-rrsets) in the [Zone](#tag/zones).  Only applicable for [Zones](#tag/zones) in primary mode.  #### Operation specific errors  | Status | Code | Description | | --- | --- | --- | | `422` | `incorrect_zone_mode` | This operation is not supported for this Zone's `mode`. | 
    * 
    * Expected answers:
-   *   code 201 : ActionResponse1 (Request succeeded.)
+   *   code 201 : ActionResponse (Request succeeded.)
    *   code 4xx : GetActions4xxResponse (Request failed with a user error.)
    *   code 5xx : GetActions5xxResponse (Request failed with a server error.)
    * 
@@ -133,7 +133,7 @@ case class ZoneRRSetActions[Auth <: hcloud.Authorization] private (baseUrl: Stri
    * @param rrType 
    * @param changeZoneRrsetTtlRequest 
    */
-  def changeZoneRrsetTtl(idOrName: String, rrName: String, rrType: String, changeZoneRrsetTtlRequest: ChangeZoneRrsetTtlRequest)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse1]] =
+  def changeZoneRrsetTtl(idOrName: String, rrName: String, rrType: String, changeZoneRrsetTtlRequest: ChangeZoneRrsetTtlRequest)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse]] =
     val idOrNamePathParam = PathSerializable.serialize("id_or_name", idOrName, PathStyleFormat.SIMPLE, false)
     val rrNamePathParam = PathSerializable.serialize("rr_name", rrName, PathStyleFormat.SIMPLE, false)
     val rrTypePathParam = PathSerializable.serialize("rr_type", rrType, PathStyleFormat.SIMPLE, false)
@@ -145,13 +145,13 @@ case class ZoneRRSetActions[Auth <: hcloud.Authorization] private (baseUrl: Stri
       .contentType("application/json")
       .auth(authConfig)
       .body(asJson(changeZoneRrsetTtlRequest))
-      .response(asJson[ActionResponse1])
+      .response(asJson[ActionResponse])
 
   /**
    * Removes resource records (RRs) from an existing [RRSet](#tag/zone-rrsets) in the [Zone](#tag/zones).  For convenience, the [RRSet](#tag/zone-rrsets) will be automatically deleted if it doesn't contain any RRs afterwards.  Only applicable for [Zones](#tag/zones) in primary mode.  #### Operation specific errors  | Status | Code | Description | | --- | --- | --- | | `422` | `incorrect_zone_mode` | This operation is not supported for this Zone's `mode`. | 
    * 
    * Expected answers:
-   *   code 201 : ActionResponse1 (Request succeeded.)
+   *   code 201 : ActionResponse (Request succeeded.)
    *   code 4xx : GetActions4xxResponse (Request failed with a user error.)
    *   code 5xx : GetActions5xxResponse (Request failed with a server error.)
    * 
@@ -163,7 +163,7 @@ case class ZoneRRSetActions[Auth <: hcloud.Authorization] private (baseUrl: Stri
    * @param rrType 
    * @param removeZoneRrsetRecordsRequest 
    */
-  def removeZoneRrsetRecords(idOrName: String, rrName: String, rrType: String, removeZoneRrsetRecordsRequest: RemoveZoneRrsetRecordsRequest)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse1]] =
+  def removeZoneRrsetRecords(idOrName: String, rrName: String, rrType: String, removeZoneRrsetRecordsRequest: RemoveZoneRrsetRecordsRequest)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse]] =
     val idOrNamePathParam = PathSerializable.serialize("id_or_name", idOrName, PathStyleFormat.SIMPLE, false)
     val rrNamePathParam = PathSerializable.serialize("rr_name", rrName, PathStyleFormat.SIMPLE, false)
     val rrTypePathParam = PathSerializable.serialize("rr_type", rrType, PathStyleFormat.SIMPLE, false)
@@ -175,13 +175,13 @@ case class ZoneRRSetActions[Auth <: hcloud.Authorization] private (baseUrl: Stri
       .contentType("application/json")
       .auth(authConfig)
       .body(asJson(removeZoneRrsetRecordsRequest))
-      .response(asJson[ActionResponse1])
+      .response(asJson[ActionResponse])
 
   /**
    * Overwrites the resource records (RRs) of an existing [RRSet](#tag/zone-rrsets) in the [Zone](#tag/zones).  Only applicable for [Zones](#tag/zones) in primary mode.  #### Operation specific errors  | Status | Code | Description | | --- | --- | --- | | `422` | `incorrect_zone_mode` | This operation is not supported for this Zone's `mode`. | 
    * 
    * Expected answers:
-   *   code 201 : ActionResponse1 (Request succeeded.)
+   *   code 201 : ActionResponse (Request succeeded.)
    *   code 4xx : GetActions4xxResponse (Request failed with a user error.)
    *   code 5xx : GetActions5xxResponse (Request failed with a server error.)
    * 
@@ -193,7 +193,7 @@ case class ZoneRRSetActions[Auth <: hcloud.Authorization] private (baseUrl: Stri
    * @param rrType 
    * @param setZoneRrsetRecordsRequest 
    */
-  def setZoneRrsetRecords(idOrName: String, rrName: String, rrType: String, setZoneRrsetRecordsRequest: SetZoneRrsetRecordsRequest)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse1]] =
+  def setZoneRrsetRecords(idOrName: String, rrName: String, rrType: String, setZoneRrsetRecordsRequest: SetZoneRrsetRecordsRequest)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse]] =
     val idOrNamePathParam = PathSerializable.serialize("id_or_name", idOrName, PathStyleFormat.SIMPLE, false)
     val rrNamePathParam = PathSerializable.serialize("rr_name", rrName, PathStyleFormat.SIMPLE, false)
     val rrTypePathParam = PathSerializable.serialize("rr_type", rrType, PathStyleFormat.SIMPLE, false)
@@ -205,13 +205,13 @@ case class ZoneRRSetActions[Auth <: hcloud.Authorization] private (baseUrl: Stri
       .contentType("application/json")
       .auth(authConfig)
       .body(asJson(setZoneRrsetRecordsRequest))
-      .response(asJson[ActionResponse1])
+      .response(asJson[ActionResponse])
 
   /**
    * Updates resource records' (RRs) comments of an existing [RRSet](#tag/zone-rrsets) in the [Zone](#tag/zones).  Only applicable for [Zones](#tag/zones) in primary mode.  #### Operation specific errors  | Status | Code | Description | | --- | --- | --- | | `422` | `incorrect_zone_mode` | This operation is not supported for this Zone's `mode`. | 
    * 
    * Expected answers:
-   *   code 200 : ActionResponse1 (Request succeeded.)
+   *   code 200 : ActionResponse (Request succeeded.)
    *   code 4xx : GetActions4xxResponse (Request failed with a user error.)
    *   code 5xx : GetActions5xxResponse (Request failed with a server error.)
    * 
@@ -223,7 +223,7 @@ case class ZoneRRSetActions[Auth <: hcloud.Authorization] private (baseUrl: Stri
    * @param rrType 
    * @param updateZoneRrsetRecordsRequest 
    */
-  def updateZoneRrsetRecords(idOrName: String, rrName: String, rrType: String, updateZoneRrsetRecordsRequest: UpdateZoneRrsetRecordsRequest)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse1]] =
+  def updateZoneRrsetRecords(idOrName: String, rrName: String, rrType: String, updateZoneRrsetRecordsRequest: UpdateZoneRrsetRecordsRequest)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse]] =
     val idOrNamePathParam = PathSerializable.serialize("id_or_name", idOrName, PathStyleFormat.SIMPLE, false)
     val rrNamePathParam = PathSerializable.serialize("rr_name", rrName, PathStyleFormat.SIMPLE, false)
     val rrTypePathParam = PathSerializable.serialize("rr_type", rrType, PathStyleFormat.SIMPLE, false)
@@ -235,6 +235,6 @@ case class ZoneRRSetActions[Auth <: hcloud.Authorization] private (baseUrl: Stri
       .contentType("application/json")
       .auth(authConfig)
       .body(asJson(updateZoneRrsetRecordsRequest))
-      .response(asJson[ActionResponse1])
+      .response(asJson[ActionResponse])
 
 end ZoneRRSetActions

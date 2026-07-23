@@ -13,7 +13,6 @@ package hcloud.api
 
 import hcloud.models.ActionListResponseWithMeta
 import hcloud.models.ActionResponse
-import hcloud.models.ActionResponse1
 import hcloud.models.ChangeZonePrimaryNameserversRequest
 import hcloud.models.ChangeZoneProtectionRequest
 import hcloud.models.ChangeZoneTtlRequest
@@ -61,7 +60,7 @@ case class ZoneActions[Auth <: hcloud.Authorization] private (baseUrl: String, a
    * Overwrites the primary nameservers of a [Zone](#tag/zones).  Only applicable for [Zones](#tag/zones) in secondary mode.  #### Operation specific errors  | Status | Code | Description | | --- | --- | --- | | `422` | `incorrect_zone_mode` | This operation is not supported for this Zone's `mode`. | 
    * 
    * Expected answers:
-   *   code 201 : ActionResponse1 (Request succeeded.)
+   *   code 201 : ActionResponse (Request succeeded.)
    *   code 4xx : GetActions4xxResponse (Request failed with a user error.)
    *   code 5xx : GetActions5xxResponse (Request failed with a server error.)
    * 
@@ -71,7 +70,7 @@ case class ZoneActions[Auth <: hcloud.Authorization] private (baseUrl: String, a
    * @param idOrName ID or Name of the Zone.
    * @param changeZonePrimaryNameserversRequest 
    */
-  def changeZonePrimaryNameservers(idOrName: String, changeZonePrimaryNameserversRequest: ChangeZonePrimaryNameserversRequest)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse1]] =
+  def changeZonePrimaryNameservers(idOrName: String, changeZonePrimaryNameserversRequest: ChangeZonePrimaryNameserversRequest)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse]] =
     val idOrNamePathParam = PathSerializable.serialize("id_or_name", idOrName, PathStyleFormat.SIMPLE, false)
     val requestURL =
       uri"$baseUrl/zones/${idOrNamePathParam}/actions/change_primary_nameservers"
@@ -81,13 +80,13 @@ case class ZoneActions[Auth <: hcloud.Authorization] private (baseUrl: String, a
       .contentType("application/json")
       .auth(authConfig)
       .body(asJson(changeZonePrimaryNameserversRequest))
-      .response(asJson[ActionResponse1])
+      .response(asJson[ActionResponse])
 
   /**
    * Changes the protection configuration of a [Zone](#tag/zones). 
    * 
    * Expected answers:
-   *   code 201 : ActionResponse1 (Request succeeded.)
+   *   code 201 : ActionResponse (Request succeeded.)
    *   code 4xx : GetActions4xxResponse (Request failed with a user error.)
    *   code 5xx : GetActions5xxResponse (Request failed with a server error.)
    * 
@@ -97,7 +96,7 @@ case class ZoneActions[Auth <: hcloud.Authorization] private (baseUrl: String, a
    * @param idOrName ID or Name of the Zone.
    * @param changeZoneProtectionRequest 
    */
-  def changeZoneProtection(idOrName: String, changeZoneProtectionRequest: ChangeZoneProtectionRequest)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse1]] =
+  def changeZoneProtection(idOrName: String, changeZoneProtectionRequest: ChangeZoneProtectionRequest)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse]] =
     val idOrNamePathParam = PathSerializable.serialize("id_or_name", idOrName, PathStyleFormat.SIMPLE, false)
     val requestURL =
       uri"$baseUrl/zones/${idOrNamePathParam}/actions/change_protection"
@@ -107,13 +106,13 @@ case class ZoneActions[Auth <: hcloud.Authorization] private (baseUrl: String, a
       .contentType("application/json")
       .auth(authConfig)
       .body(asJson(changeZoneProtectionRequest))
-      .response(asJson[ActionResponse1])
+      .response(asJson[ActionResponse])
 
   /**
    * Changes the default Time To Live (TTL) of a [Zone](#tag/zones).  This TTL is used for [RRSets](#tag/zone-rrsets) that do not explicitly define a TTL.  Only applicable for [Zones](#tag/zones) in primary mode.  #### Operation specific errors  | Status | Code | Description | | --- | --- | --- | | `422` | `incorrect_zone_mode` | This operation is not supported for this Zone's `mode`. | 
    * 
    * Expected answers:
-   *   code 201 : ActionResponse1 (Request succeeded.)
+   *   code 201 : ActionResponse (Request succeeded.)
    *   code 4xx : GetActions4xxResponse (Request failed with a user error.)
    *   code 5xx : GetActions5xxResponse (Request failed with a server error.)
    * 
@@ -123,7 +122,7 @@ case class ZoneActions[Auth <: hcloud.Authorization] private (baseUrl: String, a
    * @param idOrName ID or Name of the Zone.
    * @param changeZoneTtlRequest 
    */
-  def changeZoneTtl(idOrName: String, changeZoneTtlRequest: ChangeZoneTtlRequest)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse1]] =
+  def changeZoneTtl(idOrName: String, changeZoneTtlRequest: ChangeZoneTtlRequest)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse]] =
     val idOrNamePathParam = PathSerializable.serialize("id_or_name", idOrName, PathStyleFormat.SIMPLE, false)
     val requestURL =
       uri"$baseUrl/zones/${idOrNamePathParam}/actions/change_ttl"
@@ -133,7 +132,7 @@ case class ZoneActions[Auth <: hcloud.Authorization] private (baseUrl: String, a
       .contentType("application/json")
       .auth(authConfig)
       .body(asJson(changeZoneTtlRequest))
-      .response(asJson[ActionResponse1])
+      .response(asJson[ActionResponse])
 
   /**
    * Returns a specific [Action](#tag/actions) for a [Zone](#tag/zones). 
@@ -189,7 +188,7 @@ case class ZoneActions[Auth <: hcloud.Authorization] private (baseUrl: String, a
    * Imports a zone file, replacing all resource record sets ([RRSets](#tag/zone-rrsets)).  The import will fail if existing [RRSet](#tag/zone-rrsets) are `change` protected.  See [Zone file import](#tag/zones/zone-file-import) for more details. Only applicable for [Zones](#tag/zones) in primary mode.  #### Operation specific errors  | Status | Code | Description | | --- | --- | --- | | `422` | `incorrect_zone_mode` | This operation is not supported for this Zone's `mode`. | 
    * 
    * Expected answers:
-   *   code 201 : ActionResponse1 (Request succeeded.)
+   *   code 201 : ActionResponse (Request succeeded.)
    *   code 4xx : GetActions4xxResponse (Request failed with a user error.)
    *   code 5xx : GetActions5xxResponse (Request failed with a server error.)
    * 
@@ -199,7 +198,7 @@ case class ZoneActions[Auth <: hcloud.Authorization] private (baseUrl: String, a
    * @param idOrName ID or Name of the Zone.
    * @param importZoneZonefileRequest 
    */
-  def importZoneZonefile(idOrName: String, importZoneZonefileRequest: ImportZoneZonefileRequest)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse1]] =
+  def importZoneZonefile(idOrName: String, importZoneZonefileRequest: ImportZoneZonefileRequest)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse]] =
     val idOrNamePathParam = PathSerializable.serialize("id_or_name", idOrName, PathStyleFormat.SIMPLE, false)
     val requestURL =
       uri"$baseUrl/zones/${idOrNamePathParam}/actions/import_zonefile"
@@ -209,7 +208,7 @@ case class ZoneActions[Auth <: hcloud.Authorization] private (baseUrl: String, a
       .contentType("application/json")
       .auth(authConfig)
       .body(asJson(importZoneZonefileRequest))
-      .response(asJson[ActionResponse1])
+      .response(asJson[ActionResponse])
 
   /**
    * Returns all [Actions](#tag/actions) for a [Zone](#tag/zones).  Use the provided URI parameters to modify the result. 

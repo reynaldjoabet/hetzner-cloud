@@ -13,7 +13,6 @@ package hcloud.api
 
 import hcloud.models.ActionListResponseWithMeta
 import hcloud.models.ActionResponse
-import hcloud.models.ActionResponse1
 import hcloud.models.AddRouteRequest
 import hcloud.models.AddSubnetRequest
 import hcloud.models.ChangeIPRangeRequest
@@ -63,7 +62,7 @@ case class NetworkActions[Auth <: hcloud.Authorization] private (baseUrl: String
    * Adds a route entry to a [Network](#tag/networks).  If a change is currently being performed on this [Network](#tag/networks), a error response with code `conflict` will be returned. 
    * 
    * Expected answers:
-   *   code 201 : ActionResponse1 (Request succeeded.)
+   *   code 201 : ActionResponse (Request succeeded.)
    *   code 4xx : GetActions4xxResponse (Request failed with a user error.)
    *   code 5xx : GetActions5xxResponse (Request failed with a server error.)
    * 
@@ -73,7 +72,7 @@ case class NetworkActions[Auth <: hcloud.Authorization] private (baseUrl: String
    * @param id ID of the Network.
    * @param addRouteRequest 
    */
-  def addNetworkRoute(id: Long, addRouteRequest: AddRouteRequest)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse1]] =
+  def addNetworkRoute(id: Long, addRouteRequest: AddRouteRequest)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse]] =
     val idPathParam = PathSerializable.serialize("id", id, PathStyleFormat.SIMPLE, false)
     val requestURL =
       uri"$baseUrl/networks/${idPathParam}/actions/add_route"
@@ -83,13 +82,13 @@ case class NetworkActions[Auth <: hcloud.Authorization] private (baseUrl: String
       .contentType("application/json")
       .auth(authConfig)
       .body(asJson(addRouteRequest))
-      .response(asJson[ActionResponse1])
+      .response(asJson[ActionResponse])
 
   /**
    * Adds a new subnet to the [Network](#tag/networks).  If the subnet `ip_range` is not provided, the first available `/24` IP range will be used.  If a change is currently being performed on this [Network](#tag/networks), a error response with code `conflict` will be returned. 
    * 
    * Expected answers:
-   *   code 201 : ActionResponse1 (Request succeeded.)
+   *   code 201 : ActionResponse (Request succeeded.)
    *   code 4xx : GetActions4xxResponse (Request failed with a user error.)
    *   code 5xx : GetActions5xxResponse (Request failed with a server error.)
    * 
@@ -99,7 +98,7 @@ case class NetworkActions[Auth <: hcloud.Authorization] private (baseUrl: String
    * @param id ID of the Network.
    * @param addSubnetRequest 
    */
-  def addNetworkSubnet(id: Long, addSubnetRequest: AddSubnetRequest)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse1]] =
+  def addNetworkSubnet(id: Long, addSubnetRequest: AddSubnetRequest)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse]] =
     val idPathParam = PathSerializable.serialize("id", id, PathStyleFormat.SIMPLE, false)
     val requestURL =
       uri"$baseUrl/networks/${idPathParam}/actions/add_subnet"
@@ -109,13 +108,13 @@ case class NetworkActions[Auth <: hcloud.Authorization] private (baseUrl: String
       .contentType("application/json")
       .auth(authConfig)
       .body(asJson(addSubnetRequest))
-      .response(asJson[ActionResponse1])
+      .response(asJson[ActionResponse])
 
   /**
    * Changes the IP range of a [Network](#tag/networks).  The following restrictions apply to changing the IP range: - IP ranges can only be extended and never shrunk. - IPs can only be added to the end of the existing range, therefore only the netmask is allowed to be changed.  To update the routes on the connected [Servers](#tag/servers), they need to be rebooted or the routes to be updated manually.  For example if the [Network](#tag/networks) has a range of `10.0.0.0/16` to extend it the new range has to start with the IP `10.0.0.0` as well. The netmask `/16` can be changed to a smaller one then `16` therefore increasing the IP range. A valid entry would be `10.0.0.0/15`, `10.0.0.0/14` or `10.0.0.0/13` and so on.  If a change is currently being performed on this [Network](#tag/networks), a error response with code `conflict` will be returned. 
    * 
    * Expected answers:
-   *   code 201 : ActionResponse1 (Request succeeded.)
+   *   code 201 : ActionResponse (Request succeeded.)
    *   code 4xx : GetActions4xxResponse (Request failed with a user error.)
    *   code 5xx : GetActions5xxResponse (Request failed with a server error.)
    * 
@@ -125,7 +124,7 @@ case class NetworkActions[Auth <: hcloud.Authorization] private (baseUrl: String
    * @param id ID of the Network.
    * @param changeIPRangeRequest 
    */
-  def changeNetworkIpRange(id: Long, changeIPRangeRequest: ChangeIPRangeRequest)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse1]] =
+  def changeNetworkIpRange(id: Long, changeIPRangeRequest: ChangeIPRangeRequest)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse]] =
     val idPathParam = PathSerializable.serialize("id", id, PathStyleFormat.SIMPLE, false)
     val requestURL =
       uri"$baseUrl/networks/${idPathParam}/actions/change_ip_range"
@@ -135,13 +134,13 @@ case class NetworkActions[Auth <: hcloud.Authorization] private (baseUrl: String
       .contentType("application/json")
       .auth(authConfig)
       .body(asJson(changeIPRangeRequest))
-      .response(asJson[ActionResponse1])
+      .response(asJson[ActionResponse])
 
   /**
    * Changes the protection settings of a [Network](#tag/networks).  If a change is currently being performed on this [Network](#tag/networks), a error response with code `conflict` will be returned. 
    * 
    * Expected answers:
-   *   code 201 : ActionResponse1 (Request succeeded.)
+   *   code 201 : ActionResponse (Request succeeded.)
    *   code 4xx : GetActions4xxResponse (Request failed with a user error.)
    *   code 5xx : GetActions5xxResponse (Request failed with a server error.)
    * 
@@ -151,7 +150,7 @@ case class NetworkActions[Auth <: hcloud.Authorization] private (baseUrl: String
    * @param id ID of the Network.
    * @param changeProtectionRequest 
    */
-  def changeNetworkProtection(id: Long, changeProtectionRequest: ChangeProtectionRequest)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse1]] =
+  def changeNetworkProtection(id: Long, changeProtectionRequest: ChangeProtectionRequest)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse]] =
     val idPathParam = PathSerializable.serialize("id", id, PathStyleFormat.SIMPLE, false)
     val requestURL =
       uri"$baseUrl/networks/${idPathParam}/actions/change_protection"
@@ -161,13 +160,13 @@ case class NetworkActions[Auth <: hcloud.Authorization] private (baseUrl: String
       .contentType("application/json")
       .auth(authConfig)
       .body(asJson(changeProtectionRequest))
-      .response(asJson[ActionResponse1])
+      .response(asJson[ActionResponse])
 
   /**
    * Delete a route entry from a [Network](#tag/networks).  If a change is currently being performed on this [Network](#tag/networks), a error response with code `conflict` will be returned. 
    * 
    * Expected answers:
-   *   code 201 : ActionResponse1 (Request succeeded.)
+   *   code 201 : ActionResponse (Request succeeded.)
    *   code 4xx : GetActions4xxResponse (Request failed with a user error.)
    *   code 5xx : GetActions5xxResponse (Request failed with a server error.)
    * 
@@ -177,7 +176,7 @@ case class NetworkActions[Auth <: hcloud.Authorization] private (baseUrl: String
    * @param id ID of the Network.
    * @param deleteRouteRequest 
    */
-  def deleteNetworkRoute(id: Long, deleteRouteRequest: DeleteRouteRequest)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse1]] =
+  def deleteNetworkRoute(id: Long, deleteRouteRequest: DeleteRouteRequest)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse]] =
     val idPathParam = PathSerializable.serialize("id", id, PathStyleFormat.SIMPLE, false)
     val requestURL =
       uri"$baseUrl/networks/${idPathParam}/actions/delete_route"
@@ -187,13 +186,13 @@ case class NetworkActions[Auth <: hcloud.Authorization] private (baseUrl: String
       .contentType("application/json")
       .auth(authConfig)
       .body(asJson(deleteRouteRequest))
-      .response(asJson[ActionResponse1])
+      .response(asJson[ActionResponse])
 
   /**
    * Deletes a single subnet entry from a [Network](#tag/networks).  Subnets containing attached resources can not be deleted, they must be detached beforehand.  If a change is currently being performed on this [Network](#tag/networks), a error response with code `conflict` will be returned. 
    * 
    * Expected answers:
-   *   code 201 : ActionResponse1 (Request succeeded.)
+   *   code 201 : ActionResponse (Request succeeded.)
    *   code 4xx : GetActions4xxResponse (Request failed with a user error.)
    *   code 5xx : GetActions5xxResponse (Request failed with a server error.)
    * 
@@ -203,7 +202,7 @@ case class NetworkActions[Auth <: hcloud.Authorization] private (baseUrl: String
    * @param id ID of the Network.
    * @param deleteSubnetRequest 
    */
-  def deleteNetworkSubnet(id: Long, deleteSubnetRequest: DeleteSubnetRequest)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse1]] =
+  def deleteNetworkSubnet(id: Long, deleteSubnetRequest: DeleteSubnetRequest)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse]] =
     val idPathParam = PathSerializable.serialize("id", id, PathStyleFormat.SIMPLE, false)
     val requestURL =
       uri"$baseUrl/networks/${idPathParam}/actions/delete_subnet"
@@ -213,7 +212,7 @@ case class NetworkActions[Auth <: hcloud.Authorization] private (baseUrl: String
       .contentType("application/json")
       .auth(authConfig)
       .body(asJson(deleteSubnetRequest))
-      .response(asJson[ActionResponse1])
+      .response(asJson[ActionResponse])
 
   /**
    * Returns a specific [Action](#tag/actions) for a [Network](#tag/networks). 

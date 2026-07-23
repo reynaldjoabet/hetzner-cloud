@@ -13,7 +13,6 @@ package hcloud.api
 
 import hcloud.models.ActionListResponseWithMeta
 import hcloud.models.ActionResponse
-import hcloud.models.ActionResponse1
 import hcloud.models.GetActions4xxResponse
 import hcloud.models.GetActions5xxResponse
 import hcloud.models.ListFloatingIps200ResponseFloatingIpsInnerDnsPtrInner
@@ -60,7 +59,7 @@ case class PrimaryIPActions[Auth <: hcloud.Authorization] private (baseUrl: Stri
    * Assign a [Primary IP](#tag/primary-ips) to a resource.  A [Server](#tag/servers) can only have one [Primary IP](#tag/primary-ips) of type `ipv4` and one of type `ipv6` assigned. If you need more IPs use [Floating IPs](#tag/floating-ips).  A [Server](#tag/servers) must be powered off (status `off`) in order for this operation to succeed.  #### Operation specific errors  | Status | Code | Description | | --- | --- | --- | | `422` | `server_not_stopped` | The [Server](#tag/servers) is running, but needs to be powered off | | `422` | `primary_ip_already_assigned` | [Primary IP](#tag/primary-ips) is already assigned to a different [Server](#tag/servers) | | `422` | `server_has_ipv4` | The [Server](#tag/servers) already has an IPv4 address | | `422` | `server_has_ipv6` | The [Server](#tag/servers) already has an IPv6 address | 
    * 
    * Expected answers:
-   *   code 201 : ActionResponse1 (Request succeeded.)
+   *   code 201 : ActionResponse (Request succeeded.)
    *   code 4xx : GetActions4xxResponse (Request failed with a user error.)
    *   code 5xx : GetActions5xxResponse (Request failed with a server error.)
    * 
@@ -70,7 +69,7 @@ case class PrimaryIPActions[Auth <: hcloud.Authorization] private (baseUrl: Stri
    * @param id ID of the Primary IP.
    * @param primaryIPActionsAssignRequest 
    */
-  def assignPrimaryIp(id: Long, primaryIPActionsAssignRequest: PrimaryIPActionsAssignRequest)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse1]] =
+  def assignPrimaryIp(id: Long, primaryIPActionsAssignRequest: PrimaryIPActionsAssignRequest)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse]] =
     val idPathParam = PathSerializable.serialize("id", id, PathStyleFormat.SIMPLE, false)
     val requestURL =
       uri"$baseUrl/primary_ips/${idPathParam}/actions/assign"
@@ -80,13 +79,13 @@ case class PrimaryIPActions[Auth <: hcloud.Authorization] private (baseUrl: Stri
       .contentType("application/json")
       .auth(authConfig)
       .body(asJson(primaryIPActionsAssignRequest))
-      .response(asJson[ActionResponse1])
+      .response(asJson[ActionResponse])
 
   /**
    * Change the reverse DNS records for this [Primary IP](#tag/primary-ips).  Allows to modify the PTR records set for the IP address. 
    * 
    * Expected answers:
-   *   code 201 : ActionResponse1 (Request succeeded.)
+   *   code 201 : ActionResponse (Request succeeded.)
    *   code 4xx : GetActions4xxResponse (Request failed with a user error.)
    *   code 5xx : GetActions5xxResponse (Request failed with a server error.)
    * 
@@ -96,7 +95,7 @@ case class PrimaryIPActions[Auth <: hcloud.Authorization] private (baseUrl: Stri
    * @param id ID of the Primary IP.
    * @param listFloatingIps200ResponseFloatingIpsInnerDnsPtrInner The `ip` attributes specifies for which IP address the record is set. For IPv4 addresses this must be the exact address of the [Primary IP](#tag/primary-ips). For IPv6 addresses this must be a single address within the `/64` subnet of the [Primary IP](#tag/primary-ips).  The `dns_ptr` attribute specifies the hostname used for the IP address. Must be a fully qualified domain name (FQDN) without trailing dot.  For IPv6 [Primary IPs](#tag/primary-ips) up to 100 entries can be created. 
    */
-  def changePrimaryIpDnsPtr(id: Long, listFloatingIps200ResponseFloatingIpsInnerDnsPtrInner: ListFloatingIps200ResponseFloatingIpsInnerDnsPtrInner)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse1]] =
+  def changePrimaryIpDnsPtr(id: Long, listFloatingIps200ResponseFloatingIpsInnerDnsPtrInner: ListFloatingIps200ResponseFloatingIpsInnerDnsPtrInner)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse]] =
     val idPathParam = PathSerializable.serialize("id", id, PathStyleFormat.SIMPLE, false)
     val requestURL =
       uri"$baseUrl/primary_ips/${idPathParam}/actions/change_dns_ptr"
@@ -106,13 +105,13 @@ case class PrimaryIPActions[Auth <: hcloud.Authorization] private (baseUrl: Stri
       .contentType("application/json")
       .auth(authConfig)
       .body(asJson(listFloatingIps200ResponseFloatingIpsInnerDnsPtrInner))
-      .response(asJson[ActionResponse1])
+      .response(asJson[ActionResponse])
 
   /**
    * Changes the protection configuration of a [Primary IP](#tag/primary-ips).  A [Primary IPs](#tag/primary-ips) deletion protection can only be enabled if its `auto_delete` property is set to `false`. 
    * 
    * Expected answers:
-   *   code 201 : ActionResponse1 (Request succeeded.)
+   *   code 201 : ActionResponse (Request succeeded.)
    *   code 4xx : GetActions4xxResponse (Request failed with a user error.)
    *   code 5xx : GetActions5xxResponse (Request failed with a server error.)
    * 
@@ -122,7 +121,7 @@ case class PrimaryIPActions[Auth <: hcloud.Authorization] private (baseUrl: Stri
    * @param id ID of the Primary IP.
    * @param listFloatingIps200ResponseFloatingIpsInnerProtection 
    */
-  def changePrimaryIpProtection(id: Long, listFloatingIps200ResponseFloatingIpsInnerProtection: ListFloatingIps200ResponseFloatingIpsInnerProtection)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse1]] =
+  def changePrimaryIpProtection(id: Long, listFloatingIps200ResponseFloatingIpsInnerProtection: ListFloatingIps200ResponseFloatingIpsInnerProtection)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse]] =
     val idPathParam = PathSerializable.serialize("id", id, PathStyleFormat.SIMPLE, false)
     val requestURL =
       uri"$baseUrl/primary_ips/${idPathParam}/actions/change_protection"
@@ -132,7 +131,7 @@ case class PrimaryIPActions[Auth <: hcloud.Authorization] private (baseUrl: Stri
       .contentType("application/json")
       .auth(authConfig)
       .body(asJson(listFloatingIps200ResponseFloatingIpsInnerProtection))
-      .response(asJson[ActionResponse1])
+      .response(asJson[ActionResponse])
 
   /**
    * Returns a specific [Action](#tag/actions) for a [Primary IP](#tag/primary-ips). 
@@ -252,7 +251,7 @@ case class PrimaryIPActions[Auth <: hcloud.Authorization] private (baseUrl: Stri
    * Unassign a [Primary IP](#tag/primary-ips) from a resource.  A [Server](#tag/servers) must be powered off (status `off`) in order for this operation to succeed.  A [Server](#tag/servers) requires at least one network interface (public or private) to be powered on.  #### Operation specific errors  | Status | Code | Description | | --- | --- | --- | | `422` | `server_not_stopped` | The [Server](#tag/servers) is running, but needs to be powered off | | `422` | `server_is_load_balancer_target` | The [Server](#tag/servers) IPv4 address is a loadbalancer target | 
    * 
    * Expected answers:
-   *   code 201 : ActionResponse1 (Request succeeded.)
+   *   code 201 : ActionResponse (Request succeeded.)
    *   code 4xx : GetActions4xxResponse (Request failed with a user error.)
    *   code 5xx : GetActions5xxResponse (Request failed with a server error.)
    * 
@@ -261,7 +260,7 @@ case class PrimaryIPActions[Auth <: hcloud.Authorization] private (baseUrl: Stri
    * 
    * @param id ID of the Primary IP.
    */
-  def unassignPrimaryIp(id: Long)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse1]] =
+  def unassignPrimaryIp(id: Long)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse]] =
     val idPathParam = PathSerializable.serialize("id", id, PathStyleFormat.SIMPLE, false)
     val requestURL =
       uri"$baseUrl/primary_ips/${idPathParam}/actions/unassign"
@@ -270,6 +269,6 @@ case class PrimaryIPActions[Auth <: hcloud.Authorization] private (baseUrl: Stri
       .method(Method.POST, requestURL)
       .contentType("application/json")
       .auth(authConfig)
-      .response(asJson[ActionResponse1])
+      .response(asJson[ActionResponse])
 
 end PrimaryIPActions

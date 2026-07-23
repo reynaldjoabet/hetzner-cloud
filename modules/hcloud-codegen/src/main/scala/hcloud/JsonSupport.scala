@@ -72,7 +72,6 @@ object JsonSupport extends AdditionalTypeSerializers:
   given primaryIPResponseCodec: JsonValueCodec[PrimaryIPResponse] = deriveJsonCodec
   given createVolumeRequestCodec: JsonValueCodec[CreateVolumeRequest] = deriveJsonCodec
   given removeZoneRrsetRecordsRequestCodec: JsonValueCodec[RemoveZoneRrsetRecordsRequest] = deriveJsonCodec
-  given actionResponse1Codec: JsonValueCodec[ActionResponse1] = deriveJsonCodec
   given floatingIPCreateRequestCodec: JsonValueCodec[FloatingIPCreateRequest] = deriveJsonCodec
   given networkUpdateRequestCodec: JsonValueCodec[NetworkUpdateRequest] = deriveJsonCodec
   given listServerTypes200ResponseCodec: JsonValueCodec[ListServerTypes200Response] = deriveJsonCodec

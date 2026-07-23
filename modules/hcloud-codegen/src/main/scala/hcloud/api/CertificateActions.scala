@@ -13,7 +13,6 @@ package hcloud.api
 
 import hcloud.models.ActionListResponseWithMeta
 import hcloud.models.ActionResponse
-import hcloud.models.ActionResponse1
 import hcloud.models.GetActions4xxResponse
 import hcloud.models.GetActions5xxResponse
 import hcloud.JsonSupport.{*, given}
@@ -171,7 +170,7 @@ case class CertificateActions[Auth <: hcloud.Authorization] private (baseUrl: St
    * Retry a failed Certificate issuance or renewal.  Only applicable if the type of the Certificate is `managed` and the issuance or renewal status is `failed`.  #### Operation specific errors  | Status | Code | Description | | --- | --- | --- | |  | `caa_record_does_not_allow_ca` | CAA record does not allow certificate authority | |  | `ca_dns_validation_failed` | Certificate Authority: DNS validation failed | |  | `ca_too_many_authorizations_failed_recently` | Certificate Authority: Too many authorizations failed recently | |  | `ca_too_many_certificates_issued_for_registered_domain` | Certificate Authority: Too many certificates issued for registered domain | |  | `ca_too_many_duplicate_certificates` | Certificate Authority: Too many duplicate certificates | |  | `could_not_verify_domain_delegated_to_zone` | Could not verify domain delegated to zone | |  | `dns_zone_not_found` | DNS zone not found | |  | `dns_zone_is_secondary_zone` | DNS zone is a secondary zone | 
    * 
    * Expected answers:
-   *   code 201 : ActionResponse1 (Request succeeded.)
+   *   code 201 : ActionResponse (Request succeeded.)
    *   code 4xx : GetActions4xxResponse (Request failed with a user error.)
    *   code 5xx : GetActions5xxResponse (Request failed with a server error.)
    * 
@@ -180,7 +179,7 @@ case class CertificateActions[Auth <: hcloud.Authorization] private (baseUrl: St
    * 
    * @param id ID of the Certificate.
    */
-  def retryCertificate(id: Long)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse1]] =
+  def retryCertificate(id: Long)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse]] =
     val idPathParam = PathSerializable.serialize("id", id, PathStyleFormat.SIMPLE, false)
     val requestURL =
       uri"$baseUrl/certificates/${idPathParam}/actions/retry"
@@ -189,6 +188,6 @@ case class CertificateActions[Auth <: hcloud.Authorization] private (baseUrl: St
       .method(Method.POST, requestURL)
       .contentType("application/json")
       .auth(authConfig)
-      .response(asJson[ActionResponse1])
+      .response(asJson[ActionResponse])
 
 end CertificateActions

@@ -13,7 +13,6 @@ package hcloud.api
 
 import hcloud.models.ActionListResponseWithMeta
 import hcloud.models.ActionResponse
-import hcloud.models.ActionResponse1
 import hcloud.models.AttachVolumeRequest
 import hcloud.models.ChangeVolumeProtectionRequest
 import hcloud.models.GetActions4xxResponse
@@ -60,7 +59,7 @@ case class VolumeActions[Auth <: hcloud.Authorization] private (baseUrl: String,
    * Attaches a Volume to a Server. Works only if the Server is in the same Location as the Volume. 
    * 
    * Expected answers:
-   *   code 201 : ActionResponse1 (Request succeeded.)
+   *   code 201 : ActionResponse (Request succeeded.)
    *   code 4xx : GetActions4xxResponse (Request failed with a user error.)
    *   code 5xx : GetActions5xxResponse (Request failed with a server error.)
    * 
@@ -70,7 +69,7 @@ case class VolumeActions[Auth <: hcloud.Authorization] private (baseUrl: String,
    * @param id ID of the Volume.
    * @param attachVolumeRequest 
    */
-  def attachVolume(id: Long, attachVolumeRequest: AttachVolumeRequest)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse1]] =
+  def attachVolume(id: Long, attachVolumeRequest: AttachVolumeRequest)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse]] =
     val idPathParam = PathSerializable.serialize("id", id, PathStyleFormat.SIMPLE, false)
     val requestURL =
       uri"$baseUrl/volumes/${idPathParam}/actions/attach"
@@ -80,13 +79,13 @@ case class VolumeActions[Auth <: hcloud.Authorization] private (baseUrl: String,
       .contentType("application/json")
       .auth(authConfig)
       .body(asJson(attachVolumeRequest))
-      .response(asJson[ActionResponse1])
+      .response(asJson[ActionResponse])
 
   /**
    * Changes the protection configuration of a Volume. 
    * 
    * Expected answers:
-   *   code 201 : ActionResponse1 (Request succeeded.)
+   *   code 201 : ActionResponse (Request succeeded.)
    *   code 4xx : GetActions4xxResponse (Request failed with a user error.)
    *   code 5xx : GetActions5xxResponse (Request failed with a server error.)
    * 
@@ -96,7 +95,7 @@ case class VolumeActions[Auth <: hcloud.Authorization] private (baseUrl: String,
    * @param id ID of the Volume.
    * @param changeVolumeProtectionRequest 
    */
-  def changeVolumeProtection(id: Long, changeVolumeProtectionRequest: ChangeVolumeProtectionRequest)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse1]] =
+  def changeVolumeProtection(id: Long, changeVolumeProtectionRequest: ChangeVolumeProtectionRequest)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse]] =
     val idPathParam = PathSerializable.serialize("id", id, PathStyleFormat.SIMPLE, false)
     val requestURL =
       uri"$baseUrl/volumes/${idPathParam}/actions/change_protection"
@@ -106,13 +105,13 @@ case class VolumeActions[Auth <: hcloud.Authorization] private (baseUrl: String,
       .contentType("application/json")
       .auth(authConfig)
       .body(asJson(changeVolumeProtectionRequest))
-      .response(asJson[ActionResponse1])
+      .response(asJson[ActionResponse])
 
   /**
    * Detaches a Volume from the Server it’s attached to. You may attach it to a Server again at a later time. 
    * 
    * Expected answers:
-   *   code 201 : ActionResponse1 (Request succeeded.)
+   *   code 201 : ActionResponse (Request succeeded.)
    *   code 4xx : GetActions4xxResponse (Request failed with a user error.)
    *   code 5xx : GetActions5xxResponse (Request failed with a server error.)
    * 
@@ -121,7 +120,7 @@ case class VolumeActions[Auth <: hcloud.Authorization] private (baseUrl: String,
    * 
    * @param id ID of the Volume.
    */
-  def detachVolume(id: Long)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse1]] =
+  def detachVolume(id: Long)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse]] =
     val idPathParam = PathSerializable.serialize("id", id, PathStyleFormat.SIMPLE, false)
     val requestURL =
       uri"$baseUrl/volumes/${idPathParam}/actions/detach"
@@ -130,7 +129,7 @@ case class VolumeActions[Auth <: hcloud.Authorization] private (baseUrl: String,
       .method(Method.POST, requestURL)
       .contentType("application/json")
       .auth(authConfig)
-      .response(asJson[ActionResponse1])
+      .response(asJson[ActionResponse])
 
   /**
    * Returns a specific Action for a Volume. 
@@ -250,7 +249,7 @@ case class VolumeActions[Auth <: hcloud.Authorization] private (baseUrl: String,
    * Changes the size of a Volume. Note that downsizing a Volume is not possible. 
    * 
    * Expected answers:
-   *   code 201 : ActionResponse1 (Request succeeded.)
+   *   code 201 : ActionResponse (Request succeeded.)
    *   code 4xx : GetActions4xxResponse (Request failed with a user error.)
    *   code 5xx : GetActions5xxResponse (Request failed with a server error.)
    * 
@@ -260,7 +259,7 @@ case class VolumeActions[Auth <: hcloud.Authorization] private (baseUrl: String,
    * @param id ID of the Volume.
    * @param resizeVolumeRequest 
    */
-  def resizeVolume(id: Long, resizeVolumeRequest: ResizeVolumeRequest)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse1]] =
+  def resizeVolume(id: Long, resizeVolumeRequest: ResizeVolumeRequest)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse]] =
     val idPathParam = PathSerializable.serialize("id", id, PathStyleFormat.SIMPLE, false)
     val requestURL =
       uri"$baseUrl/volumes/${idPathParam}/actions/resize"
@@ -270,6 +269,6 @@ case class VolumeActions[Auth <: hcloud.Authorization] private (baseUrl: String,
       .contentType("application/json")
       .auth(authConfig)
       .body(asJson(resizeVolumeRequest))
-      .response(asJson[ActionResponse1])
+      .response(asJson[ActionResponse])
 
 end VolumeActions

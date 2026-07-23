@@ -13,7 +13,6 @@ package hcloud.api
 
 import hcloud.models.ActionListResponseWithMeta
 import hcloud.models.ActionResponse
-import hcloud.models.ActionResponse1
 import hcloud.models.ChangeImageProtectionRequest
 import hcloud.models.GetActions4xxResponse
 import hcloud.models.GetActions5xxResponse
@@ -58,7 +57,7 @@ case class ImageActions[Auth <: hcloud.Authorization] private (baseUrl: String, 
    * Changes the protection configuration of the Image. Can only be used on snapshots. 
    * 
    * Expected answers:
-   *   code 201 : ActionResponse1 (Request succeeded.)
+   *   code 201 : ActionResponse (Request succeeded.)
    *   code 4xx : GetActions4xxResponse (Request failed with a user error.)
    *   code 5xx : GetActions5xxResponse (Request failed with a server error.)
    * 
@@ -68,7 +67,7 @@ case class ImageActions[Auth <: hcloud.Authorization] private (baseUrl: String, 
    * @param id ID of the Image.
    * @param changeImageProtectionRequest 
    */
-  def changeImageProtection(id: Long, changeImageProtectionRequest: ChangeImageProtectionRequest)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse1]] =
+  def changeImageProtection(id: Long, changeImageProtectionRequest: ChangeImageProtectionRequest)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse]] =
     val idPathParam = PathSerializable.serialize("id", id, PathStyleFormat.SIMPLE, false)
     val requestURL =
       uri"$baseUrl/images/${idPathParam}/actions/change_protection"
@@ -78,7 +77,7 @@ case class ImageActions[Auth <: hcloud.Authorization] private (baseUrl: String, 
       .contentType("application/json")
       .auth(authConfig)
       .body(asJson(changeImageProtectionRequest))
-      .response(asJson[ActionResponse1])
+      .response(asJson[ActionResponse])
 
   /**
    * Returns a specific Action for an Image. 

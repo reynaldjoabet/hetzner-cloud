@@ -19,8 +19,8 @@ case class LoadBalancerTarget1(
   @named("server") server: Option[LoadBalancerTargetServer1] = scala.None,
   /* Use the private network IP instead of the public IP of the Server, requires the Server and Load Balancer to be in the same network. Only valid for target types `server` and `label_selector`. */
   @named("use_private_ip") usePrivateIp: Option[Boolean] = scala.None,
-  @named("label_selector") labelSelector: Option[LoadBalancerTargetLabelSelector1] = scala.None,
-  @named("ip") ip: Option[LoadBalancerTargetIP1] = scala.None
+  @named("label_selector") labelSelector: Option[LoadBalancerTargetLabelSelector] = scala.None,
+  @named("ip") ip: Option[LoadBalancerTargetIP] = scala.None
 )
 
 object LoadBalancerTarget1Enums:

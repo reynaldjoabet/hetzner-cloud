@@ -13,7 +13,6 @@ package hcloud.api
 
 import hcloud.models.ActionListResponseWithMeta
 import hcloud.models.ActionResponse
-import hcloud.models.ActionResponse1
 import hcloud.models.AttachLoadBalancerToNetworkRequest
 import hcloud.models.ChangeLoadBalancerAlgorithmRequest
 import hcloud.models.ChangeLoadBalancerProtectionRequest
@@ -68,7 +67,7 @@ case class LoadBalancerActions[Auth <: hcloud.Authorization] private (baseUrl: S
    * Adds a service to a Load Balancer.  #### Operation specific errors  | Status | Code | Description | | --- | --- | --- | | `412` | `source_port_already_used` | The source port you are trying to add is already in use | 
    * 
    * Expected answers:
-   *   code 201 : ActionResponse1 (Request succeeded.)
+   *   code 201 : ActionResponse (Request succeeded.)
    *   code 4xx : GetActions4xxResponse (Request failed with a user error.)
    *   code 5xx : GetActions5xxResponse (Request failed with a server error.)
    * 
@@ -78,7 +77,7 @@ case class LoadBalancerActions[Auth <: hcloud.Authorization] private (baseUrl: S
    * @param id ID of the Load Balancer.
    * @param loadBalancerService 
    */
-  def addLoadBalancerService(id: Long, loadBalancerService: LoadBalancerService)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse1]] =
+  def addLoadBalancerService(id: Long, loadBalancerService: LoadBalancerService)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse]] =
     val idPathParam = PathSerializable.serialize("id", id, PathStyleFormat.SIMPLE, false)
     val requestURL =
       uri"$baseUrl/load_balancers/${idPathParam}/actions/add_service"
@@ -88,13 +87,13 @@ case class LoadBalancerActions[Auth <: hcloud.Authorization] private (baseUrl: S
       .contentType("application/json")
       .auth(authConfig)
       .body(asJson(loadBalancerService))
-      .response(asJson[ActionResponse1])
+      .response(asJson[ActionResponse])
 
   /**
    * Adds a target to a Load Balancer.  #### Operation specific errors  | Status | Code | Description | | --- | --- | --- | | `422` | `ip_not_in_vswitch_subnet` | The IP you are trying to add does not belong to the vswitch subnet of the attached network | | `422` | `ip_not_owned` | The IP you are trying to add as a target is not owned by the Project owner | | `422` | `load_balancer_public_interface_disabled` | The Load Balancer's public network interface is disabled | | `422` | `load_balancer_not_attached_to_network` | The Load Balancer is not attached to a network | | `422` | `network_has_no_vswitch_subnet` | The given IP is private but attached network does not have a vswitch subnet | | `422` | `resolve_cloud_private_targets_error` | The server you are trying to add as a target is not attached to the same network as the Load Balancer | | `422` | `resolve_cloud_public_targets_error` | The server that you are trying to add as a public target does not have a public IPv4 address | | `422` | `target_already_defined` | The Load Balancer target you are trying to define is already defined | 
    * 
    * Expected answers:
-   *   code 201 : ActionResponse1 (Request succeeded.)
+   *   code 201 : ActionResponse (Request succeeded.)
    *   code 4xx : GetActions4xxResponse (Request failed with a user error.)
    *   code 5xx : GetActions5xxResponse (Request failed with a server error.)
    * 
@@ -104,7 +103,7 @@ case class LoadBalancerActions[Auth <: hcloud.Authorization] private (baseUrl: S
    * @param id ID of the Load Balancer.
    * @param loadBalancerTarget1 
    */
-  def addLoadBalancerTarget(id: Long, loadBalancerTarget1: LoadBalancerTarget1)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse1]] =
+  def addLoadBalancerTarget(id: Long, loadBalancerTarget1: LoadBalancerTarget1)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse]] =
     val idPathParam = PathSerializable.serialize("id", id, PathStyleFormat.SIMPLE, false)
     val requestURL =
       uri"$baseUrl/load_balancers/${idPathParam}/actions/add_target"
@@ -114,13 +113,13 @@ case class LoadBalancerActions[Auth <: hcloud.Authorization] private (baseUrl: S
       .contentType("application/json")
       .auth(authConfig)
       .body(asJson(loadBalancerTarget1))
-      .response(asJson[ActionResponse1])
+      .response(asJson[ActionResponse])
 
   /**
    * Attach a Load Balancer to a Network.  #### Operation specific errors  | Status | Code | Description | | --- | --- | --- | | `422` | `load_balancer_already_attached` | The Load Balancer is already attached to a network | | `422` | `ip_not_available` | The provided Network IP is not available | | `422` | `no_subnet_available` | No Subnet or IP is available for the Load Balancer within the network | 
    * 
    * Expected answers:
-   *   code 201 : ActionResponse1 (Request succeeded.)
+   *   code 201 : ActionResponse (Request succeeded.)
    *   code 4xx : GetActions4xxResponse (Request failed with a user error.)
    *   code 5xx : GetActions5xxResponse (Request failed with a server error.)
    * 
@@ -130,7 +129,7 @@ case class LoadBalancerActions[Auth <: hcloud.Authorization] private (baseUrl: S
    * @param id ID of the Load Balancer.
    * @param attachLoadBalancerToNetworkRequest 
    */
-  def attachLoadBalancerToNetwork(id: Long, attachLoadBalancerToNetworkRequest: AttachLoadBalancerToNetworkRequest)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse1]] =
+  def attachLoadBalancerToNetwork(id: Long, attachLoadBalancerToNetworkRequest: AttachLoadBalancerToNetworkRequest)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse]] =
     val idPathParam = PathSerializable.serialize("id", id, PathStyleFormat.SIMPLE, false)
     val requestURL =
       uri"$baseUrl/load_balancers/${idPathParam}/actions/attach_to_network"
@@ -140,13 +139,13 @@ case class LoadBalancerActions[Auth <: hcloud.Authorization] private (baseUrl: S
       .contentType("application/json")
       .auth(authConfig)
       .body(asJson(attachLoadBalancerToNetworkRequest))
-      .response(asJson[ActionResponse1])
+      .response(asJson[ActionResponse])
 
   /**
    * Change the algorithm that determines to which target new requests are sent. 
    * 
    * Expected answers:
-   *   code 201 : ActionResponse1 (Request succeeded.)
+   *   code 201 : ActionResponse (Request succeeded.)
    *   code 4xx : GetActions4xxResponse (Request failed with a user error.)
    *   code 5xx : GetActions5xxResponse (Request failed with a server error.)
    * 
@@ -156,7 +155,7 @@ case class LoadBalancerActions[Auth <: hcloud.Authorization] private (baseUrl: S
    * @param id ID of the Load Balancer.
    * @param changeLoadBalancerAlgorithmRequest 
    */
-  def changeLoadBalancerAlgorithm(id: Long, changeLoadBalancerAlgorithmRequest: ChangeLoadBalancerAlgorithmRequest)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse1]] =
+  def changeLoadBalancerAlgorithm(id: Long, changeLoadBalancerAlgorithmRequest: ChangeLoadBalancerAlgorithmRequest)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse]] =
     val idPathParam = PathSerializable.serialize("id", id, PathStyleFormat.SIMPLE, false)
     val requestURL =
       uri"$baseUrl/load_balancers/${idPathParam}/actions/change_algorithm"
@@ -166,13 +165,13 @@ case class LoadBalancerActions[Auth <: hcloud.Authorization] private (baseUrl: S
       .contentType("application/json")
       .auth(authConfig)
       .body(asJson(changeLoadBalancerAlgorithmRequest))
-      .response(asJson[ActionResponse1])
+      .response(asJson[ActionResponse])
 
   /**
    * Changes the hostname that will appear when getting the hostname belonging to the public IPs (IPv4 and IPv6) of this Load Balancer.  Floating IPs assigned to the Server are not affected by this. 
    * 
    * Expected answers:
-   *   code 201 : ActionResponse1 (Request succeeded.)
+   *   code 201 : ActionResponse (Request succeeded.)
    *   code 4xx : GetActions4xxResponse (Request failed with a user error.)
    *   code 5xx : GetActions5xxResponse (Request failed with a server error.)
    * 
@@ -182,7 +181,7 @@ case class LoadBalancerActions[Auth <: hcloud.Authorization] private (baseUrl: S
    * @param id ID of the Load Balancer.
    * @param changeLoadbalancerDnsPtrRequest Select the IP address for which to change the DNS entry by passing `ip`. It can be either IPv4 or IPv6. The target hostname is set by passing `dns_ptr`, which must be a fully qualified domain name (FQDN) without trailing dot.
    */
-  def changeLoadBalancerDnsPtr(id: Long, changeLoadbalancerDnsPtrRequest: ChangeLoadbalancerDnsPtrRequest)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse1]] =
+  def changeLoadBalancerDnsPtr(id: Long, changeLoadbalancerDnsPtrRequest: ChangeLoadbalancerDnsPtrRequest)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse]] =
     val idPathParam = PathSerializable.serialize("id", id, PathStyleFormat.SIMPLE, false)
     val requestURL =
       uri"$baseUrl/load_balancers/${idPathParam}/actions/change_dns_ptr"
@@ -192,13 +191,13 @@ case class LoadBalancerActions[Auth <: hcloud.Authorization] private (baseUrl: S
       .contentType("application/json")
       .auth(authConfig)
       .body(asJson(changeLoadbalancerDnsPtrRequest))
-      .response(asJson[ActionResponse1])
+      .response(asJson[ActionResponse])
 
   /**
    * Changes the protection configuration of a Load Balancer. 
    * 
    * Expected answers:
-   *   code 201 : ActionResponse1 (Request succeeded.)
+   *   code 201 : ActionResponse (Request succeeded.)
    *   code 4xx : GetActions4xxResponse (Request failed with a user error.)
    *   code 5xx : GetActions5xxResponse (Request failed with a server error.)
    * 
@@ -208,7 +207,7 @@ case class LoadBalancerActions[Auth <: hcloud.Authorization] private (baseUrl: S
    * @param id ID of the Load Balancer.
    * @param changeLoadBalancerProtectionRequest 
    */
-  def changeLoadBalancerProtection(id: Long, changeLoadBalancerProtectionRequest: ChangeLoadBalancerProtectionRequest)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse1]] =
+  def changeLoadBalancerProtection(id: Long, changeLoadBalancerProtectionRequest: ChangeLoadBalancerProtectionRequest)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse]] =
     val idPathParam = PathSerializable.serialize("id", id, PathStyleFormat.SIMPLE, false)
     val requestURL =
       uri"$baseUrl/load_balancers/${idPathParam}/actions/change_protection"
@@ -218,13 +217,13 @@ case class LoadBalancerActions[Auth <: hcloud.Authorization] private (baseUrl: S
       .contentType("application/json")
       .auth(authConfig)
       .body(asJson(changeLoadBalancerProtectionRequest))
-      .response(asJson[ActionResponse1])
+      .response(asJson[ActionResponse])
 
   /**
    * Changes the type (Max Services, Max Targets and Max Connections) of a Load Balancer.  #### Operation specific errors  | Status | Code | Description | | --- | --- | --- | | `422` | `invalid_load_balancer_type` | The Load Balancer type does not fit for the given Load Balancer | 
    * 
    * Expected answers:
-   *   code 201 : ActionResponse1 (Request succeeded.)
+   *   code 201 : ActionResponse (Request succeeded.)
    *   code 4xx : GetActions4xxResponse (Request failed with a user error.)
    *   code 5xx : GetActions5xxResponse (Request failed with a server error.)
    * 
@@ -234,7 +233,7 @@ case class LoadBalancerActions[Auth <: hcloud.Authorization] private (baseUrl: S
    * @param id ID of the Load Balancer.
    * @param changeTypeRequest 
    */
-  def changeLoadBalancerType(id: Long, changeTypeRequest: ChangeTypeRequest)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse1]] =
+  def changeLoadBalancerType(id: Long, changeTypeRequest: ChangeTypeRequest)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse]] =
     val idPathParam = PathSerializable.serialize("id", id, PathStyleFormat.SIMPLE, false)
     val requestURL =
       uri"$baseUrl/load_balancers/${idPathParam}/actions/change_type"
@@ -244,13 +243,13 @@ case class LoadBalancerActions[Auth <: hcloud.Authorization] private (baseUrl: S
       .contentType("application/json")
       .auth(authConfig)
       .body(asJson(changeTypeRequest))
-      .response(asJson[ActionResponse1])
+      .response(asJson[ActionResponse])
 
   /**
    * Delete a service of a Load Balancer. 
    * 
    * Expected answers:
-   *   code 201 : ActionResponse1 (Request succeeded.)
+   *   code 201 : ActionResponse (Request succeeded.)
    *   code 4xx : GetActions4xxResponse (Request failed with a user error.)
    *   code 5xx : GetActions5xxResponse (Request failed with a server error.)
    * 
@@ -260,7 +259,7 @@ case class LoadBalancerActions[Auth <: hcloud.Authorization] private (baseUrl: S
    * @param id ID of the Load Balancer.
    * @param deleteLoadBalancerServiceRequest 
    */
-  def deleteLoadBalancerService(id: Long, deleteLoadBalancerServiceRequest: DeleteLoadBalancerServiceRequest)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse1]] =
+  def deleteLoadBalancerService(id: Long, deleteLoadBalancerServiceRequest: DeleteLoadBalancerServiceRequest)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse]] =
     val idPathParam = PathSerializable.serialize("id", id, PathStyleFormat.SIMPLE, false)
     val requestURL =
       uri"$baseUrl/load_balancers/${idPathParam}/actions/delete_service"
@@ -270,13 +269,13 @@ case class LoadBalancerActions[Auth <: hcloud.Authorization] private (baseUrl: S
       .contentType("application/json")
       .auth(authConfig)
       .body(asJson(deleteLoadBalancerServiceRequest))
-      .response(asJson[ActionResponse1])
+      .response(asJson[ActionResponse])
 
   /**
    * Detaches a Load Balancer from a network. 
    * 
    * Expected answers:
-   *   code 201 : ActionResponse1 (Request succeeded.)
+   *   code 201 : ActionResponse (Request succeeded.)
    *   code 4xx : GetActions4xxResponse (Request failed with a user error.)
    *   code 5xx : GetActions5xxResponse (Request failed with a server error.)
    * 
@@ -286,7 +285,7 @@ case class LoadBalancerActions[Auth <: hcloud.Authorization] private (baseUrl: S
    * @param id ID of the Load Balancer.
    * @param detachLoadBalancerFromNetworkRequest 
    */
-  def detachLoadBalancerFromNetwork(id: Long, detachLoadBalancerFromNetworkRequest: DetachLoadBalancerFromNetworkRequest)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse1]] =
+  def detachLoadBalancerFromNetwork(id: Long, detachLoadBalancerFromNetworkRequest: DetachLoadBalancerFromNetworkRequest)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse]] =
     val idPathParam = PathSerializable.serialize("id", id, PathStyleFormat.SIMPLE, false)
     val requestURL =
       uri"$baseUrl/load_balancers/${idPathParam}/actions/detach_from_network"
@@ -296,13 +295,13 @@ case class LoadBalancerActions[Auth <: hcloud.Authorization] private (baseUrl: S
       .contentType("application/json")
       .auth(authConfig)
       .body(asJson(detachLoadBalancerFromNetworkRequest))
-      .response(asJson[ActionResponse1])
+      .response(asJson[ActionResponse])
 
   /**
    * Disable the public interface of a Load Balancer. The Load Balancer will be not accessible from the internet via its public IPs.  #### Operation specific errors  | Status | Code | Description | | --- | --- | --- | | `422` | `load_balancer_not_attached_to_network` | The Load Balancer is not attached to a network | | `422` | `targets_without_use_private_ip` | The Load Balancer has targets that use the public IP instead of the private IP | 
    * 
    * Expected answers:
-   *   code 201 : ActionResponse1 (Request succeeded.)
+   *   code 201 : ActionResponse (Request succeeded.)
    *   code 4xx : GetActions4xxResponse (Request failed with a user error.)
    *   code 5xx : GetActions5xxResponse (Request failed with a server error.)
    * 
@@ -311,7 +310,7 @@ case class LoadBalancerActions[Auth <: hcloud.Authorization] private (baseUrl: S
    * 
    * @param id ID of the Load Balancer.
    */
-  def disableLoadBalancerPublicInterface(id: Long)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse1]] =
+  def disableLoadBalancerPublicInterface(id: Long)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse]] =
     val idPathParam = PathSerializable.serialize("id", id, PathStyleFormat.SIMPLE, false)
     val requestURL =
       uri"$baseUrl/load_balancers/${idPathParam}/actions/disable_public_interface"
@@ -320,13 +319,13 @@ case class LoadBalancerActions[Auth <: hcloud.Authorization] private (baseUrl: S
       .method(Method.POST, requestURL)
       .contentType("application/json")
       .auth(authConfig)
-      .response(asJson[ActionResponse1])
+      .response(asJson[ActionResponse])
 
   /**
    * Enable the public interface of a Load Balancer. The Load Balancer will be accessible from the internet via its public IPs. 
    * 
    * Expected answers:
-   *   code 201 : ActionResponse1 (Request succeeded.)
+   *   code 201 : ActionResponse (Request succeeded.)
    *   code 4xx : GetActions4xxResponse (Request failed with a user error.)
    *   code 5xx : GetActions5xxResponse (Request failed with a server error.)
    * 
@@ -335,7 +334,7 @@ case class LoadBalancerActions[Auth <: hcloud.Authorization] private (baseUrl: S
    * 
    * @param id ID of the Load Balancer.
    */
-  def enableLoadBalancerPublicInterface(id: Long)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse1]] =
+  def enableLoadBalancerPublicInterface(id: Long)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse]] =
     val idPathParam = PathSerializable.serialize("id", id, PathStyleFormat.SIMPLE, false)
     val requestURL =
       uri"$baseUrl/load_balancers/${idPathParam}/actions/enable_public_interface"
@@ -344,7 +343,7 @@ case class LoadBalancerActions[Auth <: hcloud.Authorization] private (baseUrl: S
       .method(Method.POST, requestURL)
       .contentType("application/json")
       .auth(authConfig)
-      .response(asJson[ActionResponse1])
+      .response(asJson[ActionResponse])
 
   /**
    * Returns a specific Action for a Load Balancer. 
@@ -464,7 +463,7 @@ case class LoadBalancerActions[Auth <: hcloud.Authorization] private (baseUrl: S
    * Removes a target from a Load Balancer. 
    * 
    * Expected answers:
-   *   code 201 : ActionResponse1 (Request succeeded.)
+   *   code 201 : ActionResponse (Request succeeded.)
    *   code 4xx : GetActions4xxResponse (Request failed with a user error.)
    *   code 5xx : GetActions5xxResponse (Request failed with a server error.)
    * 
@@ -474,7 +473,7 @@ case class LoadBalancerActions[Auth <: hcloud.Authorization] private (baseUrl: S
    * @param id ID of the Load Balancer.
    * @param removeTargetRequest 
    */
-  def removeLoadBalancerTarget(id: Long, removeTargetRequest: RemoveTargetRequest)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse1]] =
+  def removeLoadBalancerTarget(id: Long, removeTargetRequest: RemoveTargetRequest)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse]] =
     val idPathParam = PathSerializable.serialize("id", id, PathStyleFormat.SIMPLE, false)
     val requestURL =
       uri"$baseUrl/load_balancers/${idPathParam}/actions/remove_target"
@@ -484,13 +483,13 @@ case class LoadBalancerActions[Auth <: hcloud.Authorization] private (baseUrl: S
       .contentType("application/json")
       .auth(authConfig)
       .body(asJson(removeTargetRequest))
-      .response(asJson[ActionResponse1])
+      .response(asJson[ActionResponse])
 
   /**
    * Updates a Load Balancer Service.  #### Operation specific errors  | Status | Code | Description | | --- | --- | --- | | `422` | `source_port_already_used` | The source port you are trying to add is already in use | 
    * 
    * Expected answers:
-   *   code 201 : ActionResponse1 (Request succeeded.)
+   *   code 201 : ActionResponse (Request succeeded.)
    *   code 4xx : GetActions4xxResponse (Request failed with a user error.)
    *   code 5xx : GetActions5xxResponse (Request failed with a server error.)
    * 
@@ -500,7 +499,7 @@ case class LoadBalancerActions[Auth <: hcloud.Authorization] private (baseUrl: S
    * @param id ID of the Load Balancer.
    * @param updateLoadBalancerService 
    */
-  def updateLoadBalancerService(id: Long, updateLoadBalancerService: UpdateLoadBalancerService)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse1]] =
+  def updateLoadBalancerService(id: Long, updateLoadBalancerService: UpdateLoadBalancerService)(using Auth <:< hcloud.Authorization.BearerToken): sttp.client4.Request[Either[ResponseException[String], ActionResponse]] =
     val idPathParam = PathSerializable.serialize("id", id, PathStyleFormat.SIMPLE, false)
     val requestURL =
       uri"$baseUrl/load_balancers/${idPathParam}/actions/update_service"
@@ -510,6 +509,6 @@ case class LoadBalancerActions[Auth <: hcloud.Authorization] private (baseUrl: S
       .contentType("application/json")
       .auth(authConfig)
       .body(asJson(updateLoadBalancerService))
-      .response(asJson[ActionResponse1])
+      .response(asJson[ActionResponse])
 
 end LoadBalancerActions
