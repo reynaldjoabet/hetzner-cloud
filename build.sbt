@@ -33,7 +33,7 @@ val commonSettings = Seq(
   // globalProperties.supportingFiles: see the sourceGenerators note below.
   openApiConfigFile := (baseDirectory.value / "config.json").getPath,
   // Single shared ignore file at modules/, one level above each module dir
-  openApiIgnoreFileOverride := (baseDirectory.value / ".." / ".openapi-generator-ignore").getCanonicalPath,
+  openApiIgnoreFileOverride := (baseDirectory.value.getParentFile / ".openapi-generator-ignore").getPath,
   openApiOutputDir := (baseDirectory.value / "src/main/scala").getAbsolutePath,
   openApiGenerateModelTests := SettingDisabled,
   openApiGenerateApiTests := SettingDisabled,
