@@ -10,21 +10,33 @@ ThisBuild / scalacOptions := Seq(
   "-deprecation",
   "-feature",
   "-unchecked",
-  // "-Wunused:all",
+  "-source:3.3",
+  "-java-output-version:17",
+  "-Werror",
+  "-Wshadow:all",
   "-Wvalue-discard",
   "-Wnonunit-statement",
-  "-Ykind-projector",
+  "-Xlint:all",
+  "-Ysafe-init",
+  "-Xcheck-macros",
   "-Xmax-inlines:64"
 )
 
 Global / onChangedBuildSource := ReloadOnSourceChanges
+
+val generatedScalacOptions = Seq(
+  "-encoding",
+  "UTF-8",
+  "-java-output-version:17",
+  "-Xmax-inlines:64"
+)
 
 val commonSettings = Seq(
   // Generated code is not held to our lint flags: it uses indentation syntax
   // (trips -no-indent) and is full of unused/discarded values. Resetting to
   // empty rather than subtracting individual flags means this can't drift out
   // of sync with the ThisBuild list above.
-  scalacOptions := Seq.empty,
+  scalacOptions := generatedScalacOptions,
   openApiModelNamePrefix := "",
   openApiModelNameSuffix := "",
   openApiGenerateMetadata := SettingDisabled,
@@ -68,6 +80,7 @@ lazy val modules: Seq[Project] = Seq(hcloud)
 
 lazy val root = (project in file("."))
   .settings(
+    semanticdbEnabled := true,
     name := "hetzner-cloud",
     libraryDependencies ++= Seq(
       sttpCore,

@@ -67,7 +67,7 @@ package object clients {
         if (!in.isNextToken('}')) {
           in.rollbackToken()
           while ({
-            in.readKeyAsCharBuf()
+            val _ = in.readKeyAsCharBuf()
             decode(in, depthM1)
             in.isNextToken(',')
           }) ()

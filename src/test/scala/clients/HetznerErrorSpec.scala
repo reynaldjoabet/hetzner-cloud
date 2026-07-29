@@ -83,4 +83,3 @@ class HetznerErrorSpec extends munit.FunSuite {
   }
 
 }
-
