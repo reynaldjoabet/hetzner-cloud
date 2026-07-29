@@ -1557,3 +1557,70 @@ NetworkCreateRequestSubnetsInner(
 ```
 put your bastion host, monitoring server, CI runner with cluster credentials — anything an administrator uses to reach the rest of the infrastructure — on its own subnet, separate from the servers that actually run the application.
 ```
+
+A load balancer has two separate IPs at once
+```scala
+val prodLoadBalancer = CreateLoadBalancerRequest(
+  ...
+  network = Some(123456),          // <- joins a private network (private IP)
+  publicInterface = Some(true),    // <- also gets a public IP
+  ...
+)
+```
+```scala
+val attachMainLbToNetwork = AttachLoadBalancerToNetworkRequest(
+  network = 123456,
+  ip = Some("10.0.1.5"),        // <- the LB's address inside the subnet
+  ipRange = Some("10.0.1.0/24") // <- which subnet to draw it from
+)
+```
+So the LB is dual-homed: <public IP> facing the internet, 10.0.1.5 facing mainSubnet (10.0.1.0/24).
+
+
+```sh
+ internet client
+       │
+       │  https://<LB public IP>:443
+       ▼
+┌─────────────────────────┐
+│   Load Balancer         │
+│   public IP  (ingress)  │
+│   10.0.1.5   (egress)   │  <- private IP, lives inside mainSubnet 10.0.1.0/24
+└──────────┬──────────────┘
+           │  forwarded to destinationPort, over the private network
+           ▼
+┌─────────────────────────┐
+│   Backend server        │
+│   10.0.1.42             │  <- also attached to the same subnet
+└─────────────────────────┘
+```
+
+```scala
+val productionHttpsService = LoadBalancerService(
+  protocol = LoadBalancerServiceEnums.Protocol.https,
+  listenPort = 443,        // <- 1. client connects here, on the public IP
+  destinationPort = 80,    // <- 5. forwarded here, on the backend
+  healthCheck = prodHealthCheck,
+  proxyprotocol = true,
+  http = Some(LoadBalancerServiceHTTP(
+    certificates = Some(Seq(987654)),  // <- 2. TLS terminates AT the LB
+    redirectHttp = Some(true)
+  ))
+)
+```
+- Client → LB, public side. A request hits the LB's public IP on `listenPort (443)`.
+- TLS terminates at the LB. Since `protocol = https` and `certificates` is set, the LB decrypts here — the backend never sees TLS at all, just plain HTTP on destinationPort.
+- Health check gates eligibility. The LB continuously probes every target on the health-check port (`prodHealthCheck`, port 80, `/healthz`) — a target that's failing health checks is skipped even if selected below.
+- Target selection. From the currently-healthy targets, algorithm (`least_connections` here) picks one:
+```scala
+targets = Some(Seq(
+  LoadBalancerTarget1(
+    `type` = LoadBalancerTarget1Enums.Type.label_selector,
+    server = Some(LoadBalancerTargetServer1(123456)),
+    labelSelector = Some(LoadBalancerTargetLabelSelector("role=worker,environment=production")),
+    usePrivateIp = Some(true)   // <- the hop below happens over the private network
+  )
+  ```
+
+  A `label_selector` target isn't one fixed server — it's "forward to whichever currently-running servers carry this label," so the pool can grow/shrink without touching the LB config.
+

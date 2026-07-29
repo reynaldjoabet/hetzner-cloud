@@ -80,6 +80,7 @@ lazy val root = (project in file("."))
       emberClient,
       catsEffect,
       pureconfig,
+      pureconfigGeneric,
       slf4j,
       logback,
       scribe,
@@ -88,7 +89,8 @@ lazy val root = (project in file("."))
       jsoniter,
       jsoniterMacros,
       jsoniterCirce,
-      munit
+      munit,
+      munitCatsEffect
     ),
     buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
     buildInfoPackage := "hcloud.generated",
