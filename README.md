@@ -1624,3 +1624,31 @@ targets = Some(Seq(
 
   A `label_selector` target isn't one fixed server — it's "forward to whichever currently-running servers carry this label," so the pool can grow/shrink without touching the LB config.
 
+
+```tf
+network_ipv4_cidr   = "10.0.0.0/8"
+cluster_ipv4_cidr = "10.42.0.0/16"
+service_ipv4_cidr = "10.43.0.0/16"
+```
+`network_ipv4_cidr `— the Hetzner private network
+The only one that exists outside Kubernetes. It becomes `ip_range` on the `hcloud_network `resource  then gets split into `subnet_count `pieces
+
+`service_ipv4_cidr` — ClusterIP addresses
+`--service-cidr.` The most virtual of the three: a ClusterIP never appears on the wire. With `enable_kube_proxy = false`, Cilium's eBPF translates it to a pod IP at the socket. CoreDNS gets the 10th address by convention  — for you that's `10.43.0.10`, which is what lands in every pod's `/etc/resolv.conf`.
+
+```sh
+10.0.0.0/16    subnet 0    worker-fsn1   → first node 10.0.0.101
+10.1.0.0/16    subnet 1    worker-nbg1   → first node 10.1.0.101
+...
+10.42.0.0/16   subnet 42   ← pod CIDR
+10.43.0.0/16   subnet 43   ← service CIDR
+...
+10.253.0.0/16  subnet 253  cp-hel1
+10.254.0.0/16  subnet 254  cp-nbg1
+10.255.0.0/16  subnet 255  cp-fsn1   (control planes fill from the end)
+```
+you're using 5 of 256 subnets.
+
+The only hard requirement is the inverse: they must not overlap anything a node genuinely needs to route to. Today `10.42.0.0/16` and `10.43.0.0/16` sit inside your `/8` in the slots that agent nodepools #42 and #43 would claim — harmless at 2 pools, a silent conflict at 43. Moving them out of `10.0.0.0/8` removes the question entirely
+
+Never widen to 172.16.0.0/12. That range contains 172.31.1.1, which is the default gateway on every Hetzner Cloud server's public interface 
