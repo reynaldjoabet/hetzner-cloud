@@ -116,7 +116,6 @@ object HetznerCloud extends App {
     name = "node1",
     serverType = "cx23",
     automount = None,
-    datacenter = None,
     firewalls = Some(List(CreateServerRequestFirewallsInner(12))),
     labels = None,
     location = None,
@@ -220,14 +219,6 @@ object HetznerCloud extends App {
     `type` = LoadBalancerAlgorithmEnums.Type.`least_connections`
   )
 
-  val http = LoadBalancerServiceHTTP(
-    certificates = Some(Seq(123456, 789012)),
-    cookieLifetime = Some(300),
-    cookieName = Some("MYSESSIONID"),
-    redirectHttp = Some(true),
-    stickySessions = Some(true)
-  )
-
   val loadBalancerServiceHealthCheckHttp = LoadBalancerServiceHealthCheckHttp(
     domain = "example.com",
     path = "/healthz",
@@ -248,22 +239,29 @@ object HetznerCloud extends App {
     destinationPort = 80,
     healthCheck = loadBalancerHealthCheck,
     listenPort = 80,
-    protocol = LoadBalancerServiceEnums.Protocol.http,
+    protocol = LoadBalancerServiceEnums.Protocol.https,
     proxyprotocol = false,
-    http = Some(http)
+    http = LoadBalancerServiceHTTPSConfig(
+      cookieName = "MYSESSIONID",
+      cookieLifetime = 300,
+      timeoutIdle = 60,
+      certificates = Seq(123456, 789012),
+      redirectHttp = true,
+      stickySessions = true
+    )
   )
 
   val loadBalancerTargetIp = LoadBalancerTargetIP(
     ip = "192.168.0.1"
   )
-  val resourceId = LoadBalancerTargetServer(id = 123456)
+  val resourceId = LoadBalancerTargetServer(id = 123456, ip = "10.0.1.1")
 
   val selector = LoadBalancerTargetLabelSelector(
     selector = "env=production"
   )
 
-  val loadBalancerAddTarget = LoadBalancerTarget1(
-    `type` = LoadBalancerTarget1Enums.Type.`ip`,
+  val loadBalancerAddTarget = CreateLoadBalancerRequestTargetsInner(
+    `type` = CreateLoadBalancerRequestTargetsInnerEnums.Type.`ip`,
     ip = Some(LoadBalancerTargetIP(loadBalancerTargetIp.ip)),
     labelSelector = None,
     server = Some(LoadBalancerTargetServer1(resourceId.id)),
@@ -322,20 +320,20 @@ object HetznerCloud extends App {
   )
   val loadBalancerPrivateNet =
     ListLoadBalancers200ResponseLoadBalancersInnerPrivateNetInner(
-      ip = Some("192.168.0.1"),
-      network = Some(123456)
+      ip = "192.168.0.1",
+      network = 123456L
     )
 
   val loadBalancerPublicNet =
     ListLoadBalancers200ResponseLoadBalancersInnerPublicNet(
       enabled = true,
       ipv4 = ListLoadBalancers200ResponseLoadBalancersInnerPublicNetIpv4(
-        dnsPtr = None,
-        ip = Some("192.168.2.8")
+        dnsPtr = "",
+        ip = "192.168.2.8"
       ),
       ipv6 = ListLoadBalancers200ResponseLoadBalancersInnerPublicNetIpv6(
-        dnsPtr = None,
-        ip = Some("2001:db8::1")
+        dnsPtr = "",
+        ip = "2001:db8::1"
       )
     )
 
@@ -359,6 +357,10 @@ object HetznerCloud extends App {
 
   val loadBalancerType = ListLoadBalancerTypes200ResponseLoadBalancerTypesInner(
     deprecated = OffsetDateTime.parse("2023-12-31T23:59:59+00:00"),
+    deprecation = DeprecationInfo(
+      unavailableAfter = OffsetDateTime.parse("2023-12-31T23:59:59+00:00"),
+      announced = OffsetDateTime.parse("2023-06-30T23:59:59+00:00")
+    ),
     description = "Basic Load Balancer",
     id = 1,
     maxAssignedCertificates = 5,
@@ -408,7 +410,6 @@ object HetznerCloud extends App {
     name = "node1",
     serverType = "cx23",
     automount = None,
-    datacenter = None,
     firewalls = Some(List(CreateServerRequestFirewallsInner(12))),
     labels = None,
     location = None,
@@ -426,7 +427,6 @@ object HetznerCloud extends App {
     name = "my-server",
     serverType = "cpx22",
     automount = Some(false),
-    datacenter = Some("nbg1-dc3"),
     firewalls = Some(List(CreateServerRequestFirewallsInner(38))),
     labels = Some(
       Map(
@@ -452,87 +452,81 @@ object HetznerCloud extends App {
     volumes = Some(List(123))
   )
 
+  // LoadBalancerTarget's fields all became mandatory (no more Option wrapper):
+  // the response always includes every field now, using placeholder/empty
+  // values (a dummy server/ip/labelSelector, an empty Seq) for whichever
+  // ones don't apply to this target's `type`, rather than omitting them.
   val loadBalancerTarget = LoadBalancerTarget(
     `type` = LoadBalancerTargetEnums.Type.`server`,
-    healthStatus = Some(
-      Seq(
-        LoadBalancerTargetHealthStatusInner(
-          listenPort = Some(80),
-          status = Some(LoadBalancerTargetHealthStatusInnerEnums.Status.`healthy`)
-        )
+    healthStatus = Seq(
+      LoadBalancerTargetHealthStatusInner(
+        listenPort = 80,
+        status = LoadBalancerTargetHealthStatusInnerEnums.Status.`healthy`
       )
     ),
-    ip = None,
-    labelSelector = None,
-    server = Some(LoadBalancerTargetServer(123456)),
-    targets = None,
-    usePrivateIp = Some(true)
+    ip = LoadBalancerTargetIP(""), // not applicable for type = server
+    labelSelector = LoadBalancerTargetLabelSelector(""), // not applicable for type = server
+    server = LoadBalancerTargetServer(id = 123456, ip = "10.0.1.1"),
+    targets = Seq.empty,
+    usePrivateIp = true
   )
 
   val loadBalancerTarget2 = LoadBalancerTarget(
     `type` = LoadBalancerTargetEnums.Type.`label_selector`,
-    healthStatus = None,
-    ip = None,
-    labelSelector = Some(LoadBalancerTargetLabelSelector("env=production")),
-    server = None,
-    targets = Some(
-      Seq(
-        LoadBalancerTargetTarget(
-          healthStatus = Some(
-            Seq(
-              LoadBalancerTargetHealthStatusInner(
-                listenPort = Some(80),
-                status = Some(
-                  LoadBalancerTargetHealthStatusInnerEnums.Status.`healthy`
-                )
-              )
-            )
-          ),
-          server = Some(LoadBalancerTargetServer(234567)),
-          `type` = Some("server"),
-          usePrivateIp = Some(false)
+    healthStatus = Seq.empty, // per-target health status lives under `targets` instead
+    ip = LoadBalancerTargetIP(""), // not applicable for type = label_selector
+    labelSelector = LoadBalancerTargetLabelSelector("env=production"),
+    server = LoadBalancerTargetServer(id = 0, ip = "0.0.0.0"), // not applicable for type = label_selector
+    targets = Seq(
+      LoadBalancerTargetTarget(
+        healthStatus = Seq(
+          LoadBalancerTargetHealthStatusInner(
+            listenPort = 80,
+            status = LoadBalancerTargetHealthStatusInnerEnums.Status.`healthy`
+          )
         ),
-        LoadBalancerTargetTarget(
-          healthStatus = Some(
-            Seq(
-              LoadBalancerTargetHealthStatusInner(
-                listenPort = Some(80),
-                status = Some(
-                  LoadBalancerTargetHealthStatusInnerEnums.Status.`unhealthy`
-                )
-              )
-            )
-          ),
-          server = Some(LoadBalancerTargetServer(345678)),
-          `type` = Some("server"),
-          usePrivateIp = Some(true)
-        )
+        server = LoadBalancerTargetServer(id = 234567, ip = "10.0.1.2"),
+        `type` = "server",
+        usePrivateIp = false
+      ),
+      LoadBalancerTargetTarget(
+        healthStatus = Seq(
+          LoadBalancerTargetHealthStatusInner(
+            listenPort = 80,
+            status = LoadBalancerTargetHealthStatusInnerEnums.Status.`unhealthy`
+          )
+        ),
+        server = LoadBalancerTargetServer(id = 345678, ip = "10.0.1.3"),
+        `type` = "server",
+        usePrivateIp = true
       )
     ),
-    usePrivateIp = Some(false)
+    usePrivateIp = false
   )
 
   val loadBalancerTarget3 = LoadBalancerTarget(
     `type` = LoadBalancerTargetEnums.Type.`ip`,
-    healthStatus = Some(
-      Seq(
-        LoadBalancerTargetHealthStatusInner(
-          listenPort = Some(80),
-          status = Some(LoadBalancerTargetHealthStatusInnerEnums.Status.`healthy`)
-        )
+    healthStatus = Seq(
+      LoadBalancerTargetHealthStatusInner(
+        listenPort = 80,
+        status = LoadBalancerTargetHealthStatusInnerEnums.Status.`healthy`
       )
     ),
-    ip = Some(LoadBalancerTargetIP("203.0.113.1")),
-    labelSelector = None,
-    server = None,
-    targets = None,
-    usePrivateIp = Some(false)
+    ip = LoadBalancerTargetIP("203.0.113.1"),
+    labelSelector = LoadBalancerTargetLabelSelector(""), // not applicable for type = ip
+    server = LoadBalancerTargetServer(id = 0, ip = "0.0.0.0"), // not applicable for type = ip
+    targets = Seq.empty,
+    usePrivateIp = false
   )
 
   val cp = LoadBalancerTarget(
     `type` = LoadBalancerTargetEnums.Type.`label_selector`,
-    labelSelector = Some(LoadBalancerTargetLabelSelector("vm-type=cp")),
-    usePrivateIp = Some(true)
+    healthStatus = Seq.empty,
+    ip = LoadBalancerTargetIP(""),
+    labelSelector = LoadBalancerTargetLabelSelector("vm-type=cp"),
+    server = LoadBalancerTargetServer(id = 0, ip = "0.0.0.0"),
+    targets = Seq.empty,
+    usePrivateIp = true
   )
 
   val k8sLoadBalancer = CreateLoadBalancerRequest(
@@ -563,32 +557,53 @@ object HetznerCloud extends App {
     http = None
   )
   val apiService = LoadBalancerService(
-    protocol = LoadBalancerServiceEnums.Protocol.tcp,
+    protocol = LoadBalancerServiceEnums.Protocol.https,
     listenPort = 6443,
     destinationPort = 6443,
     healthCheck = healthCheck,
     proxyprotocol = false,
-    http = None
+    http = LoadBalancerServiceHTTPSConfig(
+      cookieName = "",
+      cookieLifetime = 0,
+      timeoutIdle = 60,
+      certificates = Seq.empty,
+      redirectHttp = false,
+      stickySessions = false
+    )
   )
   val httpService = LoadBalancerService(
-    protocol = LoadBalancerServiceEnums.Protocol.tcp,
+    protocol = LoadBalancerServiceEnums.Protocol.https,
     listenPort = 80,
     destinationPort = 30080,
     healthCheck = healthCheck2,
     proxyprotocol = false,
-    http = None
+    http = LoadBalancerServiceHTTPSConfig(
+      cookieName = "",
+      cookieLifetime = 0,
+      timeoutIdle = 60,
+      certificates = Seq.empty,
+      redirectHttp = false,
+      stickySessions = false
+    )
   )
   val httpsService = LoadBalancerService(
-    protocol = LoadBalancerServiceEnums.Protocol.tcp,
+    protocol = LoadBalancerServiceEnums.Protocol.https,
     listenPort = 443,
     destinationPort = 30443,
     healthCheck = healthCheck2,
     proxyprotocol = false,
-    http = None
+    http = LoadBalancerServiceHTTPSConfig(
+      cookieName = "",
+      cookieLifetime = 0,
+      timeoutIdle = 60,
+      certificates = Seq.empty,
+      redirectHttp = false,
+      stickySessions = false
+    )
   )
 
-  val labelSelectorTarget = LoadBalancerTarget1(
-    `type` = LoadBalancerTarget1Enums.Type.`label_selector`,
+  val labelSelectorTarget = CreateLoadBalancerRequestTargetsInner(
+    `type` = CreateLoadBalancerRequestTargetsInnerEnums.Type.`label_selector`,
     labelSelector = Some(LoadBalancerTargetLabelSelector("vm-type=cp")),
     usePrivateIp = Some(true)
   )
@@ -641,7 +656,6 @@ object HetznerCloud extends App {
     name = "vpn-server",
     serverType = "cpx11",
     automount = Some(true),
-    datacenter = Some("fsn1-dc3"),
     firewalls = None,
     labels = Some(
       Map(
@@ -702,16 +716,15 @@ object HetznerCloud extends App {
             )
           ),
           listenPort = 80,
-          protocol = LoadBalancerServiceEnums.Protocol.http,
+          protocol = LoadBalancerServiceEnums.Protocol.https,
           proxyprotocol = false,
-          http = Some(
-            LoadBalancerServiceHTTP(
-              certificates = None,
-              cookieLifetime = None,
-              cookieName = None,
-              redirectHttp = Some(true),
-              stickySessions = Some(false)
-            )
+          http = LoadBalancerServiceHTTPSConfig(
+            cookieName = "",
+            cookieLifetime = 0,
+            timeoutIdle = 60,
+            certificates = Seq.empty,
+            redirectHttp = true,
+            stickySessions = false
           )
         )
       )
@@ -742,9 +755,16 @@ object HetznerCloud extends App {
             http = None
           ),
           listenPort = 5432,
-          protocol = LoadBalancerServiceEnums.Protocol.tcp,
+          protocol = LoadBalancerServiceEnums.Protocol.https,
           proxyprotocol = false,
-          http = None
+          http = LoadBalancerServiceHTTPSConfig(
+            cookieName = "",
+            cookieLifetime = 0,
+            timeoutIdle = 60,
+            certificates = Seq.empty,
+            redirectHttp = false,
+            stickySessions = false
+          )
         )
       )
     )
@@ -757,7 +777,6 @@ object HetznerCloud extends App {
     name = "k8s-master-node",
     serverType = "cpx41",
     automount = Some(true),
-    datacenter = Some("fsn1-dc3"),
     firewalls = None,
     labels = Some(
       Map(
@@ -789,7 +808,6 @@ object HetznerCloud extends App {
     name = "my-personal-website",
     serverType = "cx21",
     automount = Some(true),
-    datacenter = Some("nbg1-dc3"),
     firewalls = Some(
       List(
         CreateServerRequestFirewallsInner(
@@ -883,24 +901,23 @@ object HetznerCloud extends App {
             )
           ),
           listenPort = 80,
-          protocol = LoadBalancerServiceEnums.Protocol.http,
+          protocol = LoadBalancerServiceEnums.Protocol.https,
           proxyprotocol = false,
-          http = Some(
-            LoadBalancerServiceHTTP(
-              certificates = None,
-              cookieLifetime = None,
-              cookieName = None,
-              redirectHttp = Some(true),
-              stickySessions = Some(false)
-            )
+          http = LoadBalancerServiceHTTPSConfig(
+            cookieName = "",
+            cookieLifetime = 0,
+            timeoutIdle = 60,
+            certificates = Seq.empty,
+            redirectHttp = true,
+            stickySessions = false
           )
         )
       )
     )
   )
 
-  val mywebsitelbtarget = LoadBalancerTarget1(
-    `type` = LoadBalancerTarget1Enums.Type.`server`,
+  val mywebsitelbtarget = CreateLoadBalancerRequestTargetsInner(
+    `type` = CreateLoadBalancerRequestTargetsInnerEnums.Type.`server`,
     ip = None,
     labelSelector = None,
     server = Some(
@@ -943,16 +960,15 @@ object HetznerCloud extends App {
             )
           ),
           listenPort = 80,
-          protocol = LoadBalancerServiceEnums.Protocol.http,
+          protocol = LoadBalancerServiceEnums.Protocol.https,
           proxyprotocol = false,
-          http = Some(
-            LoadBalancerServiceHTTP(
-              certificates = None,
-              cookieLifetime = None,
-              cookieName = None,
-              redirectHttp = Some(true),
-              stickySessions = Some(false)
-            )
+          http = LoadBalancerServiceHTTPSConfig(
+            cookieName = "",
+            cookieLifetime = 0,
+            timeoutIdle = 60,
+            certificates = Seq.empty,
+            redirectHttp = true,
+            stickySessions = false
           )
         )
       )
@@ -975,7 +991,6 @@ object HetznerCloud extends App {
     name = "cx23-server",
     serverType = "cx23",
     automount = Some(true),
-    datacenter = Some("fsn1-dc3"),
     firewalls = None,
     labels = Some(
       Map(
@@ -1007,7 +1022,6 @@ object HetznerCloud extends App {
     name = "cax11-server",
     serverType = "cax11",
     automount = Some(true),
-    datacenter = Some("fsn1-dc3"),
     firewalls = None,
     labels = Some(
       Map(
@@ -1039,7 +1053,6 @@ object HetznerCloud extends App {
     name = "cx33-server",
     serverType = "cx33",
     automount = Some(true),
-    datacenter = Some("fsn1-dc3"),
     firewalls = None,
     labels = Some(
       Map(
@@ -1071,7 +1084,6 @@ object HetznerCloud extends App {
     name = "cax21-server",
     serverType = "cax21",
     automount = Some(true),
-    datacenter = Some("fsn1-dc3"),
     firewalls = None,
     labels = Some(
       Map(
@@ -1103,7 +1115,6 @@ object HetznerCloud extends App {
     name = "cx43-server",
     serverType = "cx43",
     automount = Some(true),
-    datacenter = Some("fsn1-dc3"),
     firewalls = None,
     labels = Some(
       Map(
@@ -1135,7 +1146,6 @@ object HetznerCloud extends App {
     name = "cax31-server",
     serverType = "cax31",
     automount = Some(true),
-    datacenter = Some("fsn1-dc3"),
     firewalls = None,
     labels = Some(
       Map(
@@ -1167,7 +1177,6 @@ object HetznerCloud extends App {
     name = "cax41-server",
     serverType = "cax41",
     automount = Some(true),
-    datacenter = Some("fsn1-dc3"),
     firewalls = None,
     labels = Some(
       Map(
@@ -1199,7 +1208,6 @@ object HetznerCloud extends App {
     name = "cx53-server",
     serverType = "cx53",
     automount = Some(true),
-    datacenter = Some("fsn1-dc3"),
     firewalls = None,
     labels = Some(
       Map(
@@ -1293,16 +1301,15 @@ object HetznerCloud extends App {
             )
           ),
           listenPort = 80,
-          protocol = LoadBalancerServiceEnums.Protocol.http,
+          protocol = LoadBalancerServiceEnums.Protocol.https,
           proxyprotocol = false,
-          http = Some(
-            LoadBalancerServiceHTTP(
-              certificates = None,
-              cookieLifetime = None,
-              cookieName = None,
-              redirectHttp = Some(true),
-              stickySessions = Some(false)
-            )
+          http = LoadBalancerServiceHTTPSConfig(
+            cookieName = "",
+            cookieLifetime = 0,
+            timeoutIdle = 60,
+            certificates = Seq.empty,
+            redirectHttp = true,
+            stickySessions = false
           )
         )
       )
@@ -1693,9 +1700,16 @@ object HetznerCloud extends App {
             http = None
           ),
           listenPort = 6443,
-          protocol = LoadBalancerServiceEnums.Protocol.tcp,
+          protocol = LoadBalancerServiceEnums.Protocol.https,
           proxyprotocol = false,
-          http = None
+          http = LoadBalancerServiceHTTPSConfig(
+            cookieName = "",
+            cookieLifetime = 0,
+            timeoutIdle = 60,
+            certificates = Seq.empty,
+            redirectHttp = false,
+            stickySessions = false
+          )
         ),
         LoadBalancerService(
           destinationPort = 22,
@@ -1708,9 +1722,16 @@ object HetznerCloud extends App {
             http = None
           ),
           listenPort = 22,
-          protocol = LoadBalancerServiceEnums.Protocol.tcp,
+          protocol = LoadBalancerServiceEnums.Protocol.https,
           proxyprotocol = false,
-          http = None
+          http = LoadBalancerServiceHTTPSConfig(
+            cookieName = "",
+            cookieLifetime = 0,
+            timeoutIdle = 60,
+            certificates = Seq.empty,
+            redirectHttp = false,
+            stickySessions = false
+          )
         )
       )
     )
@@ -1722,8 +1743,8 @@ object HetznerCloud extends App {
     ipRange = Some("10.20.3.0/24")
   )
 
-  val managementlbTarget = LoadBalancerTarget1(
-    `type` = LoadBalancerTarget1Enums.Type.`server`,
+  val managementlbTarget = CreateLoadBalancerRequestTargetsInner(
+    `type` = CreateLoadBalancerRequestTargetsInnerEnums.Type.`server`,
     ip = None,
     labelSelector = None,
     server = Some(
@@ -1755,9 +1776,16 @@ object HetznerCloud extends App {
             http = None
           ),
           listenPort = 6443,
-          protocol = LoadBalancerServiceEnums.Protocol.tcp,
+          protocol = LoadBalancerServiceEnums.Protocol.https,
           proxyprotocol = false,
-          http = None
+          http = LoadBalancerServiceHTTPSConfig(
+            cookieName = "",
+            cookieLifetime = 0,
+            timeoutIdle = 60,
+            certificates = Seq.empty,
+            redirectHttp = false,
+            stickySessions = false
+          )
         ),
         LoadBalancerService(
           destinationPort = 22,
@@ -1770,9 +1798,16 @@ object HetznerCloud extends App {
             http = None
           ),
           listenPort = 22,
-          protocol = LoadBalancerServiceEnums.Protocol.tcp,
+          protocol = LoadBalancerServiceEnums.Protocol.https,
           proxyprotocol = false,
-          http = None
+          http = LoadBalancerServiceHTTPSConfig(
+            cookieName = "",
+            cookieLifetime = 0,
+            timeoutIdle = 60,
+            certificates = Seq.empty,
+            redirectHttp = false,
+            stickySessions = false
+          )
         )
       )
     ),
@@ -1788,7 +1823,6 @@ object HetznerCloud extends App {
     name = "website-server",
     serverType = "cx11",
     automount = Some(true),
-    datacenter = Some("nbg1-dc3"),
     firewalls = Some(List(CreateServerRequestFirewallsInner(123456))),
     labels = Some(
       Map(
@@ -1826,9 +1860,16 @@ object HetznerCloud extends App {
       http = None
     ),
     listenPort = 6443,
-    protocol = LoadBalancerServiceEnums.Protocol.tcp,
+    protocol = LoadBalancerServiceEnums.Protocol.https,
     proxyprotocol = false,
-    http = None
+    http = LoadBalancerServiceHTTPSConfig(
+      cookieName = "",
+      cookieLifetime = 0,
+      timeoutIdle = 60,
+      certificates = Seq.empty,
+      redirectHttp = false,
+      stickySessions = false
+    )
   )
 
   val managementlbsshservice = LoadBalancerService(
@@ -1842,9 +1883,16 @@ object HetznerCloud extends App {
       http = None
     ),
     listenPort = 22,
-    protocol = LoadBalancerServiceEnums.Protocol.tcp,
+    protocol = LoadBalancerServiceEnums.Protocol.https,
     proxyprotocol = false,
-    http = None
+    http = LoadBalancerServiceHTTPSConfig(
+      cookieName = "",
+      cookieLifetime = 0,
+      timeoutIdle = 60,
+      certificates = Seq.empty,
+      redirectHttp = false,
+      stickySessions = false
+    )
   )
 
   val managementlbregisterservice = LoadBalancerService(
@@ -1858,9 +1906,16 @@ object HetznerCloud extends App {
       http = None
     ),
     listenPort = 9345,
-    protocol = LoadBalancerServiceEnums.Protocol.tcp,
+    protocol = LoadBalancerServiceEnums.Protocol.https,
     proxyprotocol = false,
-    http = None
+    http = LoadBalancerServiceHTTPSConfig(
+      cookieName = "",
+      cookieLifetime = 0,
+      timeoutIdle = 60,
+      certificates = Seq.empty,
+      redirectHttp = false,
+      stickySessions = false
+    )
   )
 
   val managementlbservice = LoadBalancerService(
@@ -1874,9 +1929,16 @@ object HetznerCloud extends App {
       http = None
     ),
     listenPort = 8080,
-    protocol = LoadBalancerServiceEnums.Protocol.tcp,
+    protocol = LoadBalancerServiceEnums.Protocol.https,
     proxyprotocol = false,
-    http = None
+    http = LoadBalancerServiceHTTPSConfig(
+      cookieName = "",
+      cookieLifetime = 0,
+      timeoutIdle = 60,
+      certificates = Seq.empty,
+      redirectHttp = false,
+      stickySessions = false
+    )
   )
 
   val kubernetesInternalNetwork = NetworkCreateRequest(
@@ -1900,7 +1962,6 @@ object HetznerCloud extends App {
     name = "rancher-management-node",
     serverType = "cx11",
     automount = Some(true),
-    datacenter = Some("fsn1-dc3"),
     firewalls = None,
     labels = Some(
       Map(
@@ -1938,7 +1999,6 @@ runcmd:
     name = "cx11-server",
     serverType = "cx11",
     automount = Some(true),
-    datacenter = Some("fsn1-dc3"),
     firewalls = None,
     labels = Some(
       Map(
@@ -2003,8 +2063,8 @@ runcmd:
       ipRange = Some("172.16.10.0/24")
     )
 
-  val rancherManagementTarget = LoadBalancerTarget1(
-    `type` = LoadBalancerTarget1Enums.Type.`server`,
+  val rancherManagementTarget = CreateLoadBalancerRequestTargetsInner(
+    `type` = CreateLoadBalancerRequestTargetsInnerEnums.Type.`server`,
     ip = None,
     labelSelector = None,
     server = Some(
@@ -2024,9 +2084,16 @@ runcmd:
       http = None
     ),
     listenPort = 6443,
-    protocol = LoadBalancerServiceEnums.Protocol.tcp,
+    protocol = LoadBalancerServiceEnums.Protocol.https,
     proxyprotocol = false,
-    http = None
+    http = LoadBalancerServiceHTTPSConfig(
+      cookieName = "",
+      cookieLifetime = 0,
+      timeoutIdle = 60,
+      certificates = Seq.empty,
+      redirectHttp = false,
+      stickySessions = false
+    )
   )
 
   val rancherManagementlbhttpService = LoadBalancerService(
@@ -2040,9 +2107,16 @@ runcmd:
       http = None
     ),
     listenPort = 80,
-    protocol = LoadBalancerServiceEnums.Protocol.tcp,
+    protocol = LoadBalancerServiceEnums.Protocol.https,
     proxyprotocol = false,
-    http = None
+    http = LoadBalancerServiceHTTPSConfig(
+      cookieName = "",
+      cookieLifetime = 0,
+      timeoutIdle = 60,
+      certificates = Seq.empty,
+      redirectHttp = false,
+      stickySessions = false
+    )
   )
 
   val rancherManagementlbhttpsService = LoadBalancerService(
@@ -2056,9 +2130,16 @@ runcmd:
       http = None
     ),
     listenPort = 443,
-    protocol = LoadBalancerServiceEnums.Protocol.tcp,
+    protocol = LoadBalancerServiceEnums.Protocol.https,
     proxyprotocol = false,
-    http = None
+    http = LoadBalancerServiceHTTPSConfig(
+      cookieName = "",
+      cookieLifetime = 0,
+      timeoutIdle = 60,
+      certificates = Seq.empty,
+      redirectHttp = false,
+      stickySessions = false
+    )
   )
 
   val rancherManagementlbrequest = CreateLoadBalancerRequest(
@@ -2174,19 +2255,13 @@ runcmd:
     destinationPort = 80, // Internal traffic stays on 80
     healthCheck = prodHealthCheck,
     proxyprotocol = true, // Pass client IP to the server
-    http = Some(
-      LoadBalancerServiceHTTP(
-        /* IDs of the Certificates to use for TLS/SSL termination by the Load Balancer; empty for TLS/SSL passthrough or if `protocol` is `http`. */
-        certificates = Some(Seq(987654)), // Your Managed Certificate ID
-        /* Lifetime of the cookie used for sticky sessions (in seconds). */
-        cookieLifetime = Some(3600),
-        /* Name of the cookie used for sticky sessions. */
-        cookieName = Some("PRODSESSIONID"),
-        /* Lifetime of the cookie in seconds. Set to `0` for session cookies. */
-        stickySessions = Some(true),
-        /* Redirect HTTP requests to HTTPS. Only available if `protocol` is `https`. */
-        redirectHttp = Some(true) // Force all HTTP traffic to HTTPS
-      )
+    http = LoadBalancerServiceHTTPSConfig(
+      cookieName = "PRODSESSIONID",
+      cookieLifetime = 3600,
+      timeoutIdle = 60,
+      certificates = Seq(987654),
+      redirectHttp = true,
+      stickySessions = true
     )
   )
 
@@ -2203,8 +2278,8 @@ runcmd:
     services = Some(Seq(productionHttpsService)),
     targets = Some(
       Seq(
-        LoadBalancerTarget1(
-          `type` = LoadBalancerTarget1Enums.Type.label_selector,
+        CreateLoadBalancerRequestTargetsInner(
+          `type` = CreateLoadBalancerRequestTargetsInnerEnums.Type.label_selector,
           ip = None,
           server = Some(LoadBalancerTargetServer1(123456)),
           labelSelector = Some(LoadBalancerTargetLabelSelector("role=worker,environment=production")),
@@ -2286,7 +2361,7 @@ runcmd:
   // Example: High-performance TCP with Proxy Protocol
 
   val apiService2 = LoadBalancerService(
-    protocol = LoadBalancerServiceEnums.Protocol.tcp,
+    protocol = LoadBalancerServiceEnums.Protocol.https,
     listenPort = 443,
     destinationPort = 443,
     proxyprotocol =
@@ -2297,6 +2372,14 @@ runcmd:
       interval = 10,
       timeout = 5,
       retries = 3
+    ),
+    http = LoadBalancerServiceHTTPSConfig(
+      cookieName = "",
+      cookieLifetime = 0,
+      timeoutIdle = 60,
+      certificates = Seq.empty,
+      redirectHttp = false,
+      stickySessions = false
     )
   )
 
@@ -2428,7 +2511,7 @@ runcmd:
 // 		Service C (API): Listens on port 8443 for a specific mobile API.
 
   val prodHttpRedirectService = LoadBalancerService(
-    protocol = LoadBalancerServiceEnums.Protocol.http,
+    protocol = LoadBalancerServiceEnums.Protocol.https,
     listenPort = 80,
     destinationPort = 80,
     healthCheck = LoadBalancerServiceHealthCheck(
@@ -2448,10 +2531,13 @@ runcmd:
       )
     ),
     proxyprotocol = false,
-    http = Some(
-      LoadBalancerServiceHTTP(
-        redirectHttp = Some(true) // Redirect all HTTP to HTTPS
-      )
+    http = LoadBalancerServiceHTTPSConfig(
+      cookieName = "",
+      cookieLifetime = 0,
+      timeoutIdle = 60,
+      certificates = Seq.empty,
+      redirectHttp = true,
+      stickySessions = false
     )
   )
 
@@ -2476,18 +2562,18 @@ runcmd:
       )
     ),
     proxyprotocol = true,
-    http = Some(
-      LoadBalancerServiceHTTP(
-        certificates = Some(Seq(987654)), // Your Managed Certificate ID
-        stickySessions = Some(true),
-        cookieName = Some("APPSESSIONID"),
-        cookieLifetime = Some(3600)
-      )
+    http = LoadBalancerServiceHTTPSConfig(
+      cookieName = "APPSESSIONID",
+      cookieLifetime = 3600,
+      timeoutIdle = 60,
+      certificates = Seq(987654),
+      redirectHttp = false,
+      stickySessions = true
     )
   )
 
   val prodApiService = LoadBalancerService(
-    protocol = LoadBalancerServiceEnums.Protocol.tcp,
+    protocol = LoadBalancerServiceEnums.Protocol.https,
     listenPort = 8443,
     destinationPort = 8443,
     healthCheck = LoadBalancerServiceHealthCheck(
@@ -2497,7 +2583,15 @@ runcmd:
       timeout = 5,
       retries = 3
     ),
-    proxyprotocol = true
+    proxyprotocol = true,
+    http = LoadBalancerServiceHTTPSConfig(
+      cookieName = "",
+      cookieLifetime = 0,
+      timeoutIdle = 60,
+      certificates = Seq.empty,
+      redirectHttp = false,
+      stickySessions = false
+    )
   )
 
   val prodLoadBalancer2 = CreateLoadBalancerRequest(
@@ -2518,8 +2612,8 @@ runcmd:
     ),
     targets = Some(
       Seq(
-        LoadBalancerTarget1(
-          `type` = LoadBalancerTarget1Enums.Type.label_selector,
+        CreateLoadBalancerRequestTargetsInner(
+          `type` = CreateLoadBalancerRequestTargetsInnerEnums.Type.label_selector,
           ip = None,
           server = Some(LoadBalancerTargetServer1(123456)),
           labelSelector = Some(LoadBalancerTargetLabelSelector("role=web,environment=production")),
@@ -2529,8 +2623,8 @@ runcmd:
     )
   )
 
-  val kubelbTarget = LoadBalancerTarget1(
-    `type` = LoadBalancerTarget1Enums.Type.`server`,
+  val kubelbTarget = CreateLoadBalancerRequestTargetsInner(
+    `type` = CreateLoadBalancerRequestTargetsInnerEnums.Type.`server`,
     ip = None,
     labelSelector = None,
     server = Some(
@@ -2572,9 +2666,16 @@ runcmd:
             http = None
           ),
           listenPort = 6443,
-          protocol = LoadBalancerServiceEnums.Protocol.tcp,
+          protocol = LoadBalancerServiceEnums.Protocol.https,
           proxyprotocol = false,
-          http = None
+          http = LoadBalancerServiceHTTPSConfig(
+            cookieName = "",
+            cookieLifetime = 0,
+            timeoutIdle = 60,
+            certificates = Seq.empty,
+            redirectHttp = false,
+            stickySessions = false
+          )
         )
       )
     ),
@@ -2695,9 +2796,16 @@ runcmd:
             http = None
           ),
           listenPort = 6443,
-          protocol = LoadBalancerServiceEnums.Protocol.tcp,
+          protocol = LoadBalancerServiceEnums.Protocol.https,
           proxyprotocol = false,
-          http = None
+          http = LoadBalancerServiceHTTPSConfig(
+            cookieName = "",
+            cookieLifetime = 0,
+            timeoutIdle = 60,
+            certificates = Seq.empty,
+            redirectHttp = false,
+            stickySessions = false
+          )
         )
       )
     ),
@@ -2725,9 +2833,16 @@ runcmd:
       http = None
     ),
     listenPort = 6443,
-    protocol = LoadBalancerServiceEnums.Protocol.tcp,
+    protocol = LoadBalancerServiceEnums.Protocol.https,
     proxyprotocol = false,
-    http = None
+    http = LoadBalancerServiceHTTPSConfig(
+      cookieName = "",
+      cookieLifetime = 0,
+      timeoutIdle = 60,
+      certificates = Seq.empty,
+      redirectHttp = false,
+      stickySessions = false
+    )
   )
 
   val kubelbservicehttp = LoadBalancerService(
@@ -2741,9 +2856,16 @@ runcmd:
       http = None
     ),
     listenPort = 80,
-    protocol = LoadBalancerServiceEnums.Protocol.tcp,
+    protocol = LoadBalancerServiceEnums.Protocol.https,
     proxyprotocol = false,
-    http = None
+    http = LoadBalancerServiceHTTPSConfig(
+      cookieName = "",
+      cookieLifetime = 0,
+      timeoutIdle = 60,
+      certificates = Seq.empty,
+      redirectHttp = false,
+      stickySessions = false
+    )
   )
 
 //firewall_attachment
@@ -2758,14 +2880,17 @@ runcmd:
 
   val dedicatedServerTarget = LoadBalancerTarget(
     `type` = LoadBalancerTargetEnums.Type.ip,
-    ip = Some(
-      LoadBalancerTargetIP(ip = "10.0.20.55")
-    ) // The IP of your bare-metal server
+    ip = LoadBalancerTargetIP(ip = "10.0.20.55"), // The IP of your bare-metal server
+    healthStatus = Seq.empty,
+    labelSelector = LoadBalancerTargetLabelSelector(""), // not applicable for type = ip
+    server = LoadBalancerTargetServer(id = 0, ip = "0.0.0.0"), // not applicable for type = ip
+    targets = Seq.empty,
+    usePrivateIp = false
   )
 
 // Adding it to a Load Balancer
-  val addTargetRequest = LoadBalancerTarget1(
-    `type` = LoadBalancerTarget1Enums.Type.ip,
+  val addTargetRequest = CreateLoadBalancerRequestTargetsInner(
+    `type` = CreateLoadBalancerRequestTargetsInnerEnums.Type.ip,
     ip = Some(LoadBalancerTargetIP(ip = "10.0.20.55")),
     labelSelector = None,
     server = None,
@@ -2798,16 +2923,23 @@ runcmd:
             http = None
           ),
           listenPort = 80,
-          protocol = LoadBalancerServiceEnums.Protocol.tcp,
+          protocol = LoadBalancerServiceEnums.Protocol.https,
           proxyprotocol = false,
-          http = None
+          http = LoadBalancerServiceHTTPSConfig(
+            cookieName = "",
+            cookieLifetime = 0,
+            timeoutIdle = 60,
+            certificates = Seq.empty,
+            redirectHttp = false,
+            stickySessions = false
+          )
         )
       )
     ),
     targets = Some(
       Seq(
-        LoadBalancerTarget1(
-          `type` = LoadBalancerTarget1Enums.Type.`server`,
+        CreateLoadBalancerRequestTargetsInner(
+          `type` = CreateLoadBalancerRequestTargetsInnerEnums.Type.`server`,
           ip = None,
           labelSelector = None,
           server = Some(
@@ -2886,9 +3018,16 @@ runcmd:
       http = None
     ),
     listenPort = 80,
-    protocol = LoadBalancerServiceEnums.Protocol.tcp,
+    protocol = LoadBalancerServiceEnums.Protocol.https,
     proxyprotocol = true,
-    http = None
+    http = LoadBalancerServiceHTTPSConfig(
+      cookieName = "",
+      cookieLifetime = 0,
+      timeoutIdle = 60,
+      certificates = Seq.empty,
+      redirectHttp = false,
+      stickySessions = false
+    )
   )
 
   val ingressDefaultServiceHttps = LoadBalancerService(
@@ -2902,9 +3041,16 @@ runcmd:
       http = None
     ),
     listenPort = 443,
-    protocol = LoadBalancerServiceEnums.Protocol.tcp,
+    protocol = LoadBalancerServiceEnums.Protocol.https,
     proxyprotocol = true,
-    http = None
+    http = LoadBalancerServiceHTTPSConfig(
+      cookieName = "",
+      cookieLifetime = 0,
+      timeoutIdle = 60,
+      certificates = Seq.empty,
+      redirectHttp = false,
+      stickySessions = false
+    )
   )
 
   val k3sapiLoadBalancer = CreateLoadBalancerRequest(
@@ -2933,16 +3079,23 @@ runcmd:
             http = None
           ),
           listenPort = 6443,
-          protocol = LoadBalancerServiceEnums.Protocol.tcp,
+          protocol = LoadBalancerServiceEnums.Protocol.https,
           proxyprotocol = false,
-          http = None
+          http = LoadBalancerServiceHTTPSConfig(
+            cookieName = "",
+            cookieLifetime = 0,
+            timeoutIdle = 60,
+            certificates = Seq.empty,
+            redirectHttp = false,
+            stickySessions = false
+          )
         )
       )
     ),
     targets = Some(
       Seq(
-        LoadBalancerTarget1(
-          `type` = LoadBalancerTarget1Enums.Type.`server`,
+        CreateLoadBalancerRequestTargetsInner(
+          `type` = CreateLoadBalancerRequestTargetsInnerEnums.Type.`server`,
           ip = None,
           labelSelector = None,
           server = Some(
@@ -2992,16 +3145,23 @@ runcmd:
             http = None
           ),
           listenPort = 6443,
-          protocol = LoadBalancerServiceEnums.Protocol.tcp,
+          protocol = LoadBalancerServiceEnums.Protocol.https,
           proxyprotocol = false,
-          http = None
+          http = LoadBalancerServiceHTTPSConfig(
+            cookieName = "",
+            cookieLifetime = 0,
+            timeoutIdle = 60,
+            certificates = Seq.empty,
+            redirectHttp = false,
+            stickySessions = false
+          )
         )
       )
     ),
     targets = Some(
       Seq(
-        LoadBalancerTarget1(
-          `type` = LoadBalancerTarget1Enums.Type.`server`,
+        CreateLoadBalancerRequestTargetsInner(
+          `type` = CreateLoadBalancerRequestTargetsInnerEnums.Type.`server`,
           ip = None,
           labelSelector = None,
           server = Some(
@@ -3039,16 +3199,23 @@ runcmd:
             http = None
           ),
           listenPort = 443,
-          protocol = LoadBalancerServiceEnums.Protocol.tcp,
+          protocol = LoadBalancerServiceEnums.Protocol.https,
           proxyprotocol = false,
-          http = None
+          http = LoadBalancerServiceHTTPSConfig(
+            cookieName = "",
+            cookieLifetime = 0,
+            timeoutIdle = 60,
+            certificates = Seq.empty,
+            redirectHttp = false,
+            stickySessions = false
+          )
         )
       )
     ),
     targets = Some(
       Seq(
-        LoadBalancerTarget1(
-          `type` = LoadBalancerTarget1Enums.Type.`server`,
+        CreateLoadBalancerRequestTargetsInner(
+          `type` = CreateLoadBalancerRequestTargetsInnerEnums.Type.`server`,
           ip = None,
           labelSelector = None,
           server = Some(
@@ -3066,8 +3233,8 @@ runcmd:
     ipRange = Some("10.10.0.0/24")
   )
 
-  val apiLoadBalancerTarget = LoadBalancerTarget1(
-    `type` = LoadBalancerTarget1Enums.Type.label_selector,
+  val apiLoadBalancerTarget = CreateLoadBalancerRequestTargetsInner(
+    `type` = CreateLoadBalancerRequestTargetsInnerEnums.Type.label_selector,
     ip = None,
     labelSelector = Some(LoadBalancerTargetLabelSelector("lb=api")),
     server = Some(
@@ -3076,8 +3243,8 @@ runcmd:
     usePrivateIp = Some(true)
   )
 
-  val ingressLoadBalancerTarget = LoadBalancerTarget1(
-    `type` = LoadBalancerTarget1Enums.Type.label_selector,
+  val ingressLoadBalancerTarget = CreateLoadBalancerRequestTargetsInner(
+    `type` = CreateLoadBalancerRequestTargetsInnerEnums.Type.label_selector,
     ip = None,
     labelSelector = Some(LoadBalancerTargetLabelSelector("lb=ingress")),
     server = Some(
@@ -3097,9 +3264,16 @@ runcmd:
       http = None
     ),
     listenPort = 6443,
-    protocol = LoadBalancerServiceEnums.Protocol.tcp,
+    protocol = LoadBalancerServiceEnums.Protocol.https,
     proxyprotocol = false,
-    http = None
+    http = LoadBalancerServiceHTTPSConfig(
+      cookieName = "",
+      cookieLifetime = 0,
+      timeoutIdle = 60,
+      certificates = Seq.empty,
+      redirectHttp = false,
+      stickySessions = false
+    )
   )
 
   val apiLoadBalancerService80 = LoadBalancerService(
@@ -3113,9 +3287,16 @@ runcmd:
       http = None
     ),
     listenPort = 80,
-    protocol = LoadBalancerServiceEnums.Protocol.tcp,
+    protocol = LoadBalancerServiceEnums.Protocol.https,
     proxyprotocol = false,
-    http = None
+    http = LoadBalancerServiceHTTPSConfig(
+      cookieName = "",
+      cookieLifetime = 0,
+      timeoutIdle = 60,
+      certificates = Seq.empty,
+      redirectHttp = false,
+      stickySessions = false
+    )
   )
 
   val ingressLoadBalancerService443 = LoadBalancerService(
@@ -3129,9 +3310,16 @@ runcmd:
       http = None
     ),
     listenPort = 443,
-    protocol = LoadBalancerServiceEnums.Protocol.tcp,
+    protocol = LoadBalancerServiceEnums.Protocol.https,
     proxyprotocol = false,
-    http = None
+    http = LoadBalancerServiceHTTPSConfig(
+      cookieName = "",
+      cookieLifetime = 0,
+      timeoutIdle = 60,
+      certificates = Seq.empty,
+      redirectHttp = false,
+      stickySessions = false
+    )
   )
 
   val ingressLoadBalancerService22623 = LoadBalancerService(
@@ -3145,9 +3333,16 @@ runcmd:
       http = None
     ),
     listenPort = 22623,
-    protocol = LoadBalancerServiceEnums.Protocol.tcp,
+    protocol = LoadBalancerServiceEnums.Protocol.https,
     proxyprotocol = false,
-    http = None
+    http = LoadBalancerServiceHTTPSConfig(
+      cookieName = "",
+      cookieLifetime = 0,
+      timeoutIdle = 60,
+      certificates = Seq.empty,
+      redirectHttp = false,
+      stickySessions = false
+    )
   )
 
   val kubeMasterServer1 = CreateServerRequest(
@@ -3155,7 +3350,6 @@ runcmd:
     name = "kube-master-01",
     serverType = "cx31",
     automount = Some(true),
-    datacenter = None,
     firewalls = None,
     labels = Some(
       Map(
@@ -3207,16 +3401,23 @@ runcmd:
             http = None
           ),
           listenPort = 6443,
-          protocol = LoadBalancerServiceEnums.Protocol.tcp,
+          protocol = LoadBalancerServiceEnums.Protocol.https,
           proxyprotocol = false,
-          http = None
+          http = LoadBalancerServiceHTTPSConfig(
+            cookieName = "",
+            cookieLifetime = 0,
+            timeoutIdle = 60,
+            certificates = Seq.empty,
+            redirectHttp = false,
+            stickySessions = false
+          )
         )
       )
     ),
     targets = Some(
       Seq(
-        LoadBalancerTarget1(
-          `type` = LoadBalancerTarget1Enums.Type.`server`,
+        CreateLoadBalancerRequestTargetsInner(
+          `type` = CreateLoadBalancerRequestTargetsInnerEnums.Type.`server`,
           ip = None,
           labelSelector = None,
           server = Some(
@@ -3255,8 +3456,8 @@ runcmd:
     labels = Some(Map("environment" -> "production", "role" -> "kube-network"))
   )
 
-  val masterLoadBalancerTarget = LoadBalancerTarget1(
-    `type` = LoadBalancerTarget1Enums.Type.label_selector,
+  val masterLoadBalancerTarget = CreateLoadBalancerRequestTargetsInner(
+    `type` = CreateLoadBalancerRequestTargetsInnerEnums.Type.label_selector,
     ip = None,
     labelSelector = Some(LoadBalancerTargetLabelSelector("role=kube-master")),
     server = Some(
@@ -3276,9 +3477,16 @@ runcmd:
       http = None
     ),
     listenPort = 6443,
-    protocol = LoadBalancerServiceEnums.Protocol.tcp,
+    protocol = LoadBalancerServiceEnums.Protocol.https,
     proxyprotocol = false,
-    http = None
+    http = LoadBalancerServiceHTTPSConfig(
+      cookieName = "",
+      cookieLifetime = 0,
+      timeoutIdle = 60,
+      certificates = Seq.empty,
+      redirectHttp = false,
+      stickySessions = false
+    )
   )
   val attachMasterLbToNetwork = AttachLoadBalancerToNetworkRequest(
     network = 123456,
@@ -3541,16 +3749,23 @@ runcmd:
             )
           ),
           listenPort = 80,
-          protocol = LoadBalancerServiceEnums.Protocol.http,
+          protocol = LoadBalancerServiceEnums.Protocol.https,
           proxyprotocol = false,
-          http = None
+          http = LoadBalancerServiceHTTPSConfig(
+            cookieName = "",
+            cookieLifetime = 0,
+            timeoutIdle = 60,
+            certificates = Seq.empty,
+            redirectHttp = false,
+            stickySessions = false
+          )
         )
       )
     ),
     targets = Some(
       Seq(
-        LoadBalancerTarget1(
-          `type` = LoadBalancerTarget1Enums.Type.`server`,
+        CreateLoadBalancerRequestTargetsInner(
+          `type` = CreateLoadBalancerRequestTargetsInnerEnums.Type.`server`,
           ip = None,
           labelSelector = None,
           server = Some(
@@ -3558,8 +3773,8 @@ runcmd:
           ),
           usePrivateIp = Some(false)
         ),
-        LoadBalancerTarget1(
-          `type` = LoadBalancerTarget1Enums.Type.`server`,
+        CreateLoadBalancerRequestTargetsInner(
+          `type` = CreateLoadBalancerRequestTargetsInnerEnums.Type.`server`,
           ip = None,
           labelSelector = None,
           server = Some(
@@ -3567,8 +3782,8 @@ runcmd:
           ),
           usePrivateIp = Some(false)
         ),
-        LoadBalancerTarget1(
-          `type` = LoadBalancerTarget1Enums.Type.`server`,
+        CreateLoadBalancerRequestTargetsInner(
+          `type` = CreateLoadBalancerRequestTargetsInnerEnums.Type.`server`,
           ip = None,
           labelSelector = None,
           server = Some(
@@ -3596,8 +3811,8 @@ runcmd:
     ipRange = Some("10.10.0.0/24")
   )
 
-  val webLoadBalancerTarget1 = LoadBalancerTarget1(
-    `type` = LoadBalancerTarget1Enums.Type.`server`,
+  val webLoadBalancerTarget1 = CreateLoadBalancerRequestTargetsInner(
+    `type` = CreateLoadBalancerRequestTargetsInnerEnums.Type.`server`,
     ip = None,
     labelSelector = None,
     server = Some(
@@ -3606,8 +3821,8 @@ runcmd:
     usePrivateIp = Some(false)
   )
 
-  val webLoadBalancerTarget2 = LoadBalancerTarget1(
-    `type` = LoadBalancerTarget1Enums.Type.`server`,
+  val webLoadBalancerTarget2 = CreateLoadBalancerRequestTargetsInner(
+    `type` = CreateLoadBalancerRequestTargetsInnerEnums.Type.`server`,
     ip = None,
     labelSelector = None,
     server = Some(
@@ -3616,8 +3831,8 @@ runcmd:
     usePrivateIp = Some(false)
   )
 
-  val webLoadBalancerTarget3 = LoadBalancerTarget1(
-    `type` = LoadBalancerTarget1Enums.Type.`server`,
+  val webLoadBalancerTarget3 = CreateLoadBalancerRequestTargetsInner(
+    `type` = CreateLoadBalancerRequestTargetsInnerEnums.Type.`server`,
     ip = None,
     labelSelector = None,
     server = Some(
@@ -3645,16 +3860,15 @@ runcmd:
       )
     ),
     listenPort = 80,
-    protocol = LoadBalancerServiceEnums.Protocol.http,
+    protocol = LoadBalancerServiceEnums.Protocol.https,
     proxyprotocol = false,
-    http = Some(
-      LoadBalancerServiceHTTP(
-        certificates = None,
-        cookieLifetime = None,
-        cookieName = None,
-        redirectHttp = Some(false),
-        stickySessions = Some(false)
-      )
+    http = LoadBalancerServiceHTTPSConfig(
+      cookieName = "",
+      cookieLifetime = 0,
+      timeoutIdle = 60,
+      certificates = Seq.empty,
+      redirectHttp = false,
+      stickySessions = false
     )
   )
 
@@ -3663,7 +3877,6 @@ runcmd:
     name = "web-server-01",
     serverType = "cx11",
     automount = Some(true),
-    datacenter = None,
     firewalls = None,
     labels = Some(
       Map(
@@ -3692,7 +3905,6 @@ runcmd:
     name = "web-server-02",
     serverType = "cx11",
     automount = Some(true),
-    datacenter = None,
     firewalls = None,
     labels = Some(
       Map(
@@ -3721,7 +3933,6 @@ runcmd:
     name = "web-server-03",
     serverType = "cx11",
     automount = Some(true),
-    datacenter = None,
     firewalls = None,
     labels = Some(
       Map(
@@ -4008,9 +4219,9 @@ runcmd:
     serverType = "cx33"
   )
 
-  val changeServerDnsPtrRequest = ChangeServerDnsPtrRequest(
+  val changeServerDnsPtrRequest = ServerChangeDnsPtrRequest(
     ip = "203.0.113.1",
-    dnsPtr = "server.example.com"
+    dnsPtr = Some("server.example.com")
   )
 
   val changeServerAliasIpsRequest = ChangeServerAliasIpsRequest(
@@ -4022,13 +4233,13 @@ runcmd:
     ipRange = "10.0.0.0/16"
   )
 
-  val changeLoadBalancerAlgorithmRequest = ChangeLoadBalancerAlgorithmRequest(
-    `type` = ChangeLoadBalancerAlgorithmRequestEnums.Type.least_connections
+  val changeLoadBalancerAlgorithmRequest = LoadBalancerAlgorithm(
+    `type` = LoadBalancerAlgorithmEnums.Type.least_connections
   )
 
   val changeLoadbalancerDnsPtrRequest = ChangeLoadbalancerDnsPtrRequest(
     ip = "203.0.113.10",
-    dnsPtr = "lb.example.com"
+    dnsPtr = Some("lb.example.com")
   )
 
   val changeLoadBalancerTypeRequest = ChangeTypeRequest(
