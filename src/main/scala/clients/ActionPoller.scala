@@ -4,6 +4,7 @@ import cats.effect.IO
 import configs.ActionPollConfig
 import hcloud.models.Action
 import hcloud.models.ActionEnums
+import support.CanEqualInstances.given
 
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.duration.MILLISECONDS
