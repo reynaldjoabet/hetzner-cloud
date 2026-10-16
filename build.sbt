@@ -56,12 +56,7 @@ val commonSettings = Seq(
 
   Compile / sourceGenerators += generate.taskValue,
   Compile / unmanagedSourceDirectories := Seq.empty,
-  libraryDependencies ++= Seq(
-    sttpJsoniter,
-    jsoniter,
-    jsoniterMacros,
-    jsoniterCirce
-  )
+  libraryDependencies ++= Seq(http.sttp.jsoniter, json.jsoniter.circe) ++ json.jsoniter.core
 )
 
 /** Defines a codegen module `<id>-codegen` generating into `modules/<id>-codegen`. The spec path and package layout
@@ -82,28 +77,23 @@ lazy val root = (project in file("."))
     semanticdbEnabled := true,
     name := "hetzner-cloud",
     libraryDependencies ++= Seq(
-      sttpCore,
-      sttpJsoniter,
-      http4sBackend,
-      http4sDsl,
-      emberServer,
-      fs2,
-      chimney,
-      emberClient,
-      catsEffect,
-      pureconfig,
-      pureconfigGeneric,
-      slf4j,
-      logback,
-      scribe,
-      scribeSlf4j,
-      scribeCats,
-      jsoniter,
-      jsoniterMacros,
-      jsoniterCirce,
-      munit,
-      munitCatsEffect
-    ),
+      http.sttp.core,
+      http.sttp.jsoniter,
+      http.sttp.backends.http4s,
+      core.fs2,
+      domain.chimney,
+      core.catsEffect,
+      Dependencies.config.pureconfig.core,
+      Dependencies.config.pureconfig.generic,
+      logging.slf4j,
+      logging.logback,
+      logging.scribe.core,
+      logging.scribe.slf4j,
+      logging.scribe.cats,
+      json.jsoniter.circe,
+      Dependencies.testing.munit,
+      Dependencies.testing.munitCatsEffect
+    ) ++ http.http4s.core ++ json.jsoniter.core,
     buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
     buildInfoPackage := "hcloud.generated",
     buildInfoObject := "HCloudBuildInfo"
