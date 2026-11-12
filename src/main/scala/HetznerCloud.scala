@@ -328,12 +328,16 @@ object HetznerCloud extends App {
     ListLoadBalancers200ResponseLoadBalancersInnerPublicNet(
       enabled = true,
       ipv4 = ListLoadBalancers200ResponseLoadBalancersInnerPublicNetIpv4(
-        dnsPtr = "",
-        ip = "192.168.2.8"
+        id = 1,
+        ip = "192.168.2.8",
+        blocked = false,
+        dnsPtr = ""
       ),
       ipv6 = ListLoadBalancers200ResponseLoadBalancersInnerPublicNetIpv6(
-        dnsPtr = "",
-        ip = "2001:db8::1"
+        id = 2,
+        ip = "2001:db8::1",
+        blocked = false,
+        dnsPtr = ""
       )
     )
 
@@ -356,7 +360,6 @@ object HetznerCloud extends App {
     )
 
   val loadBalancerType = ListLoadBalancerTypes200ResponseLoadBalancerTypesInner(
-    deprecated = OffsetDateTime.parse("2023-12-31T23:59:59+00:00"),
     deprecation = DeprecationInfo(
       unavailableAfter = OffsetDateTime.parse("2023-12-31T23:59:59+00:00"),
       announced = OffsetDateTime.parse("2023-06-30T23:59:59+00:00")
@@ -2181,7 +2184,7 @@ runcmd:
   )
 
   val attachVolumeToServerRequest = AttachVolumeRequest(
-    server = 123456,
+    assignee = AttachVolumeRequestAssignee(id = 123456, `type` = "server"),
     automount = Some(true)
   )
 
@@ -4221,7 +4224,7 @@ runcmd:
 
   val changeServerDnsPtrRequest = ServerChangeDnsPtrRequest(
     ip = "203.0.113.1",
-    dnsPtr = Some("server.example.com")
+    dnsPtr = "server.example.com"
   )
 
   val changeServerAliasIpsRequest = ChangeServerAliasIpsRequest(
@@ -4239,7 +4242,7 @@ runcmd:
 
   val changeLoadbalancerDnsPtrRequest = ChangeLoadbalancerDnsPtrRequest(
     ip = "203.0.113.10",
-    dnsPtr = Some("lb.example.com")
+    dnsPtr = "lb.example.com"
   )
 
   val changeLoadBalancerTypeRequest = ChangeTypeRequest(

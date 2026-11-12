@@ -1,9 +1,7 @@
 import Dependencies.*
 
-ThisBuild / scalaVersion := "3.10.0"
+ThisBuild / scalaVersion := "3.9.0"
 ThisBuild / version := "0.1.0-SNAPSHOT"
-
-ThisBuild / crossScalaVersions := Seq("3.9.0")
 
 ThisBuild / scalacOptions := Seq(
   "-encoding",
@@ -50,8 +48,11 @@ val commonSettings = Seq(
   openApiGenerateApiTests := SettingDisabled,
   // Fail fast on bad specs -- the hcloud spec passes the validator
   openApiValidateSpec := Some(true),
+  // openApiGenerate only returns the files it rewrote this run (unchanged files
+  // are skipped), so list the whole output dir instead.
   generate := Def.uncached {
-    openApiGenerate.value
+    val _ = openApiGenerate.value
+    (file(openApiOutputDir.value) ** "*.scala").get()
   },
 
   Compile / sourceGenerators += generate.taskValue,
